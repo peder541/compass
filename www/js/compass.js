@@ -28,5 +28,6 @@ function draw(latitude, longitude, accuracy) {
 
 function initialize() {
 	navigator.geolocation.watchPosition(geo.success, geo.failure, geo.options);	
+	alert(google.maps);
 }
 google.maps.event.addDomListener(window, 'load', initialize);
