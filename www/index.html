@@ -23,6 +23,7 @@
 			success: function(position) {
 				var crds = position.coords;
 				draw(crds.latitude, crds.longitude, crds.accuracy);
+				$('body').append(crds.latitude + ' ' + crds.longitude + ' ');
 			},
 			error: function() {
 				alert('Unable to find position');
