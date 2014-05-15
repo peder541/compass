@@ -20,14 +20,17 @@ function draw(latitude, longitude, accuracy) {
 		map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 	}
 	if (!car) car = new google.maps.Marker();
-	if (accuracy === false || accuracy < 100) {
+	if (typeof(accuracy) === 'undefined' || accuracy < 100) {
 		car.setMap(map);
 		car.setPosition(spot);
 	}
 }
 
 function initialize() {
-	navigator.geolocation.watchPosition(geo.success, geo.failure, geo.options);	
-	alert(!!navigator.geolocation);
+	draw(45.0329968, -93.1837094);
+	//navigator.geolocation.watchPosition(geo.success, geo.failure, geo.options);
 }
-google.maps.event.addDomListener(window, 'load', initialize);
+
+$(document).ready(function() {
+	google.maps.event.addDomListener(window, 'load', initialize);
+});
