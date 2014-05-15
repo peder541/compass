@@ -28,6 +28,7 @@ function draw(latitude, longitude, accuracy) {
 
 function initialize() {
 	draw(45.0329968, -93.1837094);
+	$('body').append(!!navigator.geolocation);
 	//navigator.geolocation.watchPosition(geo.success, geo.failure, geo.options);
 }
 
