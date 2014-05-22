@@ -7,5 +7,25 @@ html, body {
 	padding: 0px
 }
 #map-canvas {
-	height: 400px;
+	height: 90%
+}
+button {
+	margin: 5px;
+}
+p {
+	display: inline;
+}
+
+@media (max-width: 550px) {
+	#map-canvas {
+		height: 80%;
+	}	
+}
+
+#center_icon {
+	position: absolute;
+	bottom: 50%;
+	left: 50%;
+	display: none;
+	pointer-events: none;	
 }
