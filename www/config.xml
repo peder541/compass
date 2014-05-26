@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.phonegap.helloworld" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+<widget id="com.okeebo.compass" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
     <name>HelloWorld</name>
     <description>
         Hello World sample application that responds to the deviceready event.
@@ -51,4 +51,5 @@
     <access origin="http://127.0.0.1*" />
 	<access origin="*" />
 	<gap:plugin name="org.apache.cordova.geolocation" version="0.3.6" />
+	<gap:plugin name="com.ququplay.websocket.websocket" version="0.1.0" />
 </widget>
