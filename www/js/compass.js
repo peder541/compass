@@ -24,7 +24,7 @@ var geo = {
 };
 function connect() {
 	if (window.io) {
-		socket = io.connect('https://okeebo.com:8000');
+		socket = io.connect('http://ridesqirl.com');
 		socket.on('news', function(data) {
 			console.log(data);
 		}).on('initialize', function(data) {
@@ -104,16 +104,23 @@ function editPosition(setDrop) {
 		obj = drop;
 	}
 	map.panTo(obj.getPosition());
+	$('#center_icon').attr('src', obj.getIcon());
 	$('#map-canvas').one('mousedown', function() {
 		trueCenterIcon(obj);	
 	});
 	var listener = google.maps.event.addListener(map, 'center_changed', function() { 
 		obj.setPosition(map.center);
+		$('#confirmPosition').attr('data-address','calculating...');
 	});
+	var codingListener = google.maps.event.addListener(map, 'idle', function() {
+		getAddress(obj);
+	});
+	getAddress(obj);
 	
 	confirmPosition = function() {
 		$('#map-canvas').off('mousedown');
 		google.maps.event.removeListener(listener);
+		google.maps.event.removeListener(codingListener);
 		me.setVisible(true);
 		if (drop) drop.setVisible(true);
 		$('#center_icon').hide();
@@ -193,8 +200,10 @@ $(document).ready(function() {
 		getRoute();
 	});
 	
+	$('.menu').on('click', toggleMenu);
+	
 	$(window).on('resize', function(event) {
-		$('#map-canvas').css('height', window.innerHeight - (window.innerWidth < 550 ? 80 : 40));
+		$('#map-canvas').css('height', window.innerHeight - $('.header').outerHeight() - $('#main-footer').outerHeight());//(window.innerWidth < 550 ? 110 : 70));
 		google.maps.event.trigger(map, 'resize');
 		if ($('#center_icon').is(':visible')) trueCenterIcon();
 	});
@@ -206,7 +215,7 @@ function trueCenterIcon(obj) {
 	var $center = $('#center_icon');
 	var $map = $('#map-canvas');
 	$center.css({ 
-		'top': $map.height()*0.5 - $center.height(),
+		'top': $map.offset().top + $map.height()*0.5 - $center.height(),
 		'left': $map.width()*0.5 - $center.width()*0.5
 	}).show();
 	if (obj) {
@@ -251,4 +260,67 @@ function around_the_block(lat, lng) {
 
 function stop_drive() {
 	clearTimeout(driveTimerID);
+}
+
+function toggleMenu() {
+	var $sidebar = $('#sidebar');
+	var $screen = $('#main');
+	if ($sidebar.is(':visible')) {
+		$screen.animate({'left':''});
+		$sidebar.animate({'left':-$sidebar.width()}, function() { 
+			$sidebar.hide();
+		});
+	}
+	else {
+		$screen.animate({'left':$sidebar.width()});
+		$sidebar.css({'left':-$sidebar.width()}).show().animate({'left':''});
+	}
+}
+function getAddress(obj, retry) {
+	if (!window.geocoder) geocoder = new google.maps.Geocoder();
+	if (!obj) obj = me;
+	geocoder.geocode({location: obj.getPosition()}, function(results, status) { 
+		if (typeof(geocodeTimer) !== 'undefined') {
+			clearTimeout(geocodeTimer);
+		}
+		if (status == google.maps.GeocoderStatus.OK) {
+			var address = results[0].formatted_address;
+			address = address.split(',')[0];
+			$('#confirmPosition').attr('data-address',address);
+		}
+		else if (!retry && status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
+			geocodeTimer = setTimeout(function() { getAddress(obj, true); }, 2000);
+		}
+	});	
+}
+// Uses Postal Address
+function codeAddress(address) {
+	if (!window.geocoder) geocoder = new google.maps.Geocoder();
+	var request = {
+		address: address,
+		bounds: map.getBounds()
+	};
+	geocoder.geocode(request, placeCallback);
+}
+// Accepts Keywords
+function findPlace(place) {
+	if (!window.service) service = new google.maps.places.PlacesService(map);
+	var request = {
+		location: map.getCenter(),
+		radius: '500',
+		query: place
+	};
+	service.textSearch(request, placeCallback);
+}
+function placeCallback(results, status) {
+	if (status == google.maps.places.PlacesServiceStatus.OK) {
+		/*
+		for (var i = 0; i < results.length; i++) {
+			var address = results[i].formatted_address;
+			var LatLng = results[i].geometry.location;
+			draw(address, LatLng.lat(), LatLng.lng() );
+		}
+		/**/
+		map.panTo(results[0].geometry.location);
+	}
 }
