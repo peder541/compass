@@ -183,7 +183,6 @@ google.maps.event.addDomListener(window, 'load', initialize);
 
 $(document).ready(function() {
 	$(document).on('click', '#main-footer .Change', function(event) {
-		console.log($(this).hasClass('Drop-off'));
 		editPosition($(this).hasClass('Drop-off'));
 		this.innerHTML = this.className = this.className.replace('Change','Confirm');
 	})
@@ -379,10 +378,14 @@ function fullscreen_input() {
 		if (!window.autocomplete) {
 			autocomplete = new google.maps.places.AutocompleteService();
 		}
-		$input.css({'height': $input.height()}).animate({'top': '1%', 'left': '2%', 'width': '88%'}, function() { 
-			$input.select();
-			$('.clear,.collapse').show();
-			$(window).scrollTop(0);
+		$input.css({'height': $input.height()}).animate({'top': '1%', 'left': '2%', 'width': '88%'}, {
+			progress: function() {
+				$(window).scrollTop(0);
+			},
+			complete: function() { 
+				$input.select();
+				$('.clear,.collapse').show();
+			}
 		});
 		$('#main-footer').animate({'height': '100%'}).children().not($input).hide();
 		return true;
