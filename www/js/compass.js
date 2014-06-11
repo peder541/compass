@@ -389,7 +389,7 @@ function small_input(callback) {
 		});
 		$('#main-footer').animate({'height': '120px'}, function() {
 			$input.css({'top': '', 'left': '', 'width': '', 'height': ''});
-			$(this).children().not('#cost,input').show();
+			$(this).children().not('#cost,input,.' + $input.attr('class')).show();
 			if (typeof(callback) === 'function') callback();
 		});
 		editPosition($input.hasClass('Destination'));
