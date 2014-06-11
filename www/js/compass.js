@@ -127,7 +127,7 @@ function editPosition(setDrop) {
 		$('#center_icon').hide();
 		if (!textSearch) {
 			$('#main-footer input').hide();
-			$('#main-footer button').show();
+			$('#main-footer .Confirm').show();
 		}
 		delete confirmPosition;
 	}
@@ -194,6 +194,9 @@ $(document).ready(function() {
 	.on('click', '#getRoute', function(event) {
 		if (window.confirmPosition) $('.Confirm').click();
 		getRoute();
+	})
+	.on('click', '.collapse', function(event) {
+		small_input();
 	})
 	.on('keydown', function(event) {
 		if (event.which == 27) small_input();
@@ -372,7 +375,10 @@ function fullscreen_input() {
 		if (!window.autocomplete) {
 			autocomplete = new google.maps.places.AutocompleteService();
 		}
-		$input.css({'height': $input.height()}).animate({'top': '1%', 'left': '2%', 'width': '88%'}, function() { $input.select(); });
+		$input.css({'height': $input.height()}).animate({'top': '1%', 'left': '2%', 'width': '88%'}, function() { 
+			$input.select();
+			$('.collapse').show();
+		});
 		$('#main-footer').animate({'height': '100%'}).children().not($input).hide();
 		return true;
 	}
@@ -381,6 +387,7 @@ function small_input(callback) {
 	var $input = $('#main-footer input').filter(':visible');
 	$input.blur();
 	$('#main-footer ul').remove();
+	$('.collapse').hide();
 	if ($input.offset().top < 12) {
 		$input.animate({
 			'top': ($input.hasClass('Position') ? '8.33%' : '45.5%'),
@@ -389,7 +396,7 @@ function small_input(callback) {
 		});
 		$('#main-footer').animate({'height': '120px'}, function() {
 			$input.css({'top': '', 'left': '', 'width': '', 'height': ''});
-			$(this).children().not('#cost,input,.' + $input.attr('class')).show();
+			$('.Edit' + ($input.hasClass('Destination') ? '.Position' : '.Destination') + ',#getRoute').show();
 			if (typeof(callback) === 'function') callback();
 		});
 		editPosition($input.hasClass('Destination'));

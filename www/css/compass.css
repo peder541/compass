@@ -27,7 +27,7 @@ button {
 button::-moz-focus-inner {
   border: 0;
 }
-input {
+input, input:focus {
 	-webkit-user-modify: read-write-plaintext-only;
 }
 
@@ -90,6 +90,26 @@ input {
 }
 #main-footer > button:active {
 	background-color: #e0e;	
+}
+#main-footer > .collapse {
+	display: none;
+	position: absolute;
+	top: auto;
+	right: 0;
+	bottom: 0;
+	left: auto;
+	width: 44px;
+	height: 44px;
+	background-color: #808;
+	color: #D5D;
+	font-size: 28px;
+	border-radius: 0;
+}
+#main-footer > .collapse:hover {
+	background-color: #909;	
+}
+#main-footer > .collapse:active {
+	background-color: #a0a;
 }
 #main-footer > p {
 	display: none;
