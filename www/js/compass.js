@@ -211,7 +211,7 @@ $(document).ready(function() {
 				bounds: map.getBounds(),
 				input: $this.val()
 			}
-			if (request.input) {
+			if (request.input && event.which != 27) {
 				autocomplete.getPlacePredictions(request, function(results, status) {
 					$('#main-footer ul').remove();
 					var $ul = $('<ul>');
@@ -229,14 +229,13 @@ $(document).ready(function() {
 		if (!window.service) service = new google.maps.places.PlacesService(map);
 		var $this = $(this);
 		var $input = $('#main-footer input').filter(':visible');
+		$input.blur();
 		$input.val($this.children('span').eq(0).html());
 		var request = {
 			reference: $this.attr('data-ref')
 		}
 		service.getDetails(request, function(results, status) {
-			$('#main-footer ul').remove();
 			small_input(function() {
-				editPosition($input.hasClass('Destination'));
 				map.panTo(results.geometry.location);
 			});
 		});
@@ -374,24 +373,26 @@ function fullscreen_input() {
 			autocomplete = new google.maps.places.AutocompleteService();
 		}
 		$input.css({'height': $input.height()}).animate({'top': '1%', 'left': '2%', 'width': '88%'}, function() { $input.select(); });
-		$('#main-footer').animate({'top': 0, 'height': '100%'}).children().not($input).hide();
+		$('#main-footer').animate({'height': '100%'}).children().not($input).hide();
 		return true;
 	}
 }
 function small_input(callback) {
 	var $input = $('#main-footer input').filter(':visible');
 	$input.blur();
+	$('#main-footer ul').remove();
 	if ($input.offset().top < 12) {
 		$input.animate({
 			'top': ($input.hasClass('Position') ? '8.33%' : '45.5%'),
 			'width': '57%', 
 			'left': '5%'
 		});
-		$('#main-footer').css('top','').animate({'height': '120px'}, function() {
+		$('#main-footer').animate({'height': '120px'}, function() {
 			$input.css({'top': '', 'left': '', 'width': '', 'height': ''});
 			$(this).children().not('#cost,input').show();
 			if (typeof(callback) === 'function') callback();
 		});
+		editPosition($input.hasClass('Destination'));
 		return true;
 	}
 }

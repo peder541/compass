@@ -27,7 +27,9 @@ button {
 button::-moz-focus-inner {
   border: 0;
 }
-
+input {
+	-webkit-user-modify: read-write-plaintext-only;
+}
 
 #main {
 	position: relative;
