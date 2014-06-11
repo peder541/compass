@@ -62,28 +62,31 @@ input, input:focus {
 	top: 8.33%;
 	/*
 	width: 42.5%;
-	*/
-	width: 65%;
+	/**/
+	width: 60%;
 	font-size: 1.2em;
+	/**/
 }
 #main-footer > button:nth-of-type(2) {
 	/*
 	left: auto;
 	right: 5%;
-	*/
+	/**/
 	top: auto;
 	bottom: 8.33%;
+	/**/
 }
 #main-footer > button:last-of-type {
 	/*
 	top: auto;
 	width: 90%;
 	bottom: 8.33%;
-	*/
+	/**/
 	height: 100px;
-	width: 20%;
+	width: 25%;
 	left: auto;
 	right: 5%;
+	/**/
 }
 #main-footer > button:hover {
 	background-color: #d0d;	
@@ -125,7 +128,8 @@ input, input:focus {
 	position: absolute;
 	left: 5%;
 	top: 8.33%;
-	width: 57%;
+	width: 52%;
+	padding-left: 8%;			/* padding-left + width = width of #main-footer > button */
 	font-family: PT Sans;
 	background-color: inherit;
 	color: rgb(255, 136, 255);
@@ -134,9 +138,8 @@ input, input:focus {
 	background-image: url("../img/Google Maps Markers/red_MarkerA.png");
 	background-repeat: no-repeat;
 	background-position: left center;
-	padding-left: 8%;
 }
-#main-footer > input.Destination {
+#main-footer > input.Drop-off {
 	top: auto;
 	bottom: 8.33%;
 	background-image: url("../img/Google Maps Markers/blue_MarkerB.png");	

@@ -116,7 +116,7 @@ function editPosition(setDrop) {
 		getAddress(obj);
 	});
 	getAddress(obj);
-	$(setDrop ? '.Destination' : '.Position').show().filter('button').hide();
+	$(setDrop ? '.Drop-off' : '.Pick-up').show().filter('button').hide();
 	
 	confirmPosition = function(textSearch) {
 		$('#map-canvas').off('mousedown');
@@ -182,13 +182,14 @@ function initialize() {
 google.maps.event.addDomListener(window, 'load', initialize);
 
 $(document).ready(function() {
-	$(document).on('click', '#main-footer .Edit', function(event) {
-		editPosition($(this).hasClass('Destination'));
-		this.innerHTML = this.className = this.className.replace('Edit','Confirm');
+	$(document).on('click', '#main-footer .Change', function(event) {
+		console.log($(this).hasClass('Drop-off'));
+		editPosition($(this).hasClass('Drop-off'));
+		this.innerHTML = this.className = this.className.replace('Change','Confirm');
 	})
 	.on('click', '#main-footer .Confirm', function(event) {
 		if (window.confirmPosition) confirmPosition();
-		this.className = this.className.replace('Confirm','Edit');
+		this.className = this.className.replace('Confirm','Change');
 		this.innerHTML = this.className;
 	})
 	.on('click', '#getRoute', function(event) {
@@ -381,6 +382,7 @@ function fullscreen_input() {
 		$input.css({'height': $input.height()}).animate({'top': '1%', 'left': '2%', 'width': '88%'}, function() { 
 			$input.select();
 			$('.clear,.collapse').show();
+			$(window).scrollTop(0);
 		});
 		$('#main-footer').animate({'height': '100%'}).children().not($input).hide();
 		return true;
@@ -393,16 +395,16 @@ function small_input(callback) {
 	$('.clear,.collapse').hide();
 	if ($input.offset().top < 12) {
 		$input.animate({
-			'top': ($input.hasClass('Position') ? '8.33%' : '45.5%'),
+			'top': ($input.hasClass('Pick-up') ? '8.33%' : '45.5%'),
 			'width': '57%', 
 			'left': '5%'
 		});
 		$('#main-footer').animate({'height': '120px'}, function() {
 			$input.css({'top': '', 'left': '', 'width': '', 'height': ''});
-			$('.Edit' + ($input.hasClass('Destination') ? '.Position' : '.Destination') + ',#getRoute').show();
+			$('.Change' + ($input.hasClass('Drop-off') ? '.Pick-up' : '.Drop-off') + ',#getRoute').show();
 			if (typeof(callback) === 'function') callback();
 		});
-		editPosition($input.hasClass('Destination'));
+		editPosition($input.hasClass('Drop-off'));
 		return true;
 	}
 }
