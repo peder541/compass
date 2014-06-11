@@ -91,13 +91,12 @@ input, input:focus {
 #main-footer > button:active {
 	background-color: #e0e;	
 }
-#main-footer > .collapse {
+#main-footer > .collapse, #main-footer > .clear {
 	display: none;
 	position: absolute;
-	top: auto;
-	right: 0;
-	bottom: 0;
+	top: 1%;
 	left: auto;
+	right: 2%;
 	width: 44px;
 	height: 44px;
 	background-color: #808;
@@ -105,10 +104,15 @@ input, input:focus {
 	font-size: 28px;
 	border-radius: 0;
 }
-#main-footer > .collapse:hover {
+#main-footer > .collapse {
+	top: auto;
+	bottom: 0;
+	right: 0;
+}
+#main-footer > .collapse:hover, #main-footer > .clear:hover {
 	background-color: #909;	
 }
-#main-footer > .collapse:active {
+#main-footer > .collapse:active, #main-footer > .clear:active {
 	background-color: #a0a;
 }
 #main-footer > p {
