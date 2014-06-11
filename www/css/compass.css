@@ -6,12 +6,15 @@
 * {
 	padding: 0;
 	margin: 0;
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
+	outline: 0;
+}
+*:not(input) {
 	user-select: none;
 	-webkit-user-select: none;
 	-khtml-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
-	user-select: none;
 }
 html, body {
 	height: 100%;
@@ -20,8 +23,6 @@ html, body {
 button {
 	border: 0;
 	cursor: pointer;
-	-webkit-tap-highlight-color: rgba(0,0,0,0);
-	outline: 0;
 }
 button::-moz-focus-inner {
   border: 0;
@@ -50,7 +51,7 @@ button::-moz-focus-inner {
 #main-footer > button {
 	height: 37.5%;
 	border-radius: 5px;
-	font-family: PT Sans, Optima, Corbel, sans-serif;
+	font-family: Optima, Corbel, sans-serif;
 	font-size: 1em;
 	color: whitesmoke;
 	background-color: #c0c;
@@ -60,11 +61,8 @@ button::-moz-focus-inner {
 	/*
 	width: 42.5%;
 	*/
-	width: 53.75%;
+	width: 65%;
 	font-size: 1.2em;
-	white-space: pre;
-	overflow: hidden;
-	line-height: 0.9;
 }
 #main-footer > button:nth-of-type(2) {
 	/*
@@ -81,7 +79,7 @@ button::-moz-focus-inner {
 	bottom: 8.33%;
 	*/
 	height: 100px;
-	width: 31.25%;
+	width: 20%;
 	left: auto;
 	right: 5%;
 }
@@ -93,6 +91,48 @@ button::-moz-focus-inner {
 }
 #main-footer > p {
 	display: none;
+}
+#main-footer > input {
+	display: none;
+	border-radius: 5px;
+	height: 37.5%;
+	position: absolute;
+	left: 5%;
+	top: 8.33%;
+	width: 57%;
+	font-family: PT Sans;
+	background-color: inherit;
+	color: rgb(255, 136, 255);
+	border: 0;
+	border-bottom: 1px solid rgb(255, 136, 255);
+	background-image: url("../img/Google Maps Markers/red_MarkerA.png");
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 8%;
+}
+#main-footer > input.Destination {
+	top: auto;
+	bottom: 8.33%;
+	background-image: url("../img/Google Maps Markers/blue_MarkerB.png");	
+}
+#main-footer > ul {
+	width: 100%;
+	position: absolute;
+	top: 10%;
+	color: #F8F;
+	line-height: 1.2;
+	font-family: PT Sans;
+	font-size: 0.9em;
+	list-style: none;
+	white-space: nowrap;
+}
+#main-footer > ul > li {
+	margin: 20px 6%;
+	cursor: pointer;
+}
+#main-footer > ul > li > span:last-of-type {
+	font-size: 0.8em;
+	color: #D5D;	
 }
 #center_icon {
 	position: absolute;
@@ -145,7 +185,7 @@ button::-moz-focus-inner {
 	left: 0;
 	top: 0;
 	height: 100%;	
-	font-family: PT Sans, Optima, Corbel, sans-serif;
+	font-family: Optima, Corbel, sans-serif;
 }
 #sidebar > p {
 	padding: 15px;
@@ -166,12 +206,12 @@ button::-moz-focus-inner {
 	color: whitesmoke;
 	border-style: dotted;	
 }
-
+/*
 .Confirm:after {
 	content: '\A (' attr(data-address) ')';
 	font-size: 0.8em;
 }
-
+*/
 /*[style*="cursor: default"] {
 	display: none;
 }*/

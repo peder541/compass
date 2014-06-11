@@ -110,20 +110,25 @@ function editPosition(setDrop) {
 	});
 	var listener = google.maps.event.addListener(map, 'center_changed', function() { 
 		obj.setPosition(map.center);
-		$('.Confirm').attr('data-address','calculating...');
+		$('#main-footer input').filter(':visible').val('calculating...');
 	});
 	var codingListener = google.maps.event.addListener(map, 'idle', function() {
 		getAddress(obj);
 	});
 	getAddress(obj);
+	$(setDrop ? '.Destination' : '.Position').show().filter('button').hide();
 	
-	confirmPosition = function() {
+	confirmPosition = function(textSearch) {
 		$('#map-canvas').off('mousedown');
 		google.maps.event.removeListener(listener);
 		google.maps.event.removeListener(codingListener);
 		me.setVisible(true);
 		if (drop) drop.setVisible(true);
 		$('#center_icon').hide();
+		if (!textSearch) {
+			$('#main-footer input').hide();
+			$('#main-footer button').show();
+		}
 		delete confirmPosition;
 	}
 }
@@ -182,13 +187,59 @@ $(document).ready(function() {
 		this.innerHTML = this.className = this.className.replace('Edit','Confirm');
 	})
 	.on('click', '#main-footer .Confirm', function(event) {
-		confirmPosition();
+		if (window.confirmPosition) confirmPosition();
 		this.className = this.className.replace('Confirm','Edit');
 		this.innerHTML = this.className;
 	})
 	.on('click', '#getRoute', function(event) {
 		if (window.confirmPosition) $('.Confirm').click();
 		getRoute();
+	})
+	.on('keydown', function(event) {
+		if (event.which == 27) small_input();
+	});
+	
+	$('#main-footer input').on('mousedown', function(event) {
+		if (fullscreen_input()) {
+			event.preventDefault();
+			return false;
+		}
+	}).on('keydown', function(event) {
+		var $this = $(this);
+		setTimeout(function() {
+			var request = {
+				bounds: map.getBounds(),
+				input: $this.val()
+			}
+			if (request.input) {
+				autocomplete.getPlacePredictions(request, function(results, status) {
+					$('#main-footer ul').remove();
+					var $ul = $('<ul>');
+					$('#main-footer').append($ul);
+					for (var i=0, l=results.length; i<l; ++i) {
+						var parts = results[i].description.split(',');
+						$ul.append('<li data-ref="' + results[i].reference + '"><span>' + parts.shift() + '</span><br><span>' + parts.join(',') + '</span></li>');
+					}
+				});
+			}
+			else $('#main-footer ul').remove();
+		}, 10);
+	});
+	$('#main-footer').on('click', 'li', function(event) {
+		if (!window.service) service = new google.maps.places.PlacesService(map);
+		var $this = $(this);
+		var $input = $('#main-footer input').filter(':visible');
+		$input.val($this.children('span').eq(0).html());
+		var request = {
+			reference: $this.attr('data-ref')
+		}
+		service.getDetails(request, function(results, status) {
+			$('#main-footer ul').remove();
+			small_input(function() {
+				editPosition($input.hasClass('Destination'));
+				map.panTo(results.geometry.location);
+			});
+		});
 	});
 	
 	$('.menu').on('click', toggleMenu);
@@ -277,7 +328,7 @@ function getAddress(obj, retry) {
 		if (status == google.maps.GeocoderStatus.OK) {
 			var address = results[0].formatted_address;
 			address = address.split(',')[0];
-			$('.Confirm').attr('data-address',address);
+			$('#main-footer input').filter(':visible').val(address);
 		}
 		else if (!retry && status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
 			geocodeTimer = setTimeout(function() { getAddress(obj, true); }, 2000);
@@ -313,5 +364,34 @@ function placeCallback(results, status) {
 		}
 		/**/
 		map.panTo(results[0].geometry.location);
+	}
+}
+function fullscreen_input() {
+	var $input = $('#main-footer input').filter(':visible');
+	if ($input.offset().top > 12) {
+		confirmPosition(1);
+		if (!window.autocomplete) {
+			autocomplete = new google.maps.places.AutocompleteService();
+		}
+		$input.css({'height': $input.height()}).animate({'top': '1%', 'left': '2%', 'width': '88%'}, function() { $input.select(); });
+		$('#main-footer').animate({'top': 0, 'height': '100%'}).children().not($input).hide();
+		return true;
+	}
+}
+function small_input(callback) {
+	var $input = $('#main-footer input').filter(':visible');
+	$input.blur();
+	if ($input.offset().top < 12) {
+		$input.animate({
+			'top': ($input.hasClass('Position') ? '8.33%' : '45.5%'),
+			'width': '57%', 
+			'left': '5%'
+		});
+		$('#main-footer').css('top','').animate({'height': '120px'}, function() {
+			$input.css({'top': '', 'left': '', 'width': '', 'height': ''});
+			$(this).children().not('#cost,input').show();
+			if (typeof(callback) === 'function') callback();
+		});
+		return true;
 	}
 }
