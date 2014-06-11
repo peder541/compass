@@ -199,7 +199,7 @@ $(document).ready(function() {
 		small_input();
 	})
 	.on('click', '.clear', function(event) {
-		$('#main-footer input').filter(':visible').val('');	
+		$('#main-footer input').filter(':visible').val('').focus();	
 	})
 	.on('keydown', function(event) {
 		if (event.which == 27) small_input();
