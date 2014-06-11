@@ -88,7 +88,7 @@ function draw(index, latitude, longitude, accuracy) {
 }
 
 function editPosition(setDrop) {
-	if (window.confirmPosition) $('#confirmPosition').click();
+	if (window.confirmPosition) $('.Confirm').click();
 	if (watchID !== false) {
 		navigator.geolocation.clearWatch(watchID);
 		watchID = false;	
@@ -110,7 +110,7 @@ function editPosition(setDrop) {
 	});
 	var listener = google.maps.event.addListener(map, 'center_changed', function() { 
 		obj.setPosition(map.center);
-		$('#confirmPosition').attr('data-address','calculating...');
+		$('.Confirm').attr('data-address','calculating...');
 	});
 	var codingListener = google.maps.event.addListener(map, 'idle', function() {
 		getAddress(obj);
@@ -177,26 +177,17 @@ function initialize() {
 google.maps.event.addDomListener(window, 'load', initialize);
 
 $(document).ready(function() {
-	$(document).on('click', '#editMyPosition', function(event) {
-		editPosition();
-		this.className = 'My';
-		this.id = 'confirmPosition';
-		this.innerHTML = 'Confirm My Position';
+	$(document).on('click', '#main-footer .Edit', function(event) {
+		editPosition($(this).hasClass('Destination'));
+		this.innerHTML = this.className = this.className.replace('Edit','Confirm');
 	})
-	.on('click', '#editDropPosition', function(event) {
-		editPosition(1);
-		this.className = 'Drop';
-		this.id = 'confirmPosition';
-		this.innerHTML = 'Confirm Drop Position';
-	})
-	.on('click', '#confirmPosition', function(event) {
+	.on('click', '#main-footer .Confirm', function(event) {
 		confirmPosition();
-		this.id = 'edit' + this.className + 'Position';
-		this.innerHTML = 'Edit ' + this.className + ' Position';
-		this.className = '';
+		this.className = this.className.replace('Confirm','Edit');
+		this.innerHTML = this.className;
 	})
 	.on('click', '#getRoute', function(event) {
-		if (window.confirmPosition) $('#confirmPosition').click();
+		if (window.confirmPosition) $('.Confirm').click();
 		getRoute();
 	});
 	
@@ -286,7 +277,7 @@ function getAddress(obj, retry) {
 		if (status == google.maps.GeocoderStatus.OK) {
 			var address = results[0].formatted_address;
 			address = address.split(',')[0];
-			$('#confirmPosition').attr('data-address',address);
+			$('.Confirm').attr('data-address',address);
 		}
 		else if (!retry && status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
 			geocodeTimer = setTimeout(function() { getAddress(obj, true); }, 2000);

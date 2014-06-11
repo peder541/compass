@@ -1,6 +1,8 @@
 @charset "utf-8";
 /* CSS Document */
 
+@import url(http://fonts.googleapis.com/css?family=PT+Sans);
+
 * {
 	padding: 0;
 	margin: 0;
@@ -48,7 +50,7 @@ button::-moz-focus-inner {
 #main-footer > button {
 	height: 37.5%;
 	border-radius: 5px;
-	font-family: Corbel;
+	font-family: PT Sans, Optima, Corbel, sans-serif;
 	font-size: 1em;
 	color: whitesmoke;
 	background-color: #c0c;
@@ -58,7 +60,7 @@ button::-moz-focus-inner {
 	/*
 	width: 42.5%;
 	*/
-	width: calc(85% - 100px);
+	width: 53.75%;
 	font-size: 1.2em;
 	white-space: pre;
 	overflow: hidden;
@@ -79,7 +81,7 @@ button::-moz-focus-inner {
 	bottom: 8.33%;
 	*/
 	height: 100px;
-	width: 100px;
+	width: 31.25%;
 	left: auto;
 	right: 5%;
 }
@@ -143,7 +145,7 @@ button::-moz-focus-inner {
 	left: 0;
 	top: 0;
 	height: 100%;	
-	font-family: Corbel, Optima, sans-serif;
+	font-family: PT Sans, Optima, Corbel, sans-serif;
 }
 #sidebar > p {
 	padding: 15px;
@@ -165,7 +167,7 @@ button::-moz-focus-inner {
 	border-style: dotted;	
 }
 
-#confirmPosition:after {
+.Confirm:after {
 	content: '\A (' attr(data-address) ')';
 	font-size: 0.8em;
 }
