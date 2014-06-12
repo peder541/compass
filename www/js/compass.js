@@ -398,9 +398,10 @@ function small_input(callback) {
 	$('.clear,.collapse').hide();
 	if ($input.offset().top < 12) {
 		$input.animate({
-			'top': ($input.hasClass('Pick-up') ? '8.33%' : '45.5%'),
-			'width': '57%', 
-			'left': '5%'
+			'top': ($input.hasClass('Pick-up') ? '8.33%' : '54.17%'),
+			'width': '52%', 
+			'left': '5%',
+			'height': '45px'
 		});
 		$('#main-footer').animate({'height': '120px'}, function() {
 			$input.css({'top': '', 'left': '', 'width': '', 'height': ''});
