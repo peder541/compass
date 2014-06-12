@@ -6,6 +6,8 @@ var watchID = false;
 var filemtime = 0;
 var cars = {};
 var driver = false;
+var waitForDirections = false;
+var directionsTimer = 0;
 
 var geo = {
 	success: function(position) {
@@ -35,6 +37,21 @@ function connect() {
 			}
 		}).on('update', function(data) {
 			draw(data.id, data.coordinates[0], data.coordinates[1]);
+		}).on('rideRequested', function(data) {
+			function drawSpot(endpoint) {
+				if (window[endpoint]) window[endpoint].setMap();
+				var obj = new google.maps.Marker();
+				var spot = new google.maps.LatLng(data[endpoint][0], data[endpoint][1]);
+				obj.setIcon('img/Google Maps Markers/' + (endpoint == 'pickup' ? 'blue_MarkerB' : 'green_MarkerC') + '.png');
+				obj.setMap(map);
+				obj.setPosition(spot);
+				window[endpoint] = obj;
+			}
+			drawSpot('pickup');
+			drawSpot('dropoff');
+			getRoute(dropoff.getPosition(), [{location: pickup.getPosition()}] );
+		}).on('rideOffered', function(data) {
+			
 		}).on('leave', function(data) {
 			if (cars[data.id]) {
 				cars[data.id].setMap();
@@ -133,32 +150,65 @@ function editPosition(setDrop) {
 	}
 }
 
-function getRoute(destination) {
+function getRoute(destination, waypoints, noZoom) {
+	if (waitForDirections) {
+		if (directionsTimer) clearTimeout(directionsTimer);
+		directionsTimer = setTimeout(function() {
+			getRoute(destination, waypoints, noZoom);
+		});
+		return false;
+	}
+	else {
+		waitForDirections = true;
+		setTimeout(function() { waitForDirections = false; }, 1000);	
+	}
 	if (!destination && drop) destination = drop.getPosition();
 	var directionsRequest = {
 		origin: me.getPosition(),
 		destination: destination,
 		travelMode: 'DRIVING'
 	};
+	if (waypoints) directionsRequest.waypoints = waypoints;
 	var query = new google.maps.DirectionsService();
-	query.route(directionsRequest, drawRoute);
+	query.route(directionsRequest, function(directions, status) {
+		//if (waypoints) transit = directions;
+		drawRoute(directions, status, noZoom);
+	});
 }
 
-function drawRoute(directions) {
+function drawRoute(directions, status, noZoom) {
+	if (status == google.maps.DirectionsStatus.OVER_QUERY_LIMIT) {
+		waitForDirections = true;
+		setTimeout(function() { waitForDirections = false; }, 2000);
+		return false;
+	}
 	$('#cost > span').html(getCost(directions));
 	var renderingOptions = {
 		directions: directions,
 		map: map,
-		suppressMarkers: true
+		suppressMarkers: true,
+		preserveViewport: !!noZoom/*,
+		polylineOptions: {
+			strokeColor: 'rgb(0, 94, 255)',				// 'rgb(0, 94, 255)' is the default color Google uses
+			strokeOpacity: 0.55,						//	with an opacity of 0.55
+			strokeWeight: 6								//	and strokeWidth of 6	
+		}/**/
 	};
 	if (!route) route = new google.maps.DirectionsRenderer(renderingOptions);
 	else route.setOptions(renderingOptions);
 }
 
+function realtimeRoutes() {
+	google.maps.event.addListener(me, 'position_changed', function() {
+		getRoute(0,0,1);
+	});
+}
+
+
 function getCost(directions) {
-	var initial_cost = 2.5;
+	//var initial_cost = 2.5;
 	var distance_cost = 0.0018;
-	//var duration_cost = 0.0056;	// experimental
+	var duration_cost = 0.0056;	// experimental
 	
 	var cost = 0;
 	var routes = directions.routes;
@@ -167,11 +217,11 @@ function getCost(directions) {
 		var legs = routes[i].legs;
 		for (var j in legs) {	
 			cost += legs[j].distance.value * distance_cost;
-			//cost += legs[j].duration.value * duration_cost;
+			cost += legs[j].duration.value * duration_cost;
 		}
 	}
 	cost /= N;
-	cost += initial_cost;
+	//cost += initial_cost;
 	return cost;	
 }
 
@@ -194,6 +244,16 @@ $(document).ready(function() {
 	.on('click', '#getRoute', function(event) {
 		if (window.confirmPosition) $('.Confirm').click();
 		getRoute();
+		
+		if (window.io && window.socket) {
+			var data = {
+				pickup: me.getPosition(),
+				dropoff: drop.getPosition()
+			};
+			data.pickup = [data.pickup.lat(), data.pickup.lng()];
+			data.dropoff = [data.dropoff.lat(), data.dropoff.lng()];
+			socket.emit('requestRide', data);
+		}
 	})
 	.on('click', '.collapse', function(event) {
 		small_input();
