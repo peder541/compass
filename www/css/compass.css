@@ -118,8 +118,28 @@ input, input:focus {
 #main-footer > .collapse:active, #main-footer > .clear:active, #main-footer > ul > li:active {
 	background-color: #a0a;
 }
-#main-footer > p {
+#main-footer > #cost {
 	display: none;
+}
+#main-footer > #directions {
+	display: none;
+	position: absolute;
+	left: 5%;
+	right: 5%;
+	top: 8.33%;
+	bottom: 8.33%;
+	z-index: 900;
+	background-color: #808;
+	color: whitesmoke;
+	font-family: Candara;
+	font-size: 28px;
+}
+#main-footer > #directions b {
+	white-space: nowrap;
+}
+#main-footer > #directions div {
+	font-size: 0.8em !important;
+	margin-top: 5px;
 }
 #main-footer > input {
 	display: none;
@@ -130,8 +150,8 @@ input, input:focus {
 	top: 8.33%;
 	width: 52%;
 	padding-left: 8%;			/* padding-left + width = width of #main-footer > button */
-	font-family: PT Sans;
-	background-color: inherit;
+	font-family: PT Sans, Calibri, sans-serif;
+	background-color: #808;
 	color: rgb(255, 136, 255);
 	border: 0;
 	border-bottom: 1px solid rgb(255, 136, 255);
@@ -139,7 +159,7 @@ input, input:focus {
 	background-repeat: no-repeat;
 	background-position: left center;
 }
-#main-footer > input.Drop-off {
+#main-footer input.Drop-off {
 	top: auto;
 	bottom: 8.33%;
 	background-image: url("../img/Google Maps Markers/blue_MarkerB.png");	
@@ -150,7 +170,7 @@ input, input:focus {
 	top: 10%;
 	color: #F8F;
 	line-height: 1.2;
-	font-family: PT Sans;
+	font-family: PT Sans, Calibri, sans-serif;
 	font-size: 0.9em;
 	list-style: none;
 	white-space: nowrap;

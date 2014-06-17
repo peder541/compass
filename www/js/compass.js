@@ -6,8 +6,15 @@ var watchID = false;
 var filemtime = 0;
 var cars = {};
 var driver = false;
-var waitForDirections = false;
-var directionsTimer = 0;
+var wait = {
+	directions: false,
+	geocoding: false
+}
+var timer = {
+	directions: 0,
+	geocoding: 0
+}
+var realtimeRoutesListener = false;
 
 var geo = {
 	success: function(position) {
@@ -49,7 +56,21 @@ function connect() {
 			}
 			drawSpot('pickup');
 			drawSpot('dropoff');
-			getRoute(dropoff.getPosition(), [{location: pickup.getPosition()}] );
+			var destination = dropoff.getPosition();
+			var waypoints = [{location: pickup.getPosition()}];
+			getRoute(destination, waypoints);
+			console.log(data.traffic);
+			
+			// Realtime routing violates Google's Terms of Service. Link to actual navigation apps instead.
+			// "geo://" , "waze://" , "comgooglemaps-x-callback://"
+			/*
+			if (!realtimeRoutesListener) realtimeRoutesListener = realtimeRoutes(destination, waypoints);
+			stopDrive = function() {
+				google.maps.event.removeListener(realtimeRoutesListener);
+				realtimeRoutesListener = false;
+				delete stopDrive;	
+			}
+			/**/
 		}).on('rideOffered', function(data) {
 			
 		}).on('leave', function(data) {
@@ -151,17 +172,11 @@ function editPosition(setDrop) {
 }
 
 function getRoute(destination, waypoints, noZoom) {
-	if (waitForDirections) {
-		if (directionsTimer) clearTimeout(directionsTimer);
-		directionsTimer = setTimeout(function() {
-			getRoute(destination, waypoints, noZoom);
-		});
-		return false;
-	}
-	else {
-		waitForDirections = true;
-		setTimeout(function() { waitForDirections = false; }, 1000);	
-	}
+	var callback = function() {
+		getRoute(destination, waypoints, noZoom);
+	};
+	if (rateLimit.check('directions', callback)) return false;
+	
 	if (!destination && drop) destination = drop.getPosition();
 	var directionsRequest = {
 		origin: me.getPosition(),
@@ -171,17 +186,51 @@ function getRoute(destination, waypoints, noZoom) {
 	if (waypoints) directionsRequest.waypoints = waypoints;
 	var query = new google.maps.DirectionsService();
 	query.route(directionsRequest, function(directions, status) {
-		//if (waypoints) transit = directions;
-		drawRoute(directions, status, noZoom);
+		if (status == google.maps.DirectionsStatus.OK) {
+			//if (waypoints) transit = directions;
+			drawRoute(directions, noZoom);
+			
+			if (noZoom) giveInstructions(directions);
+			else if (waypoints) {
+				var riderLeg = directions.routes[0].legs[1];
+				if (pickup) pickup.address = riderLeg.start_address.split(',')[0];
+				if (dropoff) dropoff.address = riderLeg.end_address.split(',')[0];
+			}
+		}
+		else if (status == google.maps.DirectionsStatus.OVER_QUERY_LIMIT) {
+			rateLimit.set('directions');
+			return false;
+		}
 	});
 }
 
-function drawRoute(directions, status, noZoom) {
-	if (status == google.maps.DirectionsStatus.OVER_QUERY_LIMIT) {
-		waitForDirections = true;
-		setTimeout(function() { waitForDirections = false; }, 2000);
-		return false;
+function giveInstructions(directions) {
+	var $directions = $('#main-footer > #directions').show();
+	var legs = directions.routes[0].legs;
+	var steps = legs[0].steps;
+	var distance = steps[0].distance.value;
+	var instructions = steps[distance > 60 || steps.length==1 ? 0 : 1].instructions;
+	if (distance < 12 && steps.length==1) {
+		instructions = 'You have arrived at <b>';
+		if (legs.length > 1) {
+			instructions += pickup.address + '</b>';
+			instructions += '<div>Your rider should be nearby</div>';
+		}
+		else instructions += dropoff.address;
 	}
+	instructions = instructions.replace('Take the 1st','Turn');
+	if ($directions.html() != instructions) {
+		$directions.html(instructions);
+		/*
+		var url = 'http://translate.google.com/translate_tts?ie=UTF-8&tl=en&total=1&idx=0&textlen=23&prev=input&q=' + $directions[0].textContent;
+		var $speak = $('#speak');
+		if ($speak.index() != -1) $speak.attr('src',url);
+		else $('body').append('<iframe style="display:none;" id="speak" src="' + url + '"></iframe>');
+		/**/
+	}
+}
+
+function drawRoute(directions, noZoom) {
 	$('#cost > span').html(getCost(directions));
 	var renderingOptions = {
 		directions: directions,
@@ -198,17 +247,17 @@ function drawRoute(directions, status, noZoom) {
 	else route.setOptions(renderingOptions);
 }
 
-function realtimeRoutes() {
-	google.maps.event.addListener(me, 'position_changed', function() {
-		getRoute(0,0,1);
+function realtimeRoutes(destination, waypoints) {
+	return google.maps.event.addListener(me, 'position_changed', function() {
+		getRoute(destination, waypoints, 1);
 	});
 }
 
 
 function getCost(directions) {
 	//var initial_cost = 2.5;
-	var distance_cost = 0.0018;
-	var duration_cost = 0.0056;	// experimental
+	var distance_cost = 0.0018;	// $ per meter
+	var duration_cost = 0.0056;	// $ per second (experimental)
 	
 	var cost = 0;
 	var routes = directions.routes;
@@ -262,7 +311,18 @@ $(document).ready(function() {
 		$('#main-footer input').filter(':visible').val('').focus();	
 	})
 	.on('keydown', function(event) {
+		// Esc
 		if (event.which == 27) small_input();
+		// Arrow Keys
+		else if ([37,38,39,40].indexOf(event.which) != -1) {
+			delta = Math.pow(1.98,-map.getZoom());
+			var center = map.getCenter();
+			var lat = center.lat();
+			var lng = center.lng();
+			if (event.which % 2 == 0) lat += delta * (39 - event.which);
+			else lng += delta * (event.which - 38);
+			map.setCenter(new google.maps.LatLng(lat,lng));
+		}
 	});
 	
 	$('#main-footer input').on('mousedown', function(event) {
@@ -385,18 +445,25 @@ function toggleMenu() {
 }
 function getAddress(obj, retry) {
 	if (!window.geocoder) geocoder = new google.maps.Geocoder();
+	
+	var callback = function() {
+		getAddress(obj, retry);
+	};
+	if (rateLimit.check('geocoding', callback)) return false;
+	
 	if (!obj) obj = me;
 	geocoder.geocode({location: obj.getPosition()}, function(results, status) { 
-		if (typeof(geocodeTimer) !== 'undefined') {
-			clearTimeout(geocodeTimer);
+		if (typeof(timer.geocoding) !== 'undefined') {
+			clearTimeout(timer.geocoding);
 		}
 		if (status == google.maps.GeocoderStatus.OK) {
 			var address = results[0].formatted_address;
 			address = address.split(',')[0];
 			$('#main-footer input').filter(':visible').val(address);
 		}
-		else if (!retry && status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
-			geocodeTimer = setTimeout(function() { getAddress(obj, true); }, 2000);
+		else if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
+			rateLimit.set('geocoding');
+			if (!retry) timer.geocoding = setTimeout(function() { getAddress(obj, true); }, 2000);
 		}
 	});	
 }
@@ -443,7 +510,7 @@ function fullscreen_input() {
 				$(window).scrollTop(0);
 			},
 			complete: function() { 
-				$input.select();
+				$input.removeAttr('readonly').select();
 				$('.clear,.collapse').show();
 			}
 		});
@@ -453,7 +520,7 @@ function fullscreen_input() {
 }
 function small_input(callback) {
 	var $input = $('#main-footer input').filter(':visible');
-	$input.blur();
+	$input.blur().attr('readonly','readonly');
 	$('#main-footer ul').remove();
 	$('.clear,.collapse').hide();
 	if ($input.offset().top < 12) {
@@ -470,5 +537,33 @@ function small_input(callback) {
 		});
 		editPosition($input.hasClass('Drop-off'));
 		return true;
+	}
+}
+
+var rateLimit = {
+	check: function(serviceType, callback) {
+		if (wait[serviceType]) {
+			if (timer[serviceType]) clearTimeout(timer[serviceType]);
+			timer[serviceType] = setTimeout(callback, 1000);
+			return true;
+		}
+		else {
+			this.set(serviceType, 1000);	
+		}
+	},
+	set: function(serviceType, time) {
+		if (!time) time = 2000;
+		wait[serviceType] = true;
+		if (!rateLimit.timer[serviceType]) {
+			var callback = function() { 
+				wait[serviceType] = false;
+				rateLimit.timer[serviceType] = 0;
+			}
+			rateLimit.timer[serviceType] = setTimeout(callback, time);
+		}
+	},
+	timer: {
+		directions: 0,
+		geocoding: 0	
 	}
 }
