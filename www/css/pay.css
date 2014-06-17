@@ -1,0 +1,125 @@
+@charset "utf-8";
+/* CSS Document */
+
+@import url(http://fonts.googleapis.com/css?family=PT+Sans);
+
+* {
+	padding: 0;
+	margin: 0;
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
+	outline: 0;
+}
+*:not(input) {
+	user-select: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+}
+html, body {
+	height: 100%;
+	overflow: hidden;
+}
+button {
+	border: 0;
+	cursor: pointer;
+}
+button::-moz-focus-inner {
+  border: 0;
+}
+input, input:focus {
+	-webkit-user-modify: read-write-plaintext-only;
+}
+
+body {
+	background-color: rgb(221, 255, 238);	
+}
+form {
+	height: 100%;
+}
+form > button {
+	position: absolute;
+	bottom: 14%;
+	left: 20%;
+	width: 60%;
+	height: 18%;
+	border-radius: 15px;
+	background-color: rgb(0, 96, 0);
+	color: whitesmoke;
+	font-family: Candara;
+	font-size: 28px;
+}
+form > button[disabled] {
+	opacity: 0.3;	
+}
+label {
+	height: 18%; /*60px;*/
+	width: 100%;
+	display: inline-block;
+	font-family: Candara;
+}
+label > i {
+	width: 16%;
+	text-align: center;
+	color: rgb(0, 96, 0);
+}
+label > b {
+	display: inline-block;
+	width: 23%;
+	color: rgb(0, 96, 0);
+}
+label > input {
+	height: 100%;
+	width: 54%;
+	padding: 0 5px;
+	border: 0;
+	font-family: PT Sans;
+	background-color: rgb(221, 255, 238);
+	color: rgb(0, 96, 0);
+}
+label:not(:last-of-type) {
+	border-bottom: 1px solid rgba(0, 96, 0, 0.3);	
+}
+
+.identified {
+	background-repeat: no-repeat;
+	background-position: right center;
+}
+.visa {
+	background-image: url('../img/cards/visa.png');
+}
+.mastercard {
+	background-image: url('../img/cards/mastercard.png');
+}
+.amex {
+	background-image: url('../img/cards/amex.png');
+}
+.jcb {
+	background-image: url('../img/cards/jcb.png');
+}
+.discover {
+	background-image: url('../img/cards/discover.png');
+}
+.dinersclub {
+	background-image: url('../img/cards/diners.png');
+}
+@media (max-width: 480px), (max-height: 480px) {
+	.visa {
+		background-image: url('../img/cards/small/visa.png');
+	}
+	.mastercard {
+		background-image: url('../img/cards/small/mastercard.png');
+	}
+	.amex {
+		background-image: url('../img/cards/small/amex.png');
+	}
+	.jcb {
+		background-image: url('../img/cards/small/jcb.png');
+	}
+	.discover {
+		background-image: url('../img/cards/small/discover.png');
+	}
+	.dinersclub {
+		background-image: url('../img/cards/small/diners.png');
+	}
+}
