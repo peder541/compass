@@ -3,7 +3,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, user-scalable=no" />
-	<title>Sqirl</title>
+	<title>RideSqirl</title>
     <link rel="stylesheet" href="css/compass.css" />
     <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -15,34 +15,34 @@
 <body>
 	<div id="main">
     	<div class="header">
-        	<h1>Sqirl</h1>
+        	<h1>RideSqirl</h1>
         	<button class="menu"><i class="fa fa-bars"></i></button>
         </div>
         <div id="map-canvas"></div>
         <div id="main-footer">
         	<button class="Change Pick-up" data-address="calculating...">Change Pick-up</button>
         	<button class="Change Drop-off" data-address="calculating...">Enter Drop-off</button>
-            <input class="Pick-up" value="calculating..." readonly="readonly" />
-            <input class="Drop-off" value="calculating..." readonly="readonly" />
+            <input class="Pick-up" value="calculating..." readonly />
+            <input class="Drop-off" value="calculating..." readonly />
             <button class="clear">&times;</button>
             <button class="collapse"><i class="fa fa-caret-down"></i></button>
             <p id="cost">Cost: <span></span></p>
             <p id="directions"></p>
-        	<button id="getRoute">Get Ride</button>
+        	<button id="getRoute">Request Ride</button>
         </div>
         
         <img id="center_icon" src="img/Google Maps Markers/red_MarkerA.png" />
     </div>
     
     <div id="sidebar">
-    	<p>Back to Nest</p>
-        <p>Become a Sqirl</p>
+    	<p id="test">Back to Nest</p>
+        <p id="becomeDriver">Become a Sqirl</p>
         <p>Profile</p>
         <p>Payment</p>
         <p>FAQ</p>
         <p>Invite friends</p>
         <p>About us</p>
-        <p>Active Sqirl</p>
+        <p id="around_the_block">Active Sqirl</p>
         <p>Women in Crisis</p>
         <hr>
         <p>Courier Service</p>

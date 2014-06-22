@@ -3,7 +3,6 @@ var me = false;
 var drop = false;
 var route = false;
 var watchID = false;
-var filemtime = 0;
 var cars = {};
 var driver = false;
 var wait = {
@@ -15,6 +14,7 @@ var timer = {
 	geocoding: 0
 }
 var realtimeRoutesListener = false;
+var drivingListener = false;
 
 var geo = {
 	success: function(position) {
@@ -32,7 +32,7 @@ var geo = {
 	}
 };
 function connect() {
-	if (window.io) {
+	if (window.io && !window.socket) {
 		socket = io.connect('http://ridesqirl.com');
 		socket.on('news', function(data) {
 			console.log(data);
@@ -232,6 +232,7 @@ function giveInstructions(directions) {
 
 function drawRoute(directions, noZoom) {
 	$('#cost > span').html(getCost(directions));
+	if (!noZoom) midPoints(directions);
 	var renderingOptions = {
 		directions: directions,
 		map: map,
@@ -274,6 +275,45 @@ function getCost(directions) {
 	return cost;	
 }
 
+function midPoints(directions) {
+	var legs = directions.routes[0].legs;
+	if (legs.length == 1) return false;
+	if (window.info) for (var i=0, l=info.length; i<l; ++i) info[i].setMap();
+	info = [];
+	for (var i=0, l=legs.length; i<l; ++i) {
+		var midpoint = legs[i].distance.value*0.5;
+		var time = Math.ceil(legs[i].duration.value/60);
+		var traveled = 0;
+		var steps = legs[i].steps;
+		for (var j=0, m=steps.length; j<m; ++j) {
+			traveled += steps[j].distance.value;
+			if (midpoint < traveled) {
+				var delta = steps[j].distance.value - traveled + midpoint;
+				var ratio = delta/steps[j].distance.value;
+				var index = Math.floor(steps[j].lat_lngs.length * ratio);
+				var markerOptions = {
+					map: map,
+					position: steps[j].lat_lngs[index],
+					icon: 'http://ridesqirl.com/svg?text=' + time
+				};
+				info[i] = new google.maps.Marker(markerOptions);
+				break;
+			}
+		}
+	}
+	
+	var noCities = [ { "featureType": "administrative", "elementType": "labels", "stylers": [ { "visibility": "off" } ] } ];
+	var normalStyle = [ { } ];
+	
+}
+
+function makePayment() {
+	$('body').append('<iframe src="pay.html" id="pay"></iframe>');
+	$('#pay').on('load', function(event) {
+		$('#pay').fadeIn();
+	});
+}
+
 function initialize() {
 	watchID = navigator.geolocation.watchPosition(geo.success, geo.failure, geo.options);
 }
@@ -309,6 +349,16 @@ $(document).ready(function() {
 	})
 	.on('click', '.clear', function(event) {
 		$('#main-footer input').filter(':visible').val('').focus();	
+	})
+	.on('click', '#test', function(event) {
+		draw(0, 45, -93, 10000);
+		connect();
+	})
+	.on('click', '#becomeDriver', function(event) {
+		becomeDriver();
+	})
+	.on('click', '#around_the_block', function(event) {
+		around_the_block();
 	})
 	.on('keydown', function(event) {
 		// Esc
@@ -391,6 +441,21 @@ function trueCenterIcon(obj) {
 	}
 }
 
+function becomeDriver() {
+	driver = true;
+	socket.emit('becomeDriver');
+	emitPositionUpdates();
+}
+function emitPositionUpdates(obj) {
+	if (!obj) obj = me;
+	if (!drivingListener) {
+		drivingListener = google.maps.event.addListener(obj, 'position_changed', function() {
+			var spot = obj.getPosition();
+			if (window.io && window.socket) socket.emit('update', [spot.lat(), spot.lng()]);
+		});
+	}
+}
+
 function around_the_block(lat, lng) {
 	var delta = 0.00001;
 	var mph = 25;
@@ -404,10 +469,7 @@ function around_the_block(lat, lng) {
 	if (!lat || lat == 0) {
 		lat = bounds.south;
 		lng = bounds.east;
-		google.maps.event.addListener(me, 'position_changed', function() {
-			var spot = me.getPosition();
-			if (window.io && window.socket) socket.emit('update', [spot.lat(), spot.lng()]);
-		});
+		emitPositionUpdates();
 	} 
 	else if (lng >= bounds.east && lat < bounds.north) {
 		lat += delta;
@@ -459,7 +521,7 @@ function getAddress(obj, retry) {
 		if (status == google.maps.GeocoderStatus.OK) {
 			var address = results[0].formatted_address;
 			address = address.split(',')[0];
-			$('#main-footer input').filter(':visible').val(address);
+			if ($('#getRoute').is(':visible')) $('#main-footer input').filter(':visible').val(address);
 		}
 		else if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
 			rateLimit.set('geocoding');
@@ -566,4 +628,30 @@ var rateLimit = {
 		directions: 0,
 		geocoding: 0	
 	}
+}
+
+function getDistance(p1, p2) {
+	var R = 6378137; // Earth’s mean radius in meter
+	var dLat = rad(p2.lat() - p1.lat());
+	var dLong = rad(p2.lng() - p1.lng());
+	var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(rad(p1.lat())) * Math.cos(rad(p2.lat())) * Math.sin(dLong / 2) * Math.sin(dLong / 2);
+	var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	var d = R * c;
+	return d; // returns the distance in meter
+};
+
+function funky() {
+	var style = [ { "featureType": "road.highway", "elementType": "geometry", "stylers": [ { "hue": "#dd00ff" } ] },{ "featureType": "road.arterial", "elementType": "geometry", "stylers": [ { "hue": "#00ffdd" } ] },{ "featureType": "road.local", "elementType": "geometry", "stylers": [ { "hue": "#00ffdd" } ] },{ "featureType": "road", "elementType": "labels.text", "stylers": [ { "weight": 0.1 }, { "color": "#b18080" } ] },{ "featureType": "administrative", "elementType": "labels.text.fill", "stylers": [ { "visibility": "on" }, { "weight": 0.1 }, { "color": "#FFFFFF" } ] },{ "featureType": "administrative", "elementType": "labels.text.stroke", "stylers": [ { "color": "#808080" } ] },{ "featureType": "poi", "stylers": [ { "visibility": "off" } ] },{ } ];
+	map.setOptions({styles: style});
+}
+function noLabels() {
+	var style = [ { "elementType": "labels", "stylers": [ { "visibility": "off" } ] } ];
+	map.setOptions({styles: style});
+}
+function normalMap() {
+	map.setOptions({styles: []});
+}
+function driverMap() {
+	var style = [ { "featureType": "administrative.neighborhood", "stylers": [ { "visibility": "off" } ] } ];
+	map.setOptions({styles: style});
 }

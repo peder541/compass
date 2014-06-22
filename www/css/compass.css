@@ -48,7 +48,7 @@ input, input:focus {
 	bottom: 0;
 	width: 100%;
 	height: 120px;
-	background-color: #808;
+	background-color: #609;
 }
 #main-footer > button {
 	height: 37.5%;
@@ -56,7 +56,7 @@ input, input:focus {
 	font-family: Optima, Corbel, sans-serif;
 	font-size: 1em;
 	color: whitesmoke;
-	background-color: #c0c;
+	background-color: #C111E2; /*#a0d;*/
 	position: absolute;
 	left: 5%;
 	top: 8.33%;
@@ -89,10 +89,10 @@ input, input:focus {
 	/**/
 }
 #main-footer > button:hover {
-	background-color: #d0d;	
+	background-color: #CF20F0; /*#b1e;*/
 }
 #main-footer > button:active {
-	background-color: #e0e;	
+	background-color: #DD2FFF;/*#c2f;*/
 }
 #main-footer > .collapse, #main-footer > .clear {
 	display: none;
@@ -102,7 +102,7 @@ input, input:focus {
 	right: 2%;
 	width: 44px;
 	height: 44px;
-	background-color: #808;
+	background-color: #609;
 	color: #D5D;
 	font-size: 28px;
 	border-radius: 0;
@@ -113,10 +113,10 @@ input, input:focus {
 	right: 0;
 }
 #main-footer > .collapse:hover, #main-footer > .clear:hover, #main-footer > ul > li:hover {
-	background-color: #909;	
+	background-color: #70a;	
 }
 #main-footer > .collapse:active, #main-footer > .clear:active, #main-footer > ul > li:active {
-	background-color: #a0a;
+	background-color: #80b;
 }
 #main-footer > #cost {
 	display: none;
@@ -129,7 +129,7 @@ input, input:focus {
 	top: 8.33%;
 	bottom: 8.33%;
 	z-index: 900;
-	background-color: #808;
+	background-color: #609;
 	color: whitesmoke;
 	font-family: Candara;
 	font-size: 28px;
@@ -151,7 +151,7 @@ input, input:focus {
 	width: 52%;
 	padding-left: 8%;			/* padding-left + width = width of #main-footer > button */
 	font-family: PT Sans, Calibri, sans-serif;
-	background-color: #808;
+	background-color: #609;
 	color: rgb(255, 136, 255);
 	border: 0;
 	border-bottom: 1px solid rgb(255, 136, 255);
@@ -196,7 +196,7 @@ input, input:focus {
 .header {
 	height: 44px;
 	width: 100%;
-	background-color: #0CC;
+	background-color: #11C1E2;
 	color: whitesmoke;
 }
 .header > h1 {
@@ -214,21 +214,21 @@ input, input:focus {
 	height: 44px;
 	width: 44px;
 	color: whitesmoke;
-	background-color: #0cc;
+	background-color: #11C1E2;
 	cursor: pointer;
 	position: absolute;
 	left: 0;
 	top: 0;
 }
 .menu:hover {
-	background-color: #0dd;	
+	background-color: #20CFF0;	
 }
 .menu:active {
-	background-color: #0ee;
+	background-color: #2FDDFF;
 }
 
 #sidebar {
-	background-color: #099;
+	background-color: #069; /*#099;/**/
 	color: whitesmoke;
 	display: none;
 	width: 200px;
@@ -247,15 +247,25 @@ input, input:focus {
 	background: transparent;
 }
 #sidebar > p:hover {
-	background-color: #0aa;
+	background-color: #07a; /*#0aa;/**/
 }
 #sidebar > p:active {
-	background-color: #0bb;
-}
+	background-color: #08b; /*#0bb;/**/
+} 
 
 #sidebar > hr {
 	color: whitesmoke;
 	border-style: dotted;	
+}
+
+iframe {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	left: 0;
+	top: 0;
+	display: none;
+	border: 0;
 }
 /*
 .Confirm:after {

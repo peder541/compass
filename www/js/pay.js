@@ -17,6 +17,19 @@ $(document).ready(function() {
 		}, stripeResponse);
 		return false;
 	});
+	
+	$('label').has('#slider').on('click', function(event) {
+		var $slider = $('#slider');
+		if ($slider.hasClass('checked')) $slider.removeClass('checked');
+		else $slider.addClass('checked');
+	});
+	$('#cancel').on('click', function(event) {
+		window.top.$('iframe').fadeOut({
+			complete: function() {
+				window.top.$('iframe').remove();	
+			}
+		});
+	});
 });
 
 function stripeResponse(status, response) {
