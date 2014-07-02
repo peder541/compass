@@ -1,7 +1,7 @@
 @charset "utf-8";
 /* CSS Document */
 
-@import url(http://fonts.googleapis.com/css?family=PT+Sans);
+@import url(https://fonts.googleapis.com/css?family=PT+Sans);
 
 * {
 	padding: 0;
@@ -34,6 +34,7 @@ input, input:focus {
 #main {
 	position: relative;
 	height: 100%;
+	left: 0;
 }
 #map-canvas {
 	height: 90%;
@@ -88,10 +89,10 @@ input, input:focus {
 	right: 5%;
 	/**/
 }
-#main-footer > button:hover {
+#main-footer > button.hover {
 	background-color: #CF20F0; /*#b1e;*/
 }
-#main-footer > button:active {
+#main-footer > button.active {
 	background-color: #DD2FFF;/*#c2f;*/
 }
 #main-footer > .collapse, #main-footer > .clear {
@@ -112,10 +113,10 @@ input, input:focus {
 	bottom: 0;
 	right: 0;
 }
-#main-footer > .collapse:hover, #main-footer > .clear:hover, #main-footer > ul > li:hover {
+#main-footer > .collapse.hover, #main-footer > .clear.hover, #main-footer > ul > li.hover {
 	background-color: #70a;	
 }
-#main-footer > .collapse:active, #main-footer > .clear:active, #main-footer > ul > li:active {
+#main-footer > .collapse.active, #main-footer > .clear.active, #main-footer > ul > li.active {
 	background-color: #80b;
 }
 #main-footer > #cost {
@@ -151,6 +152,7 @@ input, input:focus {
 	width: 52%;
 	padding-left: 8%;			/* padding-left + width = width of #main-footer > button */
 	font-family: PT Sans, Calibri, sans-serif;
+	font-size: 0.9em;
 	background-color: #609;
 	color: rgb(255, 136, 255);
 	border: 0;
@@ -220,10 +222,10 @@ input, input:focus {
 	left: 0;
 	top: 0;
 }
-.menu:hover {
+.menu.hover {
 	background-color: #20CFF0;	
 }
-.menu:active {
+.menu.active {
 	background-color: #2FDDFF;
 }
 
@@ -233,7 +235,7 @@ input, input:focus {
 	display: none;
 	width: 200px;
 	position: absolute;
-	left: 0;
+	left: -200px;
 	top: 0;
 	height: 100%;	
 	font-family: Optima, Corbel, sans-serif;
@@ -246,10 +248,10 @@ input, input:focus {
 #sidebar > p::selection,#sidebar p::-moz-selection {
 	background: transparent;
 }
-#sidebar > p:hover {
+#sidebar > p.hover {
 	background-color: #07a; /*#0aa;/**/
 }
-#sidebar > p:active {
+#sidebar > p.active {
 	background-color: #08b; /*#0bb;/**/
 } 
 

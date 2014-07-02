@@ -93,7 +93,7 @@ label:not(:last-of-type) {
 	top: 60%;
 	transition: all 0.75s;
 }
-#slider:before {
+#slider:before,#slider:after {
 	position: absolute;
 	top: 4px;
 	left: 4px;
@@ -104,7 +104,17 @@ label:not(:last-of-type) {
 	border-radius: 12px;
 	transition: all 0.75s;
 }
+#slider:before {
+	background-color: rgb(0, 144, 0);
+	top: 5px;
+	left: 5px;
+	height: 22px;
+	width: 22px;
+}
 #slider.checked:before {
+	width: 40px;	
+}
+#slider.checked:after {
 	left: 24px;	
 }
 

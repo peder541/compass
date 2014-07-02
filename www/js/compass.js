@@ -1,3 +1,5 @@
+var mobile = 0;
+var mobile_timer;
 var map = false;
 var me = false;
 var drop = false;
@@ -16,6 +18,7 @@ var timer = {
 var realtimeRoutesListener = false;
 var drivingListener = false;
 
+
 var geo = {
 	success: function(position) {
 		var crds = position.coords;
@@ -33,7 +36,7 @@ var geo = {
 };
 function connect() {
 	if (window.io && !window.socket) {
-		socket = io.connect('http://ridesqirl.com');
+		socket = io.connect('https://ridesqirl.com');
 		socket.on('news', function(data) {
 			console.log(data);
 		}).on('initialize', function(data) {
@@ -47,19 +50,21 @@ function connect() {
 		}).on('rideRequested', function(data) {
 			function drawSpot(endpoint) {
 				if (window[endpoint]) window[endpoint].setMap();
-				var obj = new google.maps.Marker();
-				var spot = new google.maps.LatLng(data[endpoint][0], data[endpoint][1]);
-				obj.setIcon('img/Google Maps Markers/' + (endpoint == 'pickup' ? 'blue_MarkerB' : 'green_MarkerC') + '.png');
-				obj.setMap(map);
-				obj.setPosition(spot);
+				var markerOptions = {
+					clickable: false,
+					map: map,
+					icon: 'img/Google Maps Markers/' + (endpoint == 'pickup' ? 'blue_MarkerB' : 'green_MarkerC') + '.png',
+					optimized: false,
+					position: new google.maps.LatLng(data[endpoint][0], data[endpoint][1])
+				};
+				var obj = new google.maps.Marker(markerOptions);
 				window[endpoint] = obj;
 			}
 			drawSpot('pickup');
 			drawSpot('dropoff');
 			var destination = dropoff.getPosition();
 			var waypoints = [{location: pickup.getPosition()}];
-			getRoute(destination, waypoints);
-			console.log(data.traffic);
+			getRoute(destination, waypoints, 0, data.traffic);
 			
 			// Realtime routing violates Google's Terms of Service. Link to actual navigation apps instead.
 			// "geo://" , "waze://" , "comgooglemaps-x-callback://"
@@ -105,18 +110,27 @@ function draw(index, latitude, longitude, accuracy) {
 	}
 	if (!index) {
 		if (!me) {
-			me = new google.maps.Marker();
-			me.setIcon('img/Google Maps Markers/red_MarkerA.png');
-			me.setMap(map);
-			me.setPosition(map.center);
+			var markerOptions = {
+				clickable: false,
+				map: map,
+				icon: 'img/Google Maps Markers/red_MarkerA.png',
+				optimized: false,
+				position: map.center
+			};
+			me = new google.maps.Marker(markerOptions);
 		}
 		var obj = me;
 	}
 	else {
 		if (!cars[index]) {
-			cars[index] = new google.maps.Marker();
-			cars[index].setIcon('img/Google Maps Markers/black_Marker.png');
-			cars[index].setMap(map);
+			var markerOptions = {
+				clickable: false,
+				map: map,
+				icon: 'img/Google Maps Markers/black_Marker.png',
+				optimized: false,
+				position: map.center
+			};
+			cars[index] = new google.maps.Marker(markerOptions);
 		}
 		var obj = cars[index];
 	}
@@ -126,7 +140,7 @@ function draw(index, latitude, longitude, accuracy) {
 }
 
 function editPosition(setDrop) {
-	if (window.confirmPosition) $('.Confirm').click();
+	if (window.confirmPosition) confirmPosition();
 	if (watchID !== false) {
 		navigator.geolocation.clearWatch(watchID);
 		watchID = false;	
@@ -134,10 +148,15 @@ function editPosition(setDrop) {
 	var obj = me;
 	if (setDrop) {
 		if (!drop) {
-			drop = new google.maps.Marker();
-			drop.setIcon('img/Google Maps Markers/blue_MarkerB.png');
-			drop.setMap(map);
-			drop.setPosition(map.center);	
+			var markerOptions = {
+				clickable: false,
+				map: map,
+				icon: 'img/Google Maps Markers/blue_MarkerB.png',
+				optimized: false,
+				position: map.center
+			};
+			drop = new google.maps.Marker(markerOptions);
+			$('.Change.Drop-off').html('Change Drop-off');
 		}
 		obj = drop;
 	}
@@ -154,7 +173,9 @@ function editPosition(setDrop) {
 		getAddress(obj);
 	});
 	getAddress(obj);
-	$(setDrop ? '.Drop-off' : '.Pick-up').show().filter('button').hide();
+	var $elements = $(setDrop ? '.Drop-off' : '.Pick-up');
+	var $input = $elements.filter('input').show();
+	var $button = $elements.filter('button').hide();
 	
 	confirmPosition = function(textSearch) {
 		$('#map-canvas').off('mousedown');
@@ -164,16 +185,16 @@ function editPosition(setDrop) {
 		if (drop) drop.setVisible(true);
 		$('#center_icon').hide();
 		if (!textSearch) {
-			$('#main-footer input').hide();
-			$('#main-footer .Confirm').show();
+			$input.hide();
+			$button.show();
 		}
 		delete confirmPosition;
 	}
-}
+} 
 
-function getRoute(destination, waypoints, noZoom) {
+function getRoute(destination, waypoints, noZoom, traffic) {
 	var callback = function() {
-		getRoute(destination, waypoints, noZoom);
+		getRoute(destination, waypoints, noZoom, traffic);
 	};
 	if (rateLimit.check('directions', callback)) return false;
 	
@@ -188,7 +209,8 @@ function getRoute(destination, waypoints, noZoom) {
 	query.route(directionsRequest, function(directions, status) {
 		if (status == google.maps.DirectionsStatus.OK) {
 			//if (waypoints) transit = directions;
-			drawRoute(directions, noZoom);
+			drawRoute(directions, noZoom, traffic);
+			$('#cost > span').html(getCost(directions, traffic));
 			
 			if (noZoom) giveInstructions(directions);
 			else if (waypoints) {
@@ -230,9 +252,8 @@ function giveInstructions(directions) {
 	}
 }
 
-function drawRoute(directions, noZoom) {
-	$('#cost > span').html(getCost(directions));
-	if (!noZoom) midPoints(directions);
+function drawRoute(directions, noZoom, traffic) {
+	if (!noZoom) midPoints(directions, traffic);
 	var renderingOptions = {
 		directions: directions,
 		map: map,
@@ -255,19 +276,22 @@ function realtimeRoutes(destination, waypoints) {
 }
 
 
-function getCost(directions) {
+function getCost(directions, traffic) {
 	//var initial_cost = 2.5;
 	var distance_cost = 0.0018;	// $ per meter
 	var duration_cost = 0.0056;	// $ per second (experimental)
 	
+	traffic = traffic || 1;
 	var cost = 0;
 	var routes = directions.routes;
 	var N = routes.length;
 	for (var i=0; i<N; ++i) {
 		var legs = routes[i].legs;
-		for (var j in legs) {	
+		var l = legs.length;
+		var j = (l > 1) ? 1 : 0;
+		for (j; j < l; ++j) {	
 			cost += legs[j].distance.value * distance_cost;
-			cost += legs[j].duration.value * duration_cost;
+			cost += legs[j].duration.value * duration_cost * traffic;
 		}
 	}
 	cost /= N;
@@ -275,14 +299,15 @@ function getCost(directions) {
 	return cost;	
 }
 
-function midPoints(directions) {
+function midPoints(directions, traffic) {
 	var legs = directions.routes[0].legs;
 	if (legs.length == 1) return false;
+	traffic = traffic || 1;
 	if (window.info) for (var i=0, l=info.length; i<l; ++i) info[i].setMap();
 	info = [];
 	for (var i=0, l=legs.length; i<l; ++i) {
 		var midpoint = legs[i].distance.value*0.5;
-		var time = Math.ceil(legs[i].duration.value/60);
+		var time = legs[i].duration.value;
 		var traveled = 0;
 		var steps = legs[i].steps;
 		for (var j=0, m=steps.length; j<m; ++j) {
@@ -291,20 +316,34 @@ function midPoints(directions) {
 				var delta = steps[j].distance.value - traveled + midpoint;
 				var ratio = delta/steps[j].distance.value;
 				var index = Math.floor(steps[j].lat_lngs.length * ratio);
-				var markerOptions = {
-					map: map,
-					position: steps[j].lat_lngs[index],
-					icon: 'http://ridesqirl.com/svg?text=' + time
-				};
-				info[i] = new google.maps.Marker(markerOptions);
+				function markPoint(position, time, legTraffic) {
+					var markerOptions = {
+						map: map,
+						position: position,
+						icon: 'http://ridesqirl.com/svg?text=' + Math.ceil(time/60 * legTraffic)
+					};
+					return new google.maps.Marker(markerOptions);
+				}
+				if (i==0) {
+					var from = legs[0].start_location;
+					var to = legs[0].end_location
+					var data = {
+						pickup: [from.lat(), from.lng()], 
+						dropoff: [to.lat(), to.lng()]
+					};
+					var spot = steps[j].lat_lngs[index];
+					var t = time;
+					socket.once('trafficResponse', function(traffic) {
+						info[0] = markPoint(spot, t, traffic); 
+					}).emit('trafficRequest', data);
+				}
+				else info[i] = markPoint(steps[j].lat_lngs[index], time, traffic);
 				break;
 			}
 		}
 	}
-	
 	var noCities = [ { "featureType": "administrative", "elementType": "labels", "stylers": [ { "visibility": "off" } ] } ];
 	var normalStyle = [ { } ];
-	
 }
 
 function makePayment() {
@@ -321,17 +360,51 @@ function initialize() {
 google.maps.event.addDomListener(window, 'load', initialize);
 
 $(document).ready(function() {
-	$(document).on('click', '#main-footer .Change', function(event) {
-		editPosition($(this).hasClass('Drop-off'));
-		this.innerHTML = this.className = this.className.replace('Change','Confirm');
+	
+	FastClick.attach(document.body);
+	
+	$(window).on('resize', function(event) {
+		$('#map-canvas').css('height', window.innerHeight - 166); // 166 = $('.header').outerHeight() + $('#main-footer').outerHeight()
+		//google.maps.event.trigger(map, 'resize');
+		if ($('#center_icon').is(':visible')) trueCenterIcon();
+	})/**/
+	.on('touchstart',function(event) {
+		if (mobile_timer) clearTimeout(mobile_timer);
+		mobile = 1;
+		top = $(window).scrollTop();
 	})
-	.on('click', '#main-footer .Confirm', function(event) {
-		if (window.confirmPosition) confirmPosition();
-		this.className = this.className.replace('Confirm','Change');
-		this.innerHTML = this.className;
+	.on('touchend',function(event) {
+		mobile_timer = setTimeout(function() {
+			mobile = 0;
+			$('.active').removeClass('active');
+		},400);
+	})
+	.on('scroll',function(event) {
+		if (mobile) $('button').removeClass('active');
+	});
+	/**/
+	
+	$(document)/**/.on('touchstart mousedown','button,p,li',function(event) {
+		var $this = $(this);
+		$('.active').not($this.addClass('active')).removeClass('active');
+	})
+	.on('touchmove',function(event) {
+		if (top != $(window).scrollTop()) $('.active').removeClass('active');
+	})
+	.on('mouseenter','button,p,li',function(event) {
+		if (!mobile) $(this).addClass('hover');
+	})
+	.on('mouseleave','button,p,li',function(event) {
+		$(this).removeClass('hover');
+	})
+	.on('mouseup',function(event) {
+		$('.active').removeClass('active');
+	})/**/
+	.on('click', '#main-footer .Change', function(event) {
+		editPosition($(this).hasClass('Drop-off'));
 	})
 	.on('click', '#getRoute', function(event) {
-		if (window.confirmPosition) $('.Confirm').click();
+		if (window.confirmPosition) confirmPosition();
 		getRoute();
 		
 		if (window.io && window.socket) {
@@ -348,7 +421,7 @@ $(document).ready(function() {
 		small_input();
 	})
 	.on('click', '.clear', function(event) {
-		$('#main-footer input').filter(':visible').val('').focus();	
+		$('#main-footer input').filter(':visible').val('').focus();
 	})
 	.on('click', '#test', function(event) {
 		draw(0, 45, -93, 10000);
@@ -356,6 +429,9 @@ $(document).ready(function() {
 	})
 	.on('click', '#becomeDriver', function(event) {
 		becomeDriver();
+	})
+	.on('click', '#makePayment', function(event) {
+		makePayment();
 	})
 	.on('click', '#around_the_block', function(event) {
 		around_the_block();
@@ -375,9 +451,10 @@ $(document).ready(function() {
 		}
 	});
 	
-	$('#main-footer input').on('mousedown', function(event) {
-		if (fullscreen_input()) {
+	$('#main-footer input').on('touchstart mousedown', function(event) {
+		if ((!mobile || event.type == 'touchstart') && fullscreen_input()) {
 			event.preventDefault();
+			event.stopImmediatePropagation();
 			return false;
 		}
 	}).on('keydown', function(event) {
@@ -391,7 +468,7 @@ $(document).ready(function() {
 				autocomplete.getPlacePredictions(request, function(results, status) {
 					$('#main-footer ul').remove();
 					var $ul = $('<ul>');
-					$('#main-footer').append($ul);
+					$('#main-footer').prepend($ul);
 					for (var i=0, l=results.length; i<l; ++i) {
 						var parts = results[i].description.split(',');
 						$ul.append('<li data-ref="' + results[i].reference + '"><span>' + parts.shift() + '</span><br><span>' + parts.join(',') + '</span></li>');
@@ -417,14 +494,11 @@ $(document).ready(function() {
 		});
 	});
 	
-	$('.menu').on('click', toggleMenu);
-	
-	$(window).on('resize', function(event) {
-		$('#map-canvas').css('height', window.innerHeight - $('.header').outerHeight() - $('#main-footer').outerHeight());//(window.innerWidth < 550 ? 110 : 70));
-		google.maps.event.trigger(map, 'resize');
-		if ($('#center_icon').is(':visible')) trueCenterIcon();
+	$('.menu').on('click', function(event) {
+		toggleMenu();
 	});
 	
+	// Trigger resize event to give everything the correct placement.
 	$(window).resize();
 });
 
@@ -495,14 +569,28 @@ function toggleMenu() {
 	var $sidebar = $('#sidebar');
 	var $screen = $('#main');
 	if ($sidebar.is(':visible')) {
+		/**/
 		$screen.animate({'left':''});
 		$sidebar.animate({'left':-$sidebar.width()}, function() { 
 			$sidebar.hide();
 		});
+		/*
+		$sidebar.add($screen).css({'transition': 'left 0.4s ease-in-out'});
+		$sidebar.css({'left':-$sidebar.width()});
+		$screen.css({'left':0});
+		setTimeout(function() { $sidebar.hide(); }, 500);
+		/**/
 	}
 	else {
+		/**/
 		$screen.animate({'left':$sidebar.width()});
 		$sidebar.css({'left':-$sidebar.width()}).show().animate({'left':''});
+		/*
+		$sidebar.show();
+		$sidebar.add($screen).css({'transition': 'left 0.4s ease-in-out'});
+		$screen.css({'left':$sidebar.width()});
+		$sidebar.css({'left':0});
+		/**/
 	}
 }
 function getAddress(obj, retry) {
