@@ -19,6 +19,8 @@
 html, body {
 	height: 100%;
 	overflow: hidden;
+	-ms-touch-action: none;
+	touch-action: none;
 }
 button {
 	border: 0;
@@ -44,7 +46,7 @@ input, input:focus {
 		height: 80%;
 	}	
 }
-#main-footer {
+#main-footer, #driver-footer {
 	position: absolute;
 	bottom: 0;
 	width: 100%;
@@ -193,6 +195,66 @@ input, input:focus {
 	left: 50%;
 	display: none;
 	pointer-events: none;	
+}
+
+#driver-footer {
+	display: none;
+}
+#driver-footer button {
+	border-radius: 5px;
+	font-family: Optima, Corbel, sans-serif;
+	font-size: 1em;
+	color: whitesmoke;
+	background-color: #C111E2;
+	position: absolute;
+}
+#driver-footer #pricing {
+	position: absolute;
+	top: 8.33%;
+	right: 5%;
+	width: 175px;
+	height: 44px;	
+}
+#pricing .fare {
+	width: 44px;
+	height: 44px;
+	top: 0;
+	right: 0;
+}
+#pricing .decrease {
+	left: 0;	
+}
+#pricing #cost {
+	font-family: PT Sans, sans-serif;
+	color: whitesmoke;
+	font-size: 1.2em;
+	position: absolute;
+	top: 0;
+	left: 0;
+	line-height: 44px;
+	text-align: center;
+	width: 100%;
+}
+.currency {
+	font-size: 0.5em;
+	font-family: Verdana, Geneva, sans-serif;
+}
+.currency.usd:before {
+	content: '$';
+}
+#driver-footer .offerRide {
+	width: 175px;
+	height: 44px;
+	right: 5%;
+	bottom: 8.33%;
+	font-size: 1.2em;
+}
+#driver-footer .riderPic {
+	border-radius: 5px;
+	position: absolute;
+	top: 8.33%;
+	left: 5%;
+	width: 100px;
 }
 
 .header {

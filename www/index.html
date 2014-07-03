@@ -3,6 +3,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
 	<title>RideSqirl</title>
     <link rel="stylesheet" href="css/compass.css" />
     <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
@@ -27,9 +28,20 @@
             <input class="Drop-off" value="calculating..." readonly />
             <button class="clear">&times;</button>
             <button class="collapse"><i class="fa fa-caret-down"></i></button>
-            <p id="cost">Cost: <span></span></p>
             <p id="directions"></p>
         	<button id="getRoute">Request Ride</button>
+        </div>
+        <div id="driver-footer">
+        	<img class="riderPic" src="https://fbcdn-profile-a.akamaihd.net/hprofile-ak-xap1/t1.0-1/c0.0.160.160/p160x160/1480607_10153577754135285_101563888_n.jpg" />
+        	<div id="pricing">
+	        	<p id="cost">
+                	<sup class="currency fa fa-usd"></sup>
+                    <span data-base="2.50">2.50</span>
+                </p>
+        		<button class="decrease fare"><i class="fa fa-minus"></i></button>
+            	<button class="increase fare"><i class="fa fa-plus"></i></button>
+            </div>
+            <button class="offerRide">Offer Ride</button>
         </div>
         
         <img id="center_icon" src="img/Google Maps Markers/red_MarkerA.png" />

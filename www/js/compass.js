@@ -65,6 +65,13 @@ function connect() {
 			var destination = dropoff.getPosition();
 			var waypoints = [{location: pickup.getPosition()}];
 			getRoute(destination, waypoints, 0, data.traffic);
+			$('.offerRide').off('click').one('click', function(event) {
+				var d = {
+					rider: data.rider,
+					price: $('#cost span').html()	
+				}
+				socket.emit('offerRide',d);
+			});
 			
 			// Realtime routing violates Google's Terms of Service. Link to actual navigation apps instead.
 			// "geo://" , "waze://" , "comgooglemaps-x-callback://"
@@ -77,7 +84,7 @@ function connect() {
 			}
 			/**/
 		}).on('rideOffered', function(data) {
-			
+			alert(JSON.stringify(data));
 		}).on('leave', function(data) {
 			if (cars[data.id]) {
 				cars[data.id].setMap();
@@ -210,7 +217,8 @@ function getRoute(destination, waypoints, noZoom, traffic) {
 		if (status == google.maps.DirectionsStatus.OK) {
 			//if (waypoints) transit = directions;
 			drawRoute(directions, noZoom, traffic);
-			$('#cost > span').html(getCost(directions, traffic));
+			var cost = getCost(directions, traffic).toFixed(2);
+			$('#cost > span').attr('data-base',cost).html(cost);
 			
 			if (noZoom) giveInstructions(directions);
 			else if (waypoints) {
@@ -364,7 +372,7 @@ $(document).ready(function() {
 	FastClick.attach(document.body);
 	
 	$(window).on('resize', function(event) {
-		$('#map-canvas').css('height', window.innerHeight - 166); // 166 = $('.header').outerHeight() + $('#main-footer').outerHeight()
+		$('#map-canvas').css('height', window.innerHeight - 164); // 164 = 44 + 120 = $('.header').outerHeight() + $('#main-footer').outerHeight()
 		//google.maps.event.trigger(map, 'resize');
 		if ($('#center_icon').is(':visible')) trueCenterIcon();
 	})/**/
@@ -423,8 +431,27 @@ $(document).ready(function() {
 	.on('click', '.clear', function(event) {
 		$('#main-footer input').filter(':visible').val('').focus();
 	})
+	.on('click', '.fare', function(event) {
+		var $this = $(this);
+		var $cost = $('#cost > span');
+		var fare = Number($cost.html());
+		var base = Number($cost.attr('data-base'));
+		var test = fare < base;
+		var edge = fare == base;
+		var delta = Math.round(base*0.2) * 0.25;
+		var method = 'floor';
+		if ($this.hasClass('decrease')) {
+			delta *= -1;
+			method = 'ceil';
+		}
+		fare += delta;
+		fare = Math[method](fare * 4) * 0.25;
+		if (!edge && (fare < base) != test) fare = base;
+		var diff = Math.abs(base - fare);
+		if (diff <= base*0.2) $cost.html(fare.toFixed(2));
+	})
 	.on('click', '#test', function(event) {
-		draw(0, 45, -93, 10000);
+		draw(0, 45.03293, -93.18358, 100);
 		connect();
 	})
 	.on('click', '#becomeDriver', function(event) {
@@ -517,6 +544,7 @@ function trueCenterIcon(obj) {
 
 function becomeDriver() {
 	driver = true;
+	$('#driver-footer').show();
 	socket.emit('becomeDriver');
 	emitPositionUpdates();
 }
@@ -660,7 +688,10 @@ function fullscreen_input() {
 				$(window).scrollTop(0);
 			},
 			complete: function() { 
-				$input.removeAttr('readonly').select();
+				$input.removeAttr('readonly');
+				setTimeout(function() {
+					$input.select()/*[0].setSelectionRange(0,9999)*/;
+				}, 10);
 				$('.clear,.collapse').show();
 			}
 		});
