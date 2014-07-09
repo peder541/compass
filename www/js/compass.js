@@ -10,11 +10,11 @@ var driver = false;
 var wait = {
 	directions: false,
 	geocoding: false
-}
+};
 var timer = {
 	directions: 0,
 	geocoding: 0
-}
+};
 var realtimeRoutesListener = false;
 var drivingListener = false;
 
@@ -22,7 +22,13 @@ var drivingListener = false;
 var geo = {
 	success: function(position) {
 		var crds = position.coords;
-		draw(0, crds.latitude, crds.longitude, crds.accuracy);
+		if (geo.active) {
+			draw(0, crds.latitude, crds.longitude, crds.accuracy);
+		}
+		else {
+			geo.latitude = crds.latitude,
+			geo.longitude = crds.longitude
+		}
 		connect();
 	},
 	error: function() {
@@ -32,7 +38,8 @@ var geo = {
 	options: {
 		enableHighAccuracy: true,
 		timeout: 5000
-	}
+	},
+	active: true
 };
 function connect() {
 	if (window.io && !window.socket) {
@@ -60,8 +67,14 @@ function connect() {
 				var obj = new google.maps.Marker(markerOptions);
 				window[endpoint] = obj;
 			}
+			$(window).resize();
 			drawSpot('pickup');
 			drawSpot('dropoff');
+			$('#driver-footer').css('bottom','-120px').show().animate({'bottom':'0'}, {
+				progress: function() {
+					$('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);	
+				}
+			});
 			var destination = dropoff.getPosition();
 			var waypoints = [{location: pickup.getPosition()}];
 			getRoute(destination, waypoints, 0, data.traffic);
@@ -71,6 +84,14 @@ function connect() {
 					price: $('#cost span').html()	
 				}
 				socket.emit('offerRide',d);
+				$('#driver-footer').animate({'bottom':'-120px'}, {
+					progress: function() {
+						$('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);	
+					},
+					complete: function() {
+						$('#driver-footer').hide();
+					}
+				});
 			});
 			
 			// Realtime routing violates Google's Terms of Service. Link to actual navigation apps instead.
@@ -148,9 +169,8 @@ function draw(index, latitude, longitude, accuracy) {
 
 function editPosition(setDrop) {
 	if (window.confirmPosition) confirmPosition();
-	if (watchID !== false) {
-		navigator.geolocation.clearWatch(watchID);
-		watchID = false;	
+	if (geo.active) {
+		geo.active = false;
 	}
 	var obj = me;
 	if (setDrop) {
@@ -544,7 +564,21 @@ function trueCenterIcon(obj) {
 
 function becomeDriver() {
 	driver = true;
-	$('#driver-footer').show();
+	if (window.confirmPosition) confirmPosition();
+	if (drop) {
+		drop.setMap();
+		drop = false;
+	}
+	geo.active = true;
+	$('#main-footer').animate({'bottom': '-120px'}, { 
+		progress: function() { 
+			$('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#main-footer').css('bottom'),10) - 120);
+		},
+		complete: function() {
+			$('#main-footer').hide();	
+		}
+	});
+	//$('#driver-footer').show();
 	socket.emit('becomeDriver');
 	emitPositionUpdates();
 }
