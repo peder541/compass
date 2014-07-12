@@ -17,6 +17,7 @@ var timer = {
 };
 var realtimeRoutesListener = false;
 var drivingListener = false;
+var startApp = true;
 
 
 var geo = {
@@ -130,6 +131,8 @@ function draw(index, latitude, longitude, accuracy) {
 			disableDefaultUI: true
 		};
 		map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+		// might not be useful if we default to editing pick-up position
+		/*
 		if (accuracy > 500) {
 			var circle = new google.maps.Circle({
 				center: spot,
@@ -140,6 +143,7 @@ function draw(index, latitude, longitude, accuracy) {
 			map.fitBounds(circle.getBounds());
 			circle.setMap();
 		}
+		/**/
 	}
 	if (!index) {
 		if (!me) {
@@ -169,7 +173,10 @@ function draw(index, latitude, longitude, accuracy) {
 	}
 	if (typeof(accuracy) === 'undefined' || accuracy < 120) {
 		obj.setPosition(spot);
-		if (!window.confirmPosition && !index) editPosition();
+		if (startApp && !index) {
+			editPosition();
+			startApp = false;
+		}
 	}
 }
 
