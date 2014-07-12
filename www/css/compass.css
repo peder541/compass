@@ -70,7 +70,7 @@ input, input:focus {
 	font-size: 1.2em;
 	/**/
 }
-#main-footer > button:nth-of-type(2) {
+#main-footer > button.Drop-off {
 	/*
 	left: auto;
 	right: 5%;
@@ -79,7 +79,7 @@ input, input:focus {
 	bottom: 8.33%;
 	/**/
 }
-#main-footer > button:last-of-type {
+#main-footer > #requestRide {
 	/*
 	top: auto;
 	width: 90%;
@@ -90,6 +90,32 @@ input, input:focus {
 	left: auto;
 	right: 5%;
 	/**/
+}
+#main-footer > #contacting {
+	display: none;
+	height: 37.5%;
+	line-height: 44px;
+	width: 90%;
+	text-align: center;
+	position: absolute;
+	top: 8.33%;
+	left: 5%;
+	color: whitesmoke;
+}
+#main-footer > #contacting > span {
+	/*padding-left: 5px;*/
+	font-family: Optima, Corbel, sans-serif;
+}
+#main-footer > #contacting > span:after {
+	position: absolute;
+	content: attr(data-ellipses);	
+}
+#main-footer > #cancelRequest {
+	display: none;
+	height: 37.5%;
+	width: 90%;
+	top: auto;
+	bottom: 8.33%;	
 }
 #main-footer > button.hover {
 	background-color: #CF20F0; /*#b1e;*/
@@ -123,26 +149,6 @@ input, input:focus {
 }
 #main-footer > #cost {
 	display: none;
-}
-#main-footer > #directions {
-	display: none;
-	position: absolute;
-	left: 5%;
-	right: 5%;
-	top: 8.33%;
-	bottom: 8.33%;
-	z-index: 900;
-	background-color: #609;
-	color: whitesmoke;
-	font-family: Candara;
-	font-size: 28px;
-}
-#main-footer > #directions b {
-	white-space: nowrap;
-}
-#main-footer > #directions div {
-	font-size: 0.8em !important;
-	margin-top: 5px;
 }
 #main-footer > input {
 	display: none;
@@ -255,6 +261,82 @@ input, input:focus {
 	top: 8.33%;
 	left: 5%;
 	width: 100px;
+}
+
+#ride-offers {
+	width: 100%;
+	height: calc(100% - 164px);
+	position: absolute;
+	top: 44px;
+	left: 0;
+	display: none;
+	pointer-events: none;
+}
+.rideOffer {
+	width: 100%;
+	height: 33.3%;
+	position: relative;
+	background-color: rgba(51, 51, 51, 0.85);
+	display: none;
+	pointer-events: all;
+}
+@media (max-height: 414px) {
+	.rideOffer {
+		height: 50%;
+	}
+	.rideOffer:last-of-type {
+		display: none !important;
+	}
+}
+.rideOffer .driverPic {
+	position: absolute;
+	left: 5%;
+	width: 30%;
+	top: 7.5%;
+	height: 85%;
+	border-radius: 5px;
+	background-image: url("https://fbcdn-profile-a.akamaihd.net/hprofile-ak-xap1/t1.0-1/c0.0.160.160/p160x160/1480607_10153577754135285_101563888_n.jpg");
+	background-position: center;
+	background-size: cover;
+	background-repeat: no-repeat;
+}
+.rideOffer p {
+	color: whitesmoke;
+	font-family: Optima, Corbel, sans-serif;
+}
+.rideOffer .driverTime, .rideOffer .ridePrice {
+	position: absolute;
+	top: 7.5%;
+	left: 40%;
+	height: 7.5%;
+	width: 25%;
+	height: 42.5%;
+	text-align: center;
+	white-space: nowrap;
+	font-size: 1.2em;
+}
+.rideOffer .driverTime:after {
+	content: " min";
+}
+.rideOffer .ridePrice {
+	font-family: PT Sans, sans-serif;
+	top: auto;
+	bottom: 7.5%;
+}
+.rideOffer .acceptRide {
+	position: absolute;
+	top: 7.5%;
+	right: 5%;
+	width: 25%;
+	height: 85%;
+	font-family: Optima, Corbel, sans-serif;
+	color: whitesmoke;
+	background-color: #C111E2;
+	font-size: 1.2em;
+	border-radius: 5px;
+}
+.rideOffer .driverCar {
+	display: none;
 }
 
 .header {

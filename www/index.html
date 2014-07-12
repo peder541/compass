@@ -28,8 +28,14 @@
             <input class="Drop-off" value="calculating..." readonly />
             <button class="clear">&times;</button>
             <button class="collapse"><i class="fa fa-caret-down"></i></button>
-            <p id="directions"></p>
-        	<button id="getRoute">Request Ride</button>
+        	<button id="requestRide">Request Ride</button>
+            <p id="contacting">
+            	<!--
+            	<i class="fa fa-spinner fa-spin"></i>
+                -->
+                <span data-ellipses="...">contacting Sqirls</span>
+            </p>
+            <button id="cancelRequest">Cancel Request</button>
         </div>
         <div id="driver-footer">
         	<img class="riderPic" src="https://fbcdn-profile-a.akamaihd.net/hprofile-ak-xap1/t1.0-1/c0.0.160.160/p160x160/1480607_10153577754135285_101563888_n.jpg" />
@@ -44,21 +50,49 @@
             <button class="offerRide">Offer Ride</button>
         </div>
         
+        <div id="ride-offers">
+            <div class="rideOffer">
+                <div class="driverPic"></div>
+                <p class="driverTime">11</p>
+                <p class="ridePrice">
+                	<sup class="currency fa fa-usd"></sup>
+                    <span>2.50</span>
+                </p>
+                <button class="acceptRide">Accept Ride</button>
+                <p class="driverCar"><span class="carYear">2005</span> <span class="carMake">Mercury</span> <span class="carModel">Montego</span></p>
+            </div>
+            <div class="rideOffer">
+                <div class="driverPic"></div>
+                <p class="driverTime">11</p>
+                <p class="ridePrice">
+                	<sup class="currency fa fa-usd"></sup>
+                    <span>2.50</span>
+                </p>
+                <button class="acceptRide">Accept Ride</button>
+                <p class="driverCar"><span class="carYear">2005</span> <span class="carMake">Mercury</span> <span class="carModel">Montego</span></p>
+            </div>
+            <div class="rideOffer">
+                <div class="driverPic"></div>
+                <p class="driverTime">11</p>
+                <p class="ridePrice">
+                	<sup class="currency fa fa-usd"></sup>
+                    <span>2.50</span>
+                </p>
+                <button class="acceptRide">Accept Ride</button>
+                <p class="driverCar"><span class="carYear">2005</span> <span class="carMake">Mercury</span> <span class="carModel">Montego</span></p>
+            </div>
+        </div>
+        
         <img id="center_icon" src="img/Google Maps Markers/red_MarkerA.png" />
     </div>
     
     <div id="sidebar">
-    	<p id="test">Back to Nest</p>
+    	<p id="test">Back to Map</p>
         <p id="becomeDriver">Become a Sqirl</p>
         <p>Profile</p>
         <p id="makePayment">Payment</p>
         <p>FAQ</p>
         <p>Invite friends</p>
-        <p>About us</p>
-        <p id="around_the_block">Active Sqirl</p>
-        <p>Women in Crisis</p>
-        <hr>
-        <p>Courier Service</p>
     </div>
     
 </body>

@@ -46,15 +46,18 @@ function connect() {
 		socket = io.connect('https://ridesqirl.com');
 		socket.on('news', function(data) {
 			console.log(data);
-		}).on('initialize', function(data) {
+		})
+		.on('initialize', function(data) {
 			for (var i in cars) cars[i].setMap();
 			cars = {};
 			for (var id in data) {
 				draw(id, data[id][0], data[id][1]);
 			}
-		}).on('update', function(data) {
+		})
+		.on('update', function(data) {
 			draw(data.id, data.coordinates[0], data.coordinates[1]);
-		}).on('rideRequested', function(data) {
+		})
+		.on('rideRequested', function(data) {
 			function drawSpot(endpoint) {
 				if (window[endpoint]) window[endpoint].setMap();
 				var markerOptions = {
@@ -104,9 +107,11 @@ function connect() {
 				delete stopDrive;	
 			}
 			/**/
-		}).on('rideOffered', function(data) {
-			alert(JSON.stringify(data));
-		}).on('leave', function(data) {
+		})
+		.on('rideOffered', function(data) {
+			rideOffers.showOffer(data);
+		})
+		.on('leave', function(data) {
 			if (cars[data.id]) {
 				cars[data.id].setMap();
 				delete cars[data.id];
@@ -164,6 +169,7 @@ function draw(index, latitude, longitude, accuracy) {
 	}
 	if (typeof(accuracy) === 'undefined' || accuracy < 120) {
 		obj.setPosition(spot);
+		if (!window.confirmPosition && !index) editPosition();
 	}
 }
 
@@ -348,7 +354,7 @@ function midPoints(directions, traffic) {
 					var markerOptions = {
 						map: map,
 						position: position,
-						icon: 'http://ridesqirl.com/svg?text=' + Math.ceil(time/60 * legTraffic)
+						icon: 'https://ridesqirl.com/svg?text=' + Math.ceil(time/60 * legTraffic)
 					};
 					return new google.maps.Marker(markerOptions);
 				}
@@ -381,6 +387,45 @@ function makePayment() {
 	});
 }
 
+function ellipses($element) {
+	var length = $element.attr('data-ellipses').length;
+	switch (length) {
+		case 0:
+			$element.attr('data-ellipses','.');
+			break;
+		case 1:
+			$element.attr('data-ellipses','..');
+			break;
+		case 2:
+			$element.attr('data-ellipses','...');
+			break;
+		case 3:
+			$element.attr('data-ellipses','');
+			break;
+	}
+	setTimeout(function() {
+		ellipses($element);
+	}, 400);
+}
+
+var rideOffers = {
+	resize: function() {
+		$('#ride-offers').height($('#map-canvas').height());
+		$('.ridePrice,.driverTime').css('line-height', function() { return $(this).css('height'); });
+	},
+	showOffer: function(data) {
+		$('#ride-offers').show();
+		var $rideOffer = $('.rideOffer').not(':visible').eq(0);
+		$rideOffer.fadeIn({
+			start: rideOffers.resize
+		});
+		$rideOffer.find('.ridePrice span').html(data.price);
+		$rideOffer.on('click', '.acceptRide', function(event) {
+			makePayment();
+		});
+	}
+}
+
 function initialize() {
 	watchID = navigator.geolocation.watchPosition(geo.success, geo.failure, geo.options);
 }
@@ -395,6 +440,8 @@ $(document).ready(function() {
 		$('#map-canvas').css('height', window.innerHeight - 164); // 164 = 44 + 120 = $('.header').outerHeight() + $('#main-footer').outerHeight()
 		//google.maps.event.trigger(map, 'resize');
 		if ($('#center_icon').is(':visible')) trueCenterIcon();
+		
+		rideOffers.resize();
 	})/**/
 	.on('touchstart',function(event) {
 		if (mobile_timer) clearTimeout(mobile_timer);
@@ -431,11 +478,20 @@ $(document).ready(function() {
 	.on('click', '#main-footer .Change', function(event) {
 		editPosition($(this).hasClass('Drop-off'));
 	})
-	.on('click', '#getRoute', function(event) {
+	.on('click', '#requestRide', function(event) {
 		if (window.confirmPosition) confirmPosition();
 		getRoute();
 		
+		if (!drop) {
+			// Check if there's a default (home) address
+			// Otherwise, let the user know a drop-off is needed and return false
+			return false;
+		}
+		
 		if (window.io && window.socket) {
+			$('#main-footer').children().hide();
+			$('#cancelRequest,#contacting').show();
+			//ellipses($('#contacting span'));
 			var data = {
 				pickup: me.getPosition(),
 				dropoff: drop.getPosition()
@@ -443,6 +499,16 @@ $(document).ready(function() {
 			data.pickup = [data.pickup.lat(), data.pickup.lng()];
 			data.dropoff = [data.dropoff.lat(), data.dropoff.lng()];
 			socket.emit('requestRide', data);
+		}
+	})
+	.on('click', '#cancelRequest', function(event) {
+		if (route) {
+			route.setMap();	
+		}
+		if (window.io && window.socket) {
+			$('#main-footer').children('.Change,#requestRide').show();
+			$('#cancelRequest,#contacting,.rideOffer,#ride-offers').hide();
+			socket.emit('cancelRide');
 		}
 	})
 	.on('click', '.collapse', function(event) {
@@ -471,17 +537,17 @@ $(document).ready(function() {
 		if (diff <= base*0.2) $cost.html(fare.toFixed(2));
 	})
 	.on('click', '#test', function(event) {
-		draw(0, 45.03293, -93.18358, 100);
-		connect();
+		if (!me) {
+			draw(0, 45.03293, -93.18358, 100);
+			connect();
+		}
+		$('.menu').click();
 	})
 	.on('click', '#becomeDriver', function(event) {
 		becomeDriver();
 	})
 	.on('click', '#makePayment', function(event) {
 		makePayment();
-	})
-	.on('click', '#around_the_block', function(event) {
-		around_the_block();
 	})
 	.on('keydown', function(event) {
 		// Esc
@@ -671,7 +737,7 @@ function getAddress(obj, retry) {
 		if (status == google.maps.GeocoderStatus.OK) {
 			var address = results[0].formatted_address;
 			address = address.split(',')[0];
-			if ($('#getRoute').is(':visible')) $('#main-footer input').filter(':visible').val(address);
+			if ($('#requestRide').is(':visible')) $('#main-footer input').filter(':visible').val(address);
 		}
 		else if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
 			rateLimit.set('geocoding');
@@ -747,7 +813,7 @@ function small_input(callback) {
 		});
 		$('#main-footer').animate({'height': '120px'}, function() {
 			$input.css({'top': '', 'left': '', 'width': '', 'height': ''});
-			$('.Change' + ($input.hasClass('Drop-off') ? '.Pick-up' : '.Drop-off') + ',#getRoute').show();
+			$('.Change' + ($input.hasClass('Drop-off') ? '.Pick-up' : '.Drop-off') + ',#requestRide').show();
 			if (typeof(callback) === 'function') callback();
 		});
 		editPosition($input.hasClass('Drop-off'));
