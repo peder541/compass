@@ -120,6 +120,11 @@ function connect() {
 		})
 		.on('cardAccepted', function(data) {
 			console.log('Card accepted!');
+			$('#pay').fadeOut({
+				complete: function() {
+					$('#pay').remove();	
+				}
+			});
 		})
 		.on('leave', function(data) {
 			if (cars[data.id]) {

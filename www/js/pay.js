@@ -24,12 +24,12 @@ $(document).ready(function() {
 		else $slider.addClass('checked');
 	});
 	$('#cancel').on('click', function(event) {
-		window.top.$('iframe').fadeOut({
+		if (window.top.acceptRide) {
+			delete window.top.acceptRide;	
+		}
+		window.top.$('#pay').fadeOut({
 			complete: function() {
-				if (window.top.acceptRide) {
-					delete window.top.acceptRide;	
-				}
-				window.top.$('iframe').remove();	
+				window.top.$('#pay').remove();	
 			}
 		});
 	});
