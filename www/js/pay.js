@@ -26,6 +26,9 @@ $(document).ready(function() {
 	$('#cancel').on('click', function(event) {
 		window.top.$('iframe').fadeOut({
 			complete: function() {
+				if (window.top.acceptRide) {
+					delete window.top.acceptRide;	
+				}
 				window.top.$('iframe').remove();	
 			}
 		});
@@ -39,10 +42,15 @@ function stripeResponse(status, response) {
 	}
 	else {
 		console.log('Success');
-		var $form = $('form');
-		var token = response['id'];
-		console.log(token);
-		$form.append("<input type='hidden' name='stripeToken' value='" + token + "' />");
-		$form[0].submit();
+		var token = response.id;
+		if (window.top.acceptRide) {
+			window.top.acceptRide(token);	
+		}
+		else {
+			var $form = $('form');
+			console.log(token);
+			$form.append("<input type='hidden' name='stripeToken' value='" + token + "' />");
+			$form[0].submit();
+		}
 	}
 }

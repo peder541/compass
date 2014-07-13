@@ -112,6 +112,15 @@ function connect() {
 		.on('rideOffered', function(data) {
 			rideOffers.showOffer(data);
 		})
+		.on('cardDeclined', function(data) {
+			console.log('Card declined:', data.code);
+		})
+		.on('cardError', function(data) {
+			console.log('Card error', data);
+		})
+		.on('cardAccepted', function(data) {
+			console.log('Card accepted!');
+		})
 		.on('leave', function(data) {
 			if (cars[data.id]) {
 				cars[data.id].setMap();
@@ -429,6 +438,13 @@ var rideOffers = {
 		$rideOffer.find('.ridePrice span').html(data.price);
 		$rideOffer.on('click', '.acceptRide', function(event) {
 			makePayment();
+			window.acceptRide = function(token) {
+				if (window.io && window.socket) {
+					data.token = token;
+					socket.emit('acceptRide', data);	
+					delete window.acceptRide;
+				}
+			};
 		});
 	}
 }
