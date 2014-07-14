@@ -85,7 +85,8 @@ function connect() {
 			$('.offerRide').off('click').one('click', function(event) {
 				var d = {
 					rider: data.rider,
-					price: $('#cost span').html()	
+					price: $('#cost span').html(),
+					time: $('#cost span').attr('data-time')	
 				}
 				socket.emit('offerRide',d);
 				$('#driver-footer').animate({'bottom':'-120px'}, {
@@ -112,14 +113,29 @@ function connect() {
 		.on('rideOffered', function(data) {
 			rideOffers.showOffer(data);
 		})
+		.on('rideAccepted', function(data) {
+			console.log('Ride accepted', JSON.stringify(data));
+		})
 		.on('cardDeclined', function(data) {
 			console.log('Card declined:', data.code);
+			var $pay = $('#pay').contents();
+			$pay.find('form button').prop('disabled', false);
+			var $declined = $pay.find('.declinedCard').fadeIn();
+			setTimeout(function() {
+				$declined.fadeOut();
+			}, 1400);
 		})
 		.on('cardError', function(data) {
 			console.log('Card error', data);
 		})
 		.on('cardAccepted', function(data) {
 			console.log('Card accepted!');
+			if (window.acceptRide) {
+				delete window.acceptRide;	
+			}
+			if (window.activateRide) {
+				window.activateRide();
+			}
 			$('#pay').fadeOut({
 				complete: function() {
 					$('#pay').remove();	
@@ -390,6 +406,7 @@ function midPoints(directions, traffic) {
 					var t = time;
 					socket.once('trafficResponse', function(traffic) {
 						info[0] = markPoint(spot, t, traffic); 
+						$('#cost > span').attr('data-time', Math.ceil(t/60 * traffic));
 					}).emit('trafficRequest', data);
 				}
 				else info[i] = markPoint(steps[j].lat_lngs[index], time, traffic);
@@ -401,9 +418,12 @@ function midPoints(directions, traffic) {
 	var normalStyle = [ { } ];
 }
 
-function makePayment() {
+function makePayment(price) {
 	$('body').append('<iframe src="pay.html" id="pay"></iframe>');
 	$('#pay').on('load', function(event) {
+		if (price) {
+			$('#pay').contents().find('button[type="submit"]').attr('data-price',price);
+		}
 		$('#pay').fadeIn();
 	});
 }
@@ -440,18 +460,29 @@ var rideOffers = {
 		$rideOffer.fadeIn({
 			start: rideOffers.resize
 		});
+		$rideOffer.find('.driverTime').html(data.time);
 		$rideOffer.find('.ridePrice span').html(data.price);
-		$rideOffer.on('click', '.acceptRide', function(event) {
-			makePayment();
+		$rideOffer.off('click', '.acceptRide').on('click', '.acceptRide', function(event) {
+			makePayment(data.price);
 			window.acceptRide = function(token) {
 				if (window.io && window.socket) {
 					data.token = token;
-					socket.emit('acceptRide', data);	
-					delete window.acceptRide;
+					socket.emit('acceptRide', data);
+					window.activateRide = function() {
+						activeCar(data.driver);
+						delete window.activateRide;
+					};
 				}
 			};
 		});
 	}
+}
+
+function activeCar(driverID) {
+	cars[driverID].setIcon('img/Google Maps Markers/active_Marker.png');
+}
+function deactiveCar(driverID) {
+	cars[driverID].setIcon('img/Google Maps Markers/black_Marker.png');
 }
 
 function initialize() {
