@@ -706,6 +706,7 @@ function becomeDriver() {
 	//$('#driver-footer').show();
 	socket.emit('becomeDriver');
 	emitPositionUpdates();
+	google.maps.event.trigger(me, 'position_changed');
 }
 function emitPositionUpdates(obj) {
 	if (!obj) obj = me;
