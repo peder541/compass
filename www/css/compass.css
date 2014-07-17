@@ -33,10 +33,14 @@ input, input:focus {
 	-webkit-user-modify: read-write-plaintext-only;
 }
 
-#main {
+.screen {
 	position: relative;
 	height: 100%;
 	left: 0;
+	display: none;
+}
+#main {
+	display: block;
 }
 #map-canvas {
 	height: 90%;
@@ -422,3 +426,46 @@ iframe {
 /*[style*="cursor: default"] {
 	display: none;
 }*/
+
+
+#profile > #profile-container {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 44px;
+	background-color: #333;	
+}
+	#profile > #profile-container > #profile-pic {
+		text-align: center;
+	}
+		#profile > #profile-container > #profile-pic > img {
+			border-radius: 10px;
+			height: 160px;
+			margin-top: 15px;
+		}
+	#profile > #profile-container > #profile-info {
+		float: left;
+		margin-top: 10px;
+		margin-left: 44px;
+		color: whitesmoke;
+		font-family: Corbel;
+		line-height: 44px;
+	}
+		#profile > #profile-container > #profile-info > .clickable {
+			cursor: pointer;
+			color: #11C1E2;	
+		}
+		#profile > #profile-container > #profile-info span {
+			 padding-left: 10px;
+		}
+@media (orientation: landscape) {
+	#profile > #profile-container > #profile-pic {
+		float: left;
+	}	
+		#profile > #profile-container > #profile-pic > img {
+			margin-left: 15px;
+		}
+	#profile > #profile-container > #profile-info {
+		margin-left: 22px;
+	}
+}

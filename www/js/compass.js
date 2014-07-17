@@ -130,11 +130,11 @@ function connect() {
 		})
 		.on('cardAccepted', function(data) {
 			console.log('Card accepted!');
-			if (window.acceptRide) {
-				delete window.acceptRide;	
+			if (rideOffers.acceptOffer) {
+				delete rideOffers.acceptOffer;	
 			}
-			if (window.activateRide) {
-				window.activateRide();
+			if (rideOffers.activateRide) {
+				rideOffers.activateRide();
 			}
 			$('#pay').fadeOut({
 				complete: function() {
@@ -464,18 +464,60 @@ var rideOffers = {
 		$rideOffer.find('.ridePrice span').html(data.price);
 		$rideOffer.off('click', '.acceptRide').on('click', '.acceptRide', function(event) {
 			makePayment(data.price);
-			window.acceptRide = function(token) {
+			rideOffers.acceptOffer = function(token) {
 				if (window.io && window.socket) {
 					data.token = token;
 					socket.emit('acceptRide', data);
-					window.activateRide = function() {
-						activeCar(data.driver);
-						delete window.activateRide;
-					};
+					rideOffers.activateRide = constructRideActivator(data.driver);
 				}
 			};
 		});
 	}
+}
+
+function constructRideActivator(driverID) {
+	var f = function() {
+		activeCar(driverID);
+		getDriverTime(driverID);
+		$('.rideOffer').fadeOut({
+			complete: function() {
+				$('#ride-offers').hide();	
+			}
+		});
+		delete this.activateRide;
+	};
+	return f;
+}
+function getDriverTime(driverID) {
+	var directionsRequest = {
+		origin: cars[driverID].getPosition(),
+		destination: me.getPosition(),
+		travelMode: 'DRIVING'
+	};
+	var query = new google.maps.DirectionsService();
+	query.route(directionsRequest, function(directions, status) {
+		if (status == google.maps.DirectionsStatus.OK) {
+			var leg = directions.routes[0].legs[0];
+			if (leg.distance.value < 50) {
+				$('#contacting span').html('Sqirl has arrived').attr('data-ellipses','.');	
+				pickupTimer = false;
+			}
+			else {
+				var duration = leg.duration;
+				$('#contacting span').html(duration.text + ' until Sqirl arrives').attr('data-ellipses','.');
+				pickupTimer = setTimeout(function() {
+					getDriverTime(driverID);
+				}, Math.max(20000, (duration.value % 60) * 1000));
+			}
+		}
+	});
+}
+function deactivateRide() {
+	for (var i in cars) {
+		deactiveCar(i);	
+	}
+	clearTimeout(pickupTimer);
+	$('#contacting span').html('contacting Sqirls').attr('data-ellipses','...');
 }
 
 function activeCar(driverID) {
@@ -541,6 +583,12 @@ $(document).ready(function() {
 		if (window.confirmPosition) confirmPosition();
 		getRoute();
 		
+		// Show "Aww, nuts" if there aren't any drivers
+		if (Object.keys(cars).length == 0) {
+			console.log('Aww nuts');
+			return false;
+		}
+		
 		if (!drop) {
 			// Check if there's a default (home) address
 			// Otherwise, let the user know a drop-off is needed and return false
@@ -600,10 +648,13 @@ $(document).ready(function() {
 			draw(0, 45.03293, -93.18358, 100);
 			connect();
 		}
-		$('.menu').click();
+		changeScreen('main');
 	})
 	.on('click', '#becomeDriver', function(event) {
 		becomeDriver();
+	})
+	.on('click', '#showProfile', function(event) {
+		changeScreen('profile');
 	})
 	.on('click', '#makePayment', function(event) {
 		makePayment();
@@ -753,9 +804,21 @@ function stop_drive() {
 	clearTimeout(driveTimerID);
 }
 
+function changeScreen(newScreenID) {
+	var $oldScreen = $('.screen').filter(':visible');
+	var $newScreen = $('#' + newScreenID);
+	if (!$oldScreen.is($newScreen)) {
+		var left = $oldScreen.css('left');
+		$newScreen.css('left',left);
+		$newScreen.show();
+		$oldScreen.hide();
+	}
+	toggleMenu();	
+}
+
 function toggleMenu() {
 	var $sidebar = $('#sidebar');
-	var $screen = $('#main');
+	var $screen = $('.screen').filter(':visible');
 	if ($sidebar.is(':visible')) {
 		/**/
 		$screen.animate({'left':''});

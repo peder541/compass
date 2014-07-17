@@ -24,8 +24,8 @@ $(document).ready(function() {
 		else $slider.addClass('checked');
 	});
 	$('#cancel').on('click', function(event) {
-		if (window.top.acceptRide) {
-			delete window.top.acceptRide;	
+		if (window.top.rideOffers.acceptOffer) {
+			delete window.top.rideOffers.acceptOffer;	
 		}
 		window.top.$('#pay').fadeOut({
 			complete: function() {
@@ -43,8 +43,8 @@ function stripeResponse(status, response) {
 	else {
 		console.log('Success');
 		var token = response.id;
-		if (window.top.acceptRide) {
-			window.top.acceptRide(token);	
+		if (window.top.rideOffers.acceptOffer) {
+			window.top.rideOffers.acceptOffer(token);	
 		}
 		else {
 			var $form = $('form');
