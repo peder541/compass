@@ -57,6 +57,16 @@ function connect() {
 		})
 		.on('update', function(data) {
 			draw(data.id, data.coordinates[0], data.coordinates[1]);
+			// Say how much long it will take the driver to arrive at the rider's pickup location
+			if (data.id == rideOffers.driverID && pickupTimer) {
+				if (getDistance(me.getPosition(), cars[data.id].getPosition()) < 50) {
+					$('#contacting span').html('Sqirl has arrived').attr('data-ellipses','.');	
+					pickupTimer = false;
+				}
+				else if ((new Date()).getTime() > pickupTimer + 10000) {
+					getDriverTime();
+				}
+			}
 		})
 		.on('rideRequested', function(data) {
 			function drawSpot(endpoint) {
@@ -477,8 +487,9 @@ var rideOffers = {
 
 function constructRideActivator(driverID) {
 	var f = function() {
+		this.driverID = driverID;
 		activeCar(driverID);
-		getDriverTime(driverID);
+		getDriverTime();
 		$('.rideOffer').fadeOut({
 			complete: function() {
 				$('#ride-offers').hide();	
@@ -488,9 +499,9 @@ function constructRideActivator(driverID) {
 	};
 	return f;
 }
-function getDriverTime(driverID) {
+function getDriverTime() {
 	var directionsRequest = {
-		origin: cars[driverID].getPosition(),
+		origin: cars[rideOffers.driverID].getPosition(),
 		destination: me.getPosition(),
 		travelMode: 'DRIVING'
 	};
@@ -505,18 +516,15 @@ function getDriverTime(driverID) {
 			else {
 				var duration = leg.duration;
 				$('#contacting span').html(duration.text + ' until Sqirl arrives').attr('data-ellipses','.');
-				pickupTimer = setTimeout(function() {
-					getDriverTime(driverID);
-				}, Math.max(20000, (duration.value % 60) * 1000));
+				pickupTimer = (new Date()).getTime();
 			}
 		}
 	});
 }
 function deactivateRide() {
-	for (var i in cars) {
-		deactiveCar(i);	
-	}
-	clearTimeout(pickupTimer);
+	deactiveCar(rideOffers.driverID);
+	delete rideOffers.driverID;
+	pickupTimer = false;
 	$('#contacting span').html('contacting Sqirls').attr('data-ellipses','...');
 }
 
@@ -539,7 +547,7 @@ $(document).ready(function() {
 	
 	$(window).on('resize', function(event) {
 		$('#map-canvas').css('height', window.innerHeight - 164); // 164 = 44 + 120 = $('.header').outerHeight() + $('#main-footer').outerHeight()
-		//google.maps.event.trigger(map, 'resize');
+		google.maps.event.trigger(map, 'resize');
 		if ($('#center_icon').is(':visible')) trueCenterIcon();
 		
 		rideOffers.resize();
@@ -813,6 +821,7 @@ function changeScreen(newScreenID) {
 		$newScreen.show();
 		$oldScreen.hide();
 	}
+	$(window).resize();
 	toggleMenu();	
 }
 
@@ -981,6 +990,10 @@ function getDistance(p1, p2) {
 	var d = R * c;
 	return d; // returns the distance in meter
 };
+
+function rad(degree) {
+	return degree * Math.PI / 180;	
+}
 
 function funky() {
 	var style = [ { "featureType": "road.highway", "elementType": "geometry", "stylers": [ { "hue": "#dd00ff" } ] },{ "featureType": "road.arterial", "elementType": "geometry", "stylers": [ { "hue": "#00ffdd" } ] },{ "featureType": "road.local", "elementType": "geometry", "stylers": [ { "hue": "#00ffdd" } ] },{ "featureType": "road", "elementType": "labels.text", "stylers": [ { "weight": 0.1 }, { "color": "#b18080" } ] },{ "featureType": "administrative", "elementType": "labels.text.fill", "stylers": [ { "visibility": "on" }, { "weight": 0.1 }, { "color": "#FFFFFF" } ] },{ "featureType": "administrative", "elementType": "labels.text.stroke", "stylers": [ { "color": "#808080" } ] },{ "featureType": "poi", "stylers": [ { "visibility": "off" } ] },{ } ];
