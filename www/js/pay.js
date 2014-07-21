@@ -27,9 +27,9 @@ $(document).ready(function() {
 		if (window.top.rideOffers.acceptOffer) {
 			delete window.top.rideOffers.acceptOffer;	
 		}
-		window.top.$('#pay').fadeOut({
+		window.top.$('#payment').fadeOut({
 			complete: function() {
-				window.top.$('#pay').remove();	
+				//window.top.$('#pay').remove();	
 			}
 		});
 	});

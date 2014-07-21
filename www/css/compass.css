@@ -34,8 +34,10 @@ input, input:focus {
 }
 
 .screen {
-	position: relative;
+	position: absolute;
 	height: 100%;
+	width: 100%;
+	top: 0;
 	left: 0;
 	display: none;
 }
@@ -378,7 +380,7 @@ input, input:focus {
 }
 
 #sidebar {
-	background-color: #069; /*#099;/**/
+	background-color: #222; /*#099;/**/
 	color: whitesmoke;
 	display: none;
 	width: 200px;
@@ -408,12 +410,12 @@ input, input:focus {
 	border-style: dotted;	
 }
 
-iframe {
-	height: 100%;
+#pay {
+	height: calc(100% - 44px);
 	width: 100%;
 	position: absolute;
 	left: 0;
-	top: 0;
+	top: 44px;
 	display: none;
 	border: 0;
 }
@@ -427,13 +429,19 @@ iframe {
 	display: none;
 }*/
 
+#payment > #pay {
+	display: block;
+}
 
+#profile {
+	background-color: #333;
+}
 #profile > #profile-container {
 	width: 100%;
 	height: 100%;
 	position: absolute;
-	top: 44px;
-	background-color: #333;	
+	top: 44px;	
+	display: none;
 }
 	#profile > #profile-container > #profile-pic {
 		text-align: center;
@@ -458,6 +466,41 @@ iframe {
 		#profile > #profile-container > #profile-info span {
 			 padding-left: 10px;
 		}
+	#profile > #profile-login {
+		height: calc(100% - 44px);
+	}
+		#profile > #profile-login > .login-container {
+			height: 50%;
+			position: relative;
+		}
+			#profile > #profile-login > .login-container > .login-option {
+				position: absolute;
+				bottom: 0;
+				width: 100%;
+				height: 44px;
+				text-align: center;
+			}
+				#fb-login {
+					height: 44px;
+					color: whitesmoke;
+					background-color: #3B579D;
+					border-radius: 5px;
+				}
+				#fb-login:hover {
+					background-color: #4864B1;
+				}
+					#fb-login > i {
+						font-size: 28px;
+						margin: 8px;
+						float: left;
+					}
+					#fb-login > span {
+						float: left;
+						line-height: 44px;
+						font-size: 16px;
+						font-family: Optima, Corbel, sans-serif;
+						margin-right: 8px;
+					}
 @media (orientation: landscape) {
 	#profile > #profile-container > #profile-pic {
 		float: left;

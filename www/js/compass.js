@@ -146,9 +146,9 @@ function connect() {
 			if (rideOffers.activateRide) {
 				rideOffers.activateRide();
 			}
-			$('#pay').fadeOut({
+			$('#payment').fadeOut({
 				complete: function() {
-					$('#pay').remove();	
+					//$('#pay').remove();	
 				}
 			});
 		})
@@ -429,13 +429,15 @@ function midPoints(directions, traffic) {
 }
 
 function makePayment(price) {
+	/*
 	$('body').append('<iframe src="pay.html" id="pay"></iframe>');
 	$('#pay').on('load', function(event) {
+		*/
 		if (price) {
 			$('#pay').contents().find('button[type="submit"]').attr('data-price',price);
 		}
-		$('#pay').fadeIn();
-	});
+		$('#payment').fadeIn();
+//	});
 }
 
 function ellipses($element) {
@@ -551,6 +553,7 @@ $(document).ready(function() {
 		if ($('#center_icon').is(':visible')) trueCenterIcon();
 		
 		rideOffers.resize();
+		profile.resize();
 	})/**/
 	.on('touchstart',function(event) {
 		if (mobile_timer) clearTimeout(mobile_timer);
@@ -664,8 +667,13 @@ $(document).ready(function() {
 	.on('click', '#showProfile', function(event) {
 		changeScreen('profile');
 	})
+	.on('click', '#fb-login', function(event) {
+		if (window.FB) {
+			FB.login(profile.populate, { scope: 'public_profile,email' });
+		}
+	})
 	.on('click', '#makePayment', function(event) {
-		makePayment();
+		changeScreen('payment');
 	})
 	.on('keydown', function(event) {
 		// Esc
@@ -731,7 +739,35 @@ $(document).ready(function() {
 	
 	// Trigger resize event to give everything the correct placement.
 	$(window).resize();
+	
+	$.ajaxSetup({ cache: true });
+	$.getScript('https://connect.facebook.net/en_US/sdk.js', function(){
+		FB.init({
+			appId: '667802789972584',
+			version: 'v2.0',
+			status: true
+		});
+	});
 });
+
+var profile = {
+	populate: function() {
+		if (window.FB) {
+			var access_token = FB.getAccessToken();
+			if (access_token) {
+				FB.api('/me', function(response) {
+					$('.fa-envelope').next().html(response.email);
+					$('#profile-pic img').attr('src', 'https://graph.facebook.com/' + response.id + '/picture?type=large');
+					$('#profile-login').hide();
+					$('#profile-container').show();
+				});
+			}
+		}
+	},
+	resize: function() {
+		$('#profile-login').css('height', window.innerHeight - 44);	
+	}
+}
 
 function trueCenterIcon(obj) {
 	var $center = $('#center_icon');
