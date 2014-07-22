@@ -436,7 +436,7 @@ function makePayment(price) {
 		if (price) {
 			$('#pay').contents().find('button[type="submit"]').attr('data-price',price);
 		}
-		$('#payment').fadeIn();
+		$('#payment').css('left',0).fadeIn();
 //	});
 }
 
