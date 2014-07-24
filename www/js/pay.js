@@ -29,7 +29,8 @@ $(document).ready(function() {
 		}
 		window.top.$('#payment').fadeOut({
 			complete: function() {
-				//window.top.$('#pay').remove();	
+				window.top.$('#pay input').val('').filter('.cc-number').attr('class','cc-number');	
+				window.top.$('#pay button').prop('disabled', false).filter('[type="submit"]').attr('class','multi-use');
 			}
 		});
 	});
@@ -43,14 +44,19 @@ function stripeResponse(status, response) {
 	else {
 		console.log('Success');
 		var token = response.id;
-		if (window.top.rideOffers.acceptOffer) {
+		if (window.top.rideOffers && window.top.rideOffers.acceptOffer) {
 			window.top.rideOffers.acceptOffer(token);	
 		}
+		else if (window.top.socket) {
+			window.top.socket.emit('saveCard', {
+				token: token
+			});
+		}
 		else {
-			var $form = $('form');
+			//var $form = $('form');
 			console.log(token);
-			$form.append("<input type='hidden' name='stripeToken' value='" + token + "' />");
-			$form[0].submit();
+			//$form.append("<input type='hidden' name='stripeToken' value='" + token + "' />");
+			//$form[0].submit();
 		}
 	}
 }

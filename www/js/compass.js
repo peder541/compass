@@ -54,6 +54,7 @@ function connect() {
 			for (var id in data) {
 				draw(id, data[id][0], data[id][1]);
 			}
+			$(window).trigger('loginFB');
 		})
 		.on('update', function(data) {
 			draw(data.id, data.coordinates[0], data.coordinates[1]);
@@ -128,9 +129,9 @@ function connect() {
 		})
 		.on('cardDeclined', function(data) {
 			console.log('Card declined:', data.code);
-			var $pay = $('#pay').contents();
-			$pay.find('form button').prop('disabled', false);
-			var $declined = $pay.find('.declinedCard').fadeIn();
+			var $pay = $('#pay');
+			$pay.find('button').prop('disabled', false);
+			var $declined = $pay.next('.declinedCard').fadeIn();
 			setTimeout(function() {
 				$declined.fadeOut();
 			}, 1400);
@@ -148,7 +149,8 @@ function connect() {
 			}
 			$('#payment').fadeOut({
 				complete: function() {
-					//$('#pay').remove();	
+					$('#pay input').val('').filter('.cc-number').attr('class','cc-number');
+					$('#pay button').prop('disabled', false).filter('[type="submit"]').attr('class','multi-use');
 				}
 			});
 		})
@@ -434,7 +436,7 @@ function makePayment(price) {
 	$('#pay').on('load', function(event) {
 		*/
 		if (price) {
-			$('#pay').contents().find('button[type="submit"]').attr('data-price',price);
+			$('#pay').find('button[type="submit"]').attr('data-price',price).attr('class','single-use');
 		}
 		$('#payment').css('left',0).fadeIn();
 //	});
@@ -553,7 +555,6 @@ $(document).ready(function() {
 		if ($('#center_icon').is(':visible')) trueCenterIcon();
 		
 		rideOffers.resize();
-		profile.resize();
 	})/**/
 	.on('touchstart',function(event) {
 		if (mobile_timer) clearTimeout(mobile_timer);
@@ -667,10 +668,11 @@ $(document).ready(function() {
 	.on('click', '#showProfile', function(event) {
 		changeScreen('profile');
 	})
-	.on('click', '#fb-login', function(event) {
-		if (window.FB) {
-			FB.login(profile.populate, { scope: 'public_profile,email' });
-		}
+	.on('click', '.fb-login', function(event) {
+		profile.login();
+	})
+	.on('click', '#profile-logout', function(event) {
+		profile.logout();
 	})
 	.on('click', '#makePayment', function(event) {
 		changeScreen('payment');
@@ -744,28 +746,48 @@ $(document).ready(function() {
 	$.getScript('https://connect.facebook.net/en_US/sdk.js', function(){
 		FB.init({
 			appId: '667802789972584',
-			version: 'v2.0',
-			status: true
+			version: 'v2.0'
+		});
+		FB.getLoginStatus(function() {
+			$(window).one('loginFB', function() {
+				profile.populate();
+			});
+			if (window.io && window.socket) {
+				$(window).trigger('loginFB');
+			}
 		});
 	});
 });
 
 var profile = {
+	login: function() {
+		if (window.FB) {
+			FB.login(profile.populate, { scope: 'public_profile,email' });
+		}
+	},
 	populate: function() {
 		if (window.FB) {
 			var access_token = FB.getAccessToken();
 			if (access_token) {
 				FB.api('/me', function(response) {
+					$('.fa-user').next().html(response.name);
 					$('.fa-envelope').next().html(response.email);
 					$('#profile-pic img').attr('src', 'https://graph.facebook.com/' + response.id + '/picture?type=large');
-					$('#profile-login').hide();
-					$('#profile-container').show();
+					$('.screen-login').hide();
+					$('#profile-container,#pay').show();
 				});
+				socket.emit('login', access_token);
 			}
 		}
 	},
-	resize: function() {
-		$('#profile-login').css('height', window.innerHeight - 44);	
+	logout: function() {
+		if (window.FB) {
+			FB.logout(function(response) {
+				$('.screen-login').show();
+				$('#profile-container,#pay').hide();
+				socket.emit('logout');
+			});
+		}
 	}
 }
 

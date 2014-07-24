@@ -1,41 +1,8 @@
 @charset "utf-8";
 /* CSS Document */
 
-@import url(https://fonts.googleapis.com/css?family=PT+Sans);
-
-* {
-	padding: 0;
-	margin: 0;
-	-webkit-tap-highlight-color: rgba(0,0,0,0);
-	outline: 0;
-}
-*:not(input) {
-	user-select: none;
-	-webkit-user-select: none;
-	-khtml-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-}
-html, body {
-	height: 100%;
-	overflow: hidden;
-}
-button {
-	border: 0;
-	cursor: pointer;
-}
-button::-moz-focus-inner {
-  border: 0;
-}
-input, input:focus {
-	-webkit-user-modify: read-write-plaintext-only;
-}
-
-body {
-	background-color: whitesmoke;	
-}
 form {
-	height: 100%;
+	background-color: whitesmoke;
 }
 form > button {
 	position: absolute;
@@ -48,6 +15,14 @@ form > button {
 	font-family: Optima, Corbel, sans-serif;
 	font-size: 28px;
 	line-height: 28px;
+	/* Rounder */
+	bottom: 2%;
+	right: 4%;
+	width: 44%;
+	height: 22%;
+	border-radius: 10px;
+	font-size: 25px;
+	line-height: 25px;
 }
 form > button[disabled] {
 	opacity: 0.3;	
@@ -55,12 +30,19 @@ form > button[disabled] {
 form > #cancel {
 	left: 0;
 	background-color: #666;	
+	/* Rounder */
+	left: 4%;
 }
 label {
 	height: 25%; /*60px;*/
 	width: 100%;
 	display: inline-block;
 	font-family: Optima, Corbel, sans-serif;
+	/* Rounder */
+	width: 92%;
+	position: relative;
+	left: 4%;
+	white-space: nowrap;
 }
 label > i {
 	width: 16%;
@@ -80,6 +62,9 @@ label > input {
 	font-family: PT Sans;
 	background-color: whitesmoke;
 	color: #333;
+	/* Rounder */
+	width: 59%;
+	font-size: 14px;
 }
 label:not(:last-of-type) {
 	border-bottom: 1px solid rgba(51, 51, 51, 0.3);	
@@ -123,7 +108,7 @@ label:not(:last-of-type) {
 }
 */
 
-.multi-use {
+.multi-use:before {
 	content: "Save";
 }
 .single-use {
@@ -136,6 +121,13 @@ label:not(:last-of-type) {
 	content: "\A($" attr(data-price) ")";
 	font-family: Optima, Calibri, sans-serif;
 	font-size: 0.85em;
+	/* Rounder */
+	font-size: 19px;
+}
+@media (max-height: 300px) {
+	.single-use {
+		white-space: normal;
+	}
 }
 
 .declinedCard {

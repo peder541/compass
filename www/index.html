@@ -14,6 +14,11 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.2/fastclick.min.js"></script>
     <script type="text/javascript" src="https://ridesqirl.com/socket.io/socket.io.js"></script>
 	<script type="text/javascript" src="js/compass.js"></script>
+    
+    <link rel="stylesheet" href="css/pay.css" />
+    <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+    <script type="text/javascript" src="js/jquery.payment.js"></script>
+    <script type="text/javascript" src="js/pay.js"></script>
 </head>
 
 <body>
@@ -98,18 +103,19 @@
         		<img />
             </div>
             <div id="profile-info">
+            	<p><i class="fa fa-fw fa-user"></i><span>Ben Pedersen</span></p>
             	<p><i class="fa fa-fw fa-envelope"></i><span>ben@okeebo.com</span></p>
                 <p><i class="fa fa-fw fa-phone"></i><span>712-358-2736</span></p>
                 <p class="clickable"><i class="fa fa-fw fa-car"></i><span>Become a Sqirl</span></p>
-                <p class="clickable"><i class="fa fa-fw fa-sign-out"></i><span>Sign out</span></p>
+                <p class="clickable" id="profile-logout"><i class="fa fa-fw fa-sign-out"></i><span>Sign out</span></p>
             </div>
         </div>
-        <div id="profile-login">
+        <div class="screen-login">
         	<div class="login-container">
                 <div class="login-option">
-                    <button id="fb-login">
-                        <i class="fa fa-facebook-square"></i>
-                        <span>Log in with Facebook</span>
+                    <button class="fb-login needsclick">
+                        <i class="fa fa-facebook-square needsclick"></i>
+                        <span class="needsclick">Log in with Facebook</span>
                     </button>
                 </div>
             </div>
@@ -121,7 +127,42 @@
         	<h1>RideSqirl</h1>
         	<button class="menu"><i class="fa fa-bars"></i></button>
         </div>
-        <iframe id="pay" src="pay.html"></iframe>
+        <div class="screen-login">
+        	<div class="login-container">
+                <div class="login-option">
+                    <button class="fb-login needsclick">
+                        <i class="fa fa-facebook-square needsclick"></i>
+                        <span class="needsclick">Log in with Facebook</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <form id="pay" method="post" action="http://ridesqirl.com/test" novalidate autocomplete="on">
+            <label>
+                <i class="fa fa-credit-card"></i><b>Card</b>
+                <input type="text" class="cc-number" pattern="\d*" x-autocompletetype="cc-number" placeholder="•••• •••• •••• ••••" required>
+            </label>
+            <br>
+            <label>
+                <i class="fa fa-calendar-o"></i><b>Expires</b>
+                <input type="text" class="cc-exp" pattern="\d*" x-autocompletetype="cc-exp" placeholder="MM / YY" required>
+            </label>
+            <br>
+            <label>
+                <i class="fa fa-lock"></i><b>CVC</b>
+                <input type="text" class="cc-cvc" pattern="\d*" x-autocompletetype="cc-csc" placeholder="123" required autocomplete="off">
+            </label>
+            <!--
+            <label>
+                <b style="width: 39%; position: relative; left: 5%;">Remember me</b>
+                <input type="text" disabled style="pointer-events: none;">
+                <div id="slider"></div>
+            </label>
+            -->
+            <button type="submit" data-price="10.00" class="multi-use"></button>
+            <button type="button" id="cancel">Cancel</button>
+        </form>
+        <div class="declinedCard">Card Declined!</div>
     </div>
     
     <div id="sidebar">
