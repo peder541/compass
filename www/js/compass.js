@@ -762,7 +762,16 @@ $(document).ready(function() {
 var profile = {
 	login: function() {
 		if (window.FB) {
-			FB.login(profile.populate, { scope: 'public_profile,email' });
+			if (window.navigator && window.navigator.standalone) {
+				var url = 'https://www.facebook.com/dialog/oauth';
+				url += '?client_id=667802789972584';
+				url += '&redirect_uri=' + document.location.href;
+				url += '&scope=public_profile,email';
+				window.open(url, '', null); 
+			}
+			else {
+				FB.login(profile.populate, { scope: 'public_profile,email' });
+			}
 		}
 	},
 	populate: function() {
