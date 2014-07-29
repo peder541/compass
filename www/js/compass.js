@@ -757,6 +757,10 @@ $(document).ready(function() {
 			}
 		});
 	});
+	
+	if (window.navigator && window.navigator.standalone) {
+		changeScreen(window.localStorage.getItem('screen') || 'main', true);
+	}
 });
 
 var profile = {
@@ -879,7 +883,7 @@ function stop_drive() {
 	clearTimeout(driveTimerID);
 }
 
-function changeScreen(newScreenID) {
+function changeScreen(newScreenID, quick) {
 	var $oldScreen = $('.screen').filter(':visible');
 	var $newScreen = $('#' + newScreenID);
 	if (!$oldScreen.is($newScreen)) {
@@ -889,7 +893,10 @@ function changeScreen(newScreenID) {
 		$oldScreen.hide();
 	}
 	$(window).resize();
-	toggleMenu();	
+	if (!quick) toggleMenu();
+	if (window.navigator && window.navigator.standalone) {
+		window.localStorage.setItem('screen',newScreenID);	
+	}
 }
 
 function toggleMenu() {
