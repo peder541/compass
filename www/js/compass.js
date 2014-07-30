@@ -665,6 +665,31 @@ $(document).ready(function() {
 	.on('click', '#becomeDriver', function(event) {
 		becomeDriver();
 	})
+	.on('click', '#inviteFriends', function(event) {
+		/* FB */
+		if (window.navigator && window.navigator.standalone) {
+			var url = 'https://www.facebook.com/dialog/share';
+			url += '?app_id=667802789972584';
+			url += '&display=popup';
+			url += '&href=https://ridesqirl.com';
+			url += '&redirect_uri=' + document.location.href;
+			window.open(url, '', null); 
+		}
+		else {
+			FB.ui({
+				method: 'share',
+				href: 'https://ridesqirl.com'
+			});
+		}
+		/**/
+		/* Twitter
+		// Properly want to load the twitter js (https://platform.twitter.com/widgets.js)
+		var url = 'https://twitter.com/intent/tweet';
+		url += '?text=Get a free ride with RideSqirl:';
+		url += '&url=https://ridesqirl.com';
+		window.open(url, '', null);
+		/**/
+	})
 	.on('click', '#showProfile', function(event) {
 		changeScreen('profile');
 	})
@@ -771,7 +796,7 @@ var profile = {
 				url += '?client_id=667802789972584';
 				url += '&redirect_uri=' + document.location.href;
 				url += '&scope=public_profile,email';
-				window.open(url, '', null); 
+				window.open(url, '', null);
 			}
 			else {
 				FB.login(profile.populate, { scope: 'public_profile,email' });
