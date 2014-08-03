@@ -375,9 +375,9 @@ function realtimeRoutes(destination, waypoints) {
 
 
 function getCost(directions, traffic) {
-	//var initial_cost = 2.5;
-	var distance_cost = 0.0018;	// $ per meter
-	var duration_cost = 0.0056;	// $ per second (experimental)
+	var initial_cost = 2.5;
+	var distance_cost = 0.001;	// $ per meter						= 1.609/mile
+	var duration_cost = 0.005;	// $ per second (experimental)		= 0.300/minute
 	
 	traffic = traffic || 1;
 	var cost = 0;
@@ -393,7 +393,7 @@ function getCost(directions, traffic) {
 		}
 	}
 	cost /= N;
-	//cost += initial_cost;
+	cost += initial_cost;
 	return cost;	
 }
 
@@ -450,10 +450,17 @@ function makePayment(price) {
 	$('body').append('<iframe src="pay.html" id="pay"></iframe>');
 	$('#credit-card-info').on('load', function(event) {
 		*/
-		if (price) {
-			$('#credit-card-info').find('button[type="submit"]').attr('data-price',price).attr('class','single-use');
+		if (FB && FB.getUserID()) {
+			if ($('.payment-cc').length > 0) {
+				if (confirm('This trip will cost $' + price)) rideOffers.acceptOffer();
+			}
 		}
-		$('#credit-card').fadeIn();
+		else {
+			if (price) {
+				$('#credit-card-info').find('button[type="submit"]').attr('data-price',price).attr('class','single-use');
+			}
+			$('#credit-card').fadeIn();
+		}
 //	});
 }
 
@@ -492,7 +499,6 @@ var rideOffers = {
 		$rideOffer.find('.driverTime').html(data.time);
 		$rideOffer.find('.ridePrice span').html(data.price);
 		$rideOffer.off('click', '.acceptRide').on('click', '.acceptRide', function(event) {
-			makePayment(data.price);
 			rideOffers.acceptOffer = function(token) {
 				if (window.io && window.socket) {
 					data.token = token;
@@ -500,6 +506,7 @@ var rideOffers = {
 					rideOffers.activateRide = constructRideActivator(data.driver);
 				}
 			};
+			makePayment(data.price);
 		});
 	}
 }
