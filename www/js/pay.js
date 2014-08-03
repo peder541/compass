@@ -27,10 +27,10 @@ $(document).ready(function() {
 		if (window.top.rideOffers.acceptOffer) {
 			delete window.top.rideOffers.acceptOffer;	
 		}
-		window.top.$('#payment').fadeOut({
+		window.top.$('#credit-card').fadeOut({
 			complete: function() {
-				window.top.$('#pay input').val('').filter('.cc-number').attr('class','cc-number');	
-				window.top.$('#pay button').prop('disabled', false).filter('[type="submit"]').attr('class','multi-use');
+				window.top.$('#credit-card-info input').val('').filter('.cc-number').attr('class','cc-number');	
+				window.top.$('#credit-card-info button').prop('disabled', false).filter('[type="submit"]').attr('class','multi-use');
 			}
 		});
 	});

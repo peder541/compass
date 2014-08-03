@@ -155,7 +155,15 @@
                 </div>
             </div>
         </div>
-        <form id="pay" method="post" action="http://ridesqirl.com/test" novalidate autocomplete="on">
+        <div id="payment-info">
+        	<h2>Payment Information</h2>
+            <div id="payment-add-card">
+            	<button>Add a Card</button>
+            </div>
+        </div>
+    </div>
+    <div id="credit-card" class="screen">
+        <form id="credit-card-info" method="post" action="http://ridesqirl.com/test" novalidate autocomplete="on">
             <label>
                 <i class="fa fa-credit-card"></i><b>Card</b>
                 <input type="text" class="cc-number" pattern="\d*" x-autocompletetype="cc-number" placeholder="•••• •••• •••• ••••" required>

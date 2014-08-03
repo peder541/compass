@@ -410,13 +410,66 @@ input, input:focus {
 	border-style: dotted;	
 }
 
-#pay {
+#payment-info {
+	font-size: 14px;
+	font-family: PT Sans, sans-serif;
+	color: #333;
+	padding: 20px;
+	display: none;
+}
+	#payment-info > h2 {
+		font-size: 16px;
+		font-weight: 400;
+		margin-bottom: 10px;	
+	}
+	#payment-info > .payment-cc {
+		background-repeat: no-repeat;
+		background-position: left center;
+		margin: 0px 10px;
+		padding: 10px 0px 10px 50px;
+		height: 24px;
+		line-height: 24px;
+		border-bottom: 1px solid #aaa;
+	}
+	#payment-info > .payment-cc:first-of-type {
+		border-top: 1px solid #aaa;
+	}
+	#payment-info > .payment-cc:before {
+		content: '•••• ';
+	}
+	#payment-info > .payment-cc:after {
+		float: right;
+		width: 20px;
+		text-align: center;
+		font-size: 1.25em;
+	}
+	#payment-info > .payment-cc.checked:after {
+		font-family: FontAwesome;
+		content: "\f00c";
+		color: #096;
+	}
+	#payment-info > #payment-add-card {
+		text-align: center;
+	}
+		#payment-info > #payment-add-card > button {
+			height: 44px;
+			line-height: 44px;
+			border-radius: 5px;
+			background-color: #096;
+			color: whitesmoke;
+			width: 100%;
+			margin: 5px 0;
+			font-family: PT Sans, sans-serif;
+			font-size: 16px;
+			max-width: 300px;
+		}
+#credit-card-info {
 	width: 100%;
 	position: absolute;
 	left: 0;
 	top: 44px;
 	bottom: 0;
-	display: none;
+	display: block;
 	border: 0;
 }
 /*

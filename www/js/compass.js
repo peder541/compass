@@ -129,7 +129,7 @@ function connect() {
 		})
 		.on('cardDeclined', function(data) {
 			console.log('Card declined:', data.code);
-			var $pay = $('#pay');
+			var $pay = $('#credit-card-info');
 			$pay.find('button').prop('disabled', false);
 			var $declined = $pay.next('.declinedCard').fadeIn();
 			setTimeout(function() {
@@ -147,12 +147,27 @@ function connect() {
 			if (rideOffers.activateRide) {
 				rideOffers.activateRide();
 			}
-			$('#payment').fadeOut({
+			$('#credit-card').fadeOut({
 				complete: function() {
-					$('#pay input').val('').filter('.cc-number').attr('class','cc-number');
-					$('#pay button').prop('disabled', false).filter('[type="submit"]').attr('class','multi-use');
+					$('#credit-card-info input').val('').filter('.cc-number').attr('class','cc-number');
+					$('#credit-card-info button').prop('disabled', false).filter('[type="submit"]').attr('class','multi-use');
 				}
 			});
+		})
+		.on('listCards', function(data) {
+			for (var i=0, l=data.length; i<l; ++i) {
+				var brand = data[i].brand;
+				if (brand == 'American Express') {
+					brand = 'amex';
+				}
+				else {
+					brand = brand.toLowerCase().replace(/\s/g,'');
+				}
+				$('#payment-info #payment-add-card').before($('<p />', {
+					class: 'payment-cc ' + brand + (data[i].default_card ? ' checked' : ''), 
+					text: data[i].last4
+				}));
+			}
 		})
 		.on('leave', function(data) {
 			if (cars[data.id]) {
@@ -433,12 +448,12 @@ function midPoints(directions, traffic) {
 function makePayment(price) {
 	/*
 	$('body').append('<iframe src="pay.html" id="pay"></iframe>');
-	$('#pay').on('load', function(event) {
+	$('#credit-card-info').on('load', function(event) {
 		*/
 		if (price) {
-			$('#pay').find('button[type="submit"]').attr('data-price',price).attr('class','single-use');
+			$('#credit-card-info').find('button[type="submit"]').attr('data-price',price).attr('class','single-use');
 		}
-		$('#payment').css('left',0).fadeIn();
+		$('#credit-card').fadeIn();
 //	});
 }
 
@@ -702,6 +717,9 @@ $(document).ready(function() {
 	.on('click', '#makePayment', function(event) {
 		changeScreen('payment');
 	})
+	.on('click', '#payment-add-card button', function(event) {
+		$('#credit-card').fadeIn();
+	})
 	.on('keydown', function(event) {
 		// Esc
 		if (event.which == 27) small_input();
@@ -812,7 +830,7 @@ var profile = {
 					$('.fa-envelope').next().html(response.email);
 					$('#profile-pic img').attr('src', 'https://graph.facebook.com/' + response.id + '/picture?type=large');
 					$('.screen-login').hide();
-					$('#profile-container,#pay').show();
+					$('#profile-container,#payment-info').show();
 				});
 				socket.emit('login', access_token);
 			}
@@ -822,7 +840,7 @@ var profile = {
 		if (window.FB) {
 			FB.logout(function(response) {
 				$('.screen-login').show();
-				$('#profile-container,#pay').hide();
+				$('#profile-container,#credit-card-info').hide();
 				socket.emit('logout');
 			});
 		}
