@@ -301,7 +301,7 @@ input, input:focus {
 	top: 7.5%;
 	height: 85%;
 	border-radius: 5px;
-	background-image: url("https://fbcdn-profile-a.akamaihd.net/hprofile-ak-xap1/t1.0-1/c0.0.160.160/p160x160/1480607_10153577754135285_101563888_n.jpg");
+	background-image: url("../img/blank.png");
 	background-position: center;
 	background-size: cover;
 	background-repeat: no-repeat;

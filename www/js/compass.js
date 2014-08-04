@@ -85,11 +85,16 @@ function connect() {
 			$(window).resize();
 			drawSpot('pickup');
 			drawSpot('dropoff');
-			$('#driver-footer').css('bottom','-120px').show().animate({'bottom':'0'}, {
-				progress: function() {
-					$('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);	
-				}
+			
+			getProfileImage(data, function(src) {
+				$('#driver-footer').css('bottom','-120px').show().animate({'bottom':'0'}, {
+					progress: function() {
+						$('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);	
+					}
+				});
+				$('.riderPic').attr('src', src);
 			});
+			
 			var destination = dropoff.getPosition();
 			var waypoints = [{location: pickup.getPosition()}];
 			getRoute(destination, waypoints, 0, data.traffic);
@@ -109,6 +114,7 @@ function connect() {
 					}
 				});
 			});
+			$('#map-canvas').css('height',window.innerHeight - 44);
 			
 			// Realtime routing violates Google's Terms of Service. Link to actual navigation apps instead.
 			// "geo://" , "waze://" , "comgooglemaps-x-callback://"
@@ -485,6 +491,25 @@ function ellipses($element) {
 	}, 400);
 }
 
+function getProfileImage(data, callback) {
+	var img = new Image();
+	// Execute callback once image loads
+	img.onload = function() {
+		if (typeof callback === 'function') {
+			callback(img.src);
+		}
+	}
+	if (data.fbID) {
+		// picture for people identified with facebook
+		img.src = 'https://graph.facebook.com/v2.0/' + data.fbID + '/picture?width=160&height=160';
+	}
+	else {
+		// picture for unidentified people
+		img.src = 'https://ridesqirl.com/app/img/unidentified.png';
+	}
+	return img.src;
+}
+
 var rideOffers = {
 	resize: function() {
 		$('#ride-offers').height($('#map-canvas').height());
@@ -493,9 +518,14 @@ var rideOffers = {
 	showOffer: function(data) {
 		$('#ride-offers').show();
 		var $rideOffer = $('.rideOffer').not(':visible').eq(0);
-		$rideOffer.fadeIn({
-			start: rideOffers.resize
+		
+		getProfileImage(data, function(src) {
+			$rideOffer.fadeIn({
+				start: rideOffers.resize
+			});
+			$rideOffer.children('.driverPic').css('background-image','url("' + src + '")');
 		});
+		
 		$rideOffer.find('.driverTime').html(data.time);
 		$rideOffer.find('.ridePrice span').html(data.price);
 		$rideOffer.off('click', '.acceptRide').on('click', '.acceptRide', function(event) {
