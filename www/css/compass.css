@@ -4,262 +4,262 @@
 @import url(https://fonts.googleapis.com/css?family=PT+Sans);
 
 * {
-	padding: 0;
-	margin: 0;
-	-webkit-tap-highlight-color: rgba(0,0,0,0);
-	outline: 0;
+    padding: 0;
+    margin: 0;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    outline: 0;
 }
 *:not(input) {
-	user-select: none;
-	-webkit-user-select: none;
-	-khtml-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 html, body {
-	height: 100%;
-	overflow: hidden;
-	-ms-touch-action: none;
-	touch-action: none;
+    height: 100%;
+    overflow: hidden;
+    -ms-touch-action: none;
+    touch-action: none;
 }
 button {
-	border: 0;
-	cursor: pointer;
+    border: 0;
+    cursor: pointer;
 }
 button::-moz-focus-inner {
   border: 0;
 }
 input, input:focus {
-	-webkit-user-modify: read-write-plaintext-only;
+    -webkit-user-modify: read-write-plaintext-only;
 }
 
 .screen {
-	position: absolute;
-	height: 100%;
-	width: 100%;
-	top: 0;
-	left: 0;
-	display: none;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    display: none;
 }
 #main {
-	display: block;
+    display: block;
 }
 #map-canvas {
-	height: 90%;
+    height: 90%;
 }
 @media (max-width: 550px) {
-	#map-canvas {
-		height: 80%;
-	}	
+    #map-canvas {
+        height: 80%;
+    }	
 }
 #main-footer, #driver-footer {
-	position: absolute;
-	bottom: 0;
-	width: 100%;
-	height: 120px;
-	background-color: #609;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 120px;
+    background-color: #609;
 }
 #main-footer > button {
-	height: 37.5%;
-	border-radius: 5px;
-	font-family: Optima, Corbel, sans-serif;
-	font-size: 1em;
-	color: whitesmoke;
-	background-color: #C111E2; /*#a0d;*/
-	position: absolute;
-	left: 5%;
-	top: 8.33%;
-	/*
-	width: 42.5%;
-	/**/
-	width: 60%;
-	font-size: 1.2em;
-	/**/
+    height: 37.5%;
+    border-radius: 5px;
+    font-family: Optima, Corbel, sans-serif;
+    font-size: 1em;
+    color: whitesmoke;
+    background-color: #C111E2; /*#a0d;*/
+    position: absolute;
+    left: 5%;
+    top: 8.33%;
+    /*
+    width: 42.5%;
+    /**/
+    width: 60%;
+    font-size: 1.2em;
+    /**/
 }
 #main-footer > button.Drop-off {
-	/*
-	left: auto;
-	right: 5%;
-	/**/
-	top: auto;
-	bottom: 8.33%;
-	/**/
+    /*
+    left: auto;
+    right: 5%;
+    /**/
+    top: auto;
+    bottom: 8.33%;
+    /**/
 }
 #main-footer > #requestRide {
-	/*
-	top: auto;
-	width: 90%;
-	bottom: 8.33%;
-	/**/
-	height: 100px;
-	width: 25%;
-	left: auto;
-	right: 5%;
-	/**/
+    /*
+    top: auto;
+    width: 90%;
+    bottom: 8.33%;
+    /**/
+    height: 100px;
+    width: 25%;
+    left: auto;
+    right: 5%;
+    /**/
 }
 #main-footer > #contacting {
-	display: none;
-	height: 37.5%;
-	line-height: 44px;
-	width: 90%;
-	text-align: center;
-	position: absolute;
-	top: 8.33%;
-	left: 5%;
-	color: whitesmoke;
+    display: none;
+    height: 37.5%;
+    line-height: 44px;
+    width: 90%;
+    text-align: center;
+    position: absolute;
+    top: 8.33%;
+    left: 5%;
+    color: whitesmoke;
 }
 #main-footer > #contacting > span {
-	/*padding-left: 5px;*/
-	font-family: Optima, Corbel, sans-serif;
+    /*padding-left: 5px;*/
+    font-family: Optima, Corbel, sans-serif;
 }
 #main-footer > #contacting > span:after {
-	position: absolute;
-	content: attr(data-ellipses);	
+    position: absolute;
+    content: attr(data-ellipses);	
 }
 #main-footer > #cancelRequest {
-	display: none;
-	height: 37.5%;
-	width: 90%;
-	top: auto;
-	bottom: 8.33%;	
+    display: none;
+    height: 37.5%;
+    width: 90%;
+    top: auto;
+    bottom: 8.33%;	
 }
 #main-footer > button.hover {
-	background-color: #CF20F0; /*#b1e;*/
+    background-color: #CF20F0; /*#b1e;*/
 }
 #main-footer > button.active {
-	background-color: #DD2FFF;/*#c2f;*/
+    background-color: #DD2FFF;/*#c2f;*/
 }
 #main-footer > .collapse, #main-footer > .clear {
-	display: none;
-	position: absolute;
-	top: 1%;
-	left: auto;
-	right: 2%;
-	width: 44px;
-	height: 44px;
-	background-color: #609;
-	color: #D5D;
-	font-size: 28px;
-	border-radius: 0;
+    display: none;
+    position: absolute;
+    top: 1%;
+    left: auto;
+    right: 2%;
+    width: 44px;
+    height: 44px;
+    background-color: #609;
+    color: #D5D;
+    font-size: 28px;
+    border-radius: 0;
 }
 #main-footer > .collapse {
-	top: auto;
-	bottom: 0;
-	right: 0;
+    top: auto;
+    bottom: 0;
+    right: 0;
 }
 #main-footer > .collapse.hover, #main-footer > .clear.hover, #main-footer > ul > li.hover {
-	background-color: #70a;	
+    background-color: #70a;	
 }
 #main-footer > .collapse.active, #main-footer > .clear.active, #main-footer > ul > li.active {
-	background-color: #80b;
+    background-color: #80b;
 }
 #main-footer > #cost {
-	display: none;
+    display: none;
 }
 #main-footer > input {
-	display: none;
-	border-radius: 5px;
-	height: 37.5%;
-	position: absolute;
-	left: 5%;
-	top: 8.33%;
-	width: 52%;
-	padding-left: 8%;			/* padding-left + width = width of #main-footer > button */
-	font-family: PT Sans, Calibri, sans-serif;
-	font-size: 0.9em;
-	background-color: #609;
-	color: rgb(255, 136, 255);
-	border: 0;
-	border-bottom: 1px solid rgb(255, 136, 255);
-	background-image: url("../img/Google Maps Markers/red_MarkerA.png");
-	background-repeat: no-repeat;
-	background-position: left center;
+    display: none;
+    border-radius: 5px;
+    height: 37.5%;
+    position: absolute;
+    left: 5%;
+    top: 8.33%;
+    width: 52%;
+    padding-left: 8%;			/* padding-left + width = width of #main-footer > button */
+    font-family: PT Sans, Calibri, sans-serif;
+    font-size: 0.9em;
+    background-color: #609;
+    color: rgb(255, 136, 255);
+    border: 0;
+    border-bottom: 1px solid rgb(255, 136, 255);
+    background-image: url("../img/Google Maps Markers/red_MarkerA.png");
+    background-repeat: no-repeat;
+    background-position: left center;
 }
 #main-footer input.Drop-off {
-	top: auto;
-	bottom: 8.33%;
-	background-image: url("../img/Google Maps Markers/blue_MarkerB.png");	
+    top: auto;
+    bottom: 8.33%;
+    background-image: url("../img/Google Maps Markers/blue_MarkerB.png");	
 }
 #main-footer > ul {
-	width: 100%;
-	position: absolute;
-	top: 10%;
-	color: #F8F;
-	line-height: 1.2;
-	font-family: PT Sans, Calibri, sans-serif;
-	font-size: 0.9em;
-	list-style: none;
-	white-space: nowrap;
-	margin-top: 10px;
+    width: 100%;
+    position: absolute;
+    top: 10%;
+    color: #F8F;
+    line-height: 1.2;
+    font-family: PT Sans, Calibri, sans-serif;
+    font-size: 0.9em;
+    list-style: none;
+    white-space: nowrap;
+    margin-top: 10px;
 }
 #main-footer > ul > li {
-	margin: 0 3%;
-	padding: 10px 3%;
-	cursor: pointer;
+    margin: 0 3%;
+    padding: 10px 3%;
+    cursor: pointer;
 }
 #main-footer > ul > li > span:last-of-type {
-	font-size: 0.8em;
-	color: #D5D;	
+    font-size: 0.8em;
+    color: #D5D;	
 }
 #center_icon {
-	position: absolute;
-	bottom: 50%;
-	left: 50%;
-	display: none;
-	pointer-events: none;	
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    display: none;
+    pointer-events: none;	
 }
 
 #driver-footer {
-	display: none;
+    display: none;
 }
 #driver-footer button {
-	border-radius: 5px;
-	font-family: Optima, Corbel, sans-serif;
-	font-size: 1em;
-	color: whitesmoke;
-	background-color: #C111E2;
-	position: absolute;
+    border-radius: 5px;
+    font-family: Optima, Corbel, sans-serif;
+    font-size: 1em;
+    color: whitesmoke;
+    background-color: #C111E2;
+    position: absolute;
 }
 #driver-footer #pricing {
-	position: absolute;
-	top: 8.33%;
-	right: 5%;
-	width: 175px;
-	height: 44px;	
+    position: absolute;
+    top: 8.33%;
+    right: 5%;
+    width: 175px;
+    height: 44px;	
 }
 #pricing .fare {
-	width: 44px;
-	height: 44px;
-	top: 0;
-	right: 0;
+    width: 44px;
+    height: 44px;
+    top: 0;
+    right: 0;
 }
 #pricing .decrease {
-	left: 0;	
+    left: 0;	
 }
 #pricing #cost {
-	font-family: PT Sans, sans-serif;
-	color: whitesmoke;
-	font-size: 1.2em;
-	position: absolute;
-	top: 0;
-	left: 0;
-	line-height: 44px;
-	text-align: center;
-	width: 100%;
+    font-family: PT Sans, sans-serif;
+    color: whitesmoke;
+    font-size: 1.2em;
+    position: absolute;
+    top: 0;
+    left: 0;
+    line-height: 44px;
+    text-align: center;
+    width: 100%;
 }
 .currency {
-	font-size: 0.5em;
-	font-family: Verdana, Geneva, sans-serif;
+    font-size: 0.5em;
+    font-family: Verdana, Geneva, sans-serif;
 }
 .currency.usd:before {
-	content: '$';
+    content: '$';
 }
 #driver-footer #riderResponse {
     position: absolute;
-	top: 8.33%;
+    top: 8.33%;
     left: calc(10% + 100px);
     bottom: 8.33%;  
-	right: 5%;
+    right: 5%;
     display: none;
     font-family: Optima, Corbel, sans-serif;
     color: whitesmoke;
@@ -291,315 +291,315 @@ input, input:focus {
     display: none;
 }
 #driver-footer .offerRide {
-	width: 175px;
-	height: 44px;
-	right: 5%;
-	bottom: 8.33%;
-	font-size: 1.2em;
+    width: 175px;
+    height: 44px;
+    right: 5%;
+    bottom: 8.33%;
+    font-size: 1.2em;
 }
 #driver-footer .riderPic {
-	border-radius: 5px;
-	position: absolute;
-	top: 8.33%;
-	left: 5%;
-	width: 100px;
+    border-radius: 5px;
+    position: absolute;
+    top: 8.33%;
+    left: 5%;
+    width: 100px;
 }
 
 #ride-offers {
-	width: 100%;
-	height: calc(100% - 164px);
-	position: absolute;
-	top: 44px;
-	left: 0;
-	display: none;
-	pointer-events: none;
+    width: 100%;
+    height: calc(100% - 164px);
+    position: absolute;
+    top: 44px;
+    left: 0;
+    display: none;
+    pointer-events: none;
 }
 .rideOffer {
-	width: 100%;
-	height: 33.3%;
-	position: relative;
-	background-color: rgba(51, 51, 51, 0.85);
-	display: none;
-	pointer-events: all;
+    width: 100%;
+    height: 33.3%;
+    position: relative;
+    background-color: rgba(51, 51, 51, 0.85);
+    display: none;
+    pointer-events: all;
 }
 @media (max-height: 414px) {
-	.rideOffer {
-		height: 50%;
-	}
-	.rideOffer:last-of-type {
-		display: none !important;
-	}
+    .rideOffer {
+        height: 50%;
+    }
+    .rideOffer:last-of-type {
+        display: none !important;
+    }
 }
 .rideOffer .driverPic {
-	position: absolute;
-	left: 5%;
-	width: 30%;
-	top: 7.5%;
-	height: 85%;
-	border-radius: 5px;
-	background-image: url("../img/blank.png");
-	background-position: center;
-	background-size: cover;
-	background-repeat: no-repeat;
+    position: absolute;
+    left: 5%;
+    width: 30%;
+    top: 7.5%;
+    height: 85%;
+    border-radius: 5px;
+    background-image: url("../img/blank.png");
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
 }
 .rideOffer p {
-	color: whitesmoke;
-	font-family: Optima, Corbel, sans-serif;
+    color: whitesmoke;
+    font-family: Optima, Corbel, sans-serif;
 }
 .rideOffer .driverTime, .rideOffer .ridePrice {
-	position: absolute;
-	top: 7.5%;
-	left: 40%;
-	height: 7.5%;
-	width: 25%;
-	height: 42.5%;
-	text-align: center;
-	white-space: nowrap;
-	font-size: 1.2em;
+    position: absolute;
+    top: 7.5%;
+    left: 40%;
+    height: 7.5%;
+    width: 25%;
+    height: 42.5%;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 1.2em;
 }
 .rideOffer .driverTime:after {
-	content: " min";
+    content: " min";
 }
 .rideOffer .ridePrice {
-	font-family: PT Sans, sans-serif;
-	top: auto;
-	bottom: 7.5%;
+    font-family: PT Sans, sans-serif;
+    top: auto;
+    bottom: 7.5%;
 }
 .rideOffer .acceptRide {
-	position: absolute;
-	top: 7.5%;
-	right: 5%;
-	width: 25%;
-	height: 85%;
-	font-family: Optima, Corbel, sans-serif;
-	color: whitesmoke;
-	background-color: #C111E2;
-	font-size: 1.2em;
-	border-radius: 5px;
+    position: absolute;
+    top: 7.5%;
+    right: 5%;
+    width: 25%;
+    height: 85%;
+    font-family: Optima, Corbel, sans-serif;
+    color: whitesmoke;
+    background-color: #C111E2;
+    font-size: 1.2em;
+    border-radius: 5px;
 }
 .rideOffer .driverCar {
-	display: none;
+    display: none;
 }
 
 .header {
-	height: 44px;
-	width: 100%;
-	background-color: #11C1E2;
-	color: whitesmoke;
+    height: 44px;
+    width: 100%;
+    background-color: #11C1E2;
+    color: whitesmoke;
 }
 .header > h1 {
-	font-size: 28px;
-	font-family: Optima, Candara, sans-serif;
-	text-align: center;
-	width: 100%;
-	position: absolute;
-	left: 0;
-	top: 0;
-	line-height: 44px;
+    font-size: 28px;
+    font-family: Optima, Candara, sans-serif;
+    text-align: center;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    line-height: 44px;
 }
 .menu {
-	font-size: 28px;
-	height: 44px;
-	width: 44px;
-	color: whitesmoke;
-	background-color: #11C1E2;
-	cursor: pointer;
-	position: absolute;
-	left: 0;
-	top: 0;
+    font-size: 28px;
+    height: 44px;
+    width: 44px;
+    color: whitesmoke;
+    background-color: #11C1E2;
+    cursor: pointer;
+    position: absolute;
+    left: 0;
+    top: 0;
 }
 .menu.hover {
-	background-color: #20CFF0;	
+    background-color: #20CFF0;	
 }
 .menu.active {
-	background-color: #2FDDFF;
+    background-color: #2FDDFF;
 }
 
 #sidebar {
-	background-color: #222; /*#099;/**/
-	color: whitesmoke;
-	display: none;
-	width: 200px;
-	position: absolute;
-	left: -200px;
-	top: 0;
-	height: 100%;	
-	font-family: Optima, Corbel, sans-serif;
+    background-color: #222; /*#099;/**/
+    color: whitesmoke;
+    display: none;
+    width: 200px;
+    position: absolute;
+    left: -200px;
+    top: 0;
+    height: 100%;	
+    font-family: Optima, Corbel, sans-serif;
 }
 #sidebar > p {
-	padding: 15px;
-	font-size: 1em;
-	cursor: pointer;
+    padding: 15px;
+    font-size: 1em;
+    cursor: pointer;
 }
 #sidebar > p::selection,#sidebar p::-moz-selection {
-	background: transparent;
+    background: transparent;
 }
 #sidebar > p.hover {
-	background-color: #07a; /*#0aa;/**/
+    background-color: #07a; /*#0aa;/**/
 }
 #sidebar > p.active {
-	background-color: #08b; /*#0bb;/**/
+    background-color: #08b; /*#0bb;/**/
 } 
 
 #sidebar > hr {
-	color: whitesmoke;
-	border-style: dotted;	
+    color: whitesmoke;
+    border-style: dotted;	
 }
 
 #payment-info {
-	font-size: 14px;
-	font-family: PT Sans, sans-serif;
-	color: #333;
-	padding: 20px;
-	display: none;
+    font-size: 14px;
+    font-family: PT Sans, sans-serif;
+    color: #333;
+    padding: 20px;
+    display: none;
 }
-	#payment-info > h2 {
-		font-size: 16px;
-		font-weight: 400;
-		margin-bottom: 10px;	
-	}
-	#payment-info > .payment-cc {
-		background-repeat: no-repeat;
-		background-position: left center;
-		margin: 0px 10px;
-		padding: 10px 0px 10px 50px;
-		height: 24px;
-		line-height: 24px;
-		border-bottom: 1px solid #aaa;
-	}
-	#payment-info > .payment-cc:first-of-type {
-		border-top: 1px solid #aaa;
-	}
-	#payment-info > .payment-cc:before {
-		content: '•••• ';
-	}
-	#payment-info > .payment-cc:after {
-		float: right;
-		width: 20px;
-		text-align: center;
-		font-size: 1.25em;
-	}
-	#payment-info > .payment-cc.checked:after {
-		font-family: FontAwesome;
-		content: "\f00c";
-		color: #096;
-	}
-	#payment-info > #payment-add-card {
-		text-align: center;
-	}
-		#payment-info > #payment-add-card > button {
-			height: 44px;
-			line-height: 44px;
-			border-radius: 5px;
-			background-color: #096;
-			color: whitesmoke;
-			width: 100%;
-			margin: 5px 0;
-			font-family: PT Sans, sans-serif;
-			font-size: 16px;
-			max-width: 300px;
-		}
+    #payment-info > h2 {
+        font-size: 16px;
+        font-weight: 400;
+        margin-bottom: 10px;	
+    }
+    #payment-info > .payment-cc {
+        background-repeat: no-repeat;
+        background-position: left center;
+        margin: 0px 10px;
+        padding: 10px 0px 10px 50px;
+        height: 24px;
+        line-height: 24px;
+        border-bottom: 1px solid #aaa;
+    }
+    #payment-info > .payment-cc:first-of-type {
+        border-top: 1px solid #aaa;
+    }
+    #payment-info > .payment-cc:before {
+        content: '•••• ';
+    }
+    #payment-info > .payment-cc:after {
+        float: right;
+        width: 20px;
+        text-align: center;
+        font-size: 1.25em;
+    }
+    #payment-info > .payment-cc.checked:after {
+        font-family: FontAwesome;
+        content: "\f00c";
+        color: #096;
+    }
+    #payment-info > #payment-add-card {
+        text-align: center;
+    }
+        #payment-info > #payment-add-card > button {
+            height: 44px;
+            line-height: 44px;
+            border-radius: 5px;
+            background-color: #096;
+            color: whitesmoke;
+            width: 100%;
+            margin: 5px 0;
+            font-family: PT Sans, sans-serif;
+            font-size: 16px;
+            max-width: 300px;
+        }
 #credit-card-info {
-	width: 100%;
-	position: absolute;
-	left: 0;
-	top: 44px;
-	bottom: 0;
-	display: block;
-	border: 0;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 44px;
+    bottom: 0;
+    display: block;
+    border: 0;
 }
 /*
 .Confirm:after {
-	content: '\A (' attr(data-address) ')';
-	font-size: 0.8em;
+    content: '\A (' attr(data-address) ')';
+    font-size: 0.8em;
 }
 */
 /*[style*="cursor: default"] {
-	display: none;
+    display: none;
 }*/
 
 #payment {
-	background-color: whitesmoke;	
+    background-color: whitesmoke;	
 }
 
 #profile {
-	background-color: #333;
+    background-color: #333;
 }
 #profile > #profile-container {
-	width: 100%;
-	position: absolute;
-	top: 44px;	
-	display: none;
+    width: 100%;
+    position: absolute;
+    top: 44px;	
+    display: none;
 }
-	#profile > #profile-container > #profile-pic {
-		text-align: center;
-	}
-		#profile > #profile-container > #profile-pic > img {
-			border-radius: 10px;
-			height: 160px;
-			margin-top: 15px;
-		}
-	#profile > #profile-container > #profile-info {
-		float: left;
-		margin-top: 10px;
-		margin-left: 44px;
-		color: whitesmoke;
-		font-family: Optima, Corbel, sans-serif;
-		line-height: 44px;
-	}
-		#profile > #profile-container > #profile-info > .clickable {
-			cursor: pointer;
-			color: #11C1E2;	
-		}
-		#profile > #profile-container > #profile-info span {
-			 padding-left: 10px;
-		}
+    #profile > #profile-container > #profile-pic {
+        text-align: center;
+    }
+        #profile > #profile-container > #profile-pic > img {
+            border-radius: 10px;
+            height: 160px;
+            margin-top: 15px;
+        }
+    #profile > #profile-container > #profile-info {
+        float: left;
+        margin-top: 10px;
+        margin-left: 44px;
+        color: whitesmoke;
+        font-family: Optima, Corbel, sans-serif;
+        line-height: 44px;
+    }
+        #profile > #profile-container > #profile-info > .clickable {
+            cursor: pointer;
+            color: #11C1E2;	
+        }
+        #profile > #profile-container > #profile-info span {
+             padding-left: 10px;
+        }
 @media (orientation: landscape) {
-	#profile > #profile-container > #profile-pic {
-		float: left;
-	}	
-		#profile > #profile-container > #profile-pic > img {
-			margin-left: 15px;
-		}
-	#profile > #profile-container > #profile-info {
-		margin-left: 22px;
-	}
+    #profile > #profile-container > #profile-pic {
+        float: left;
+    }	
+        #profile > #profile-container > #profile-pic > img {
+            margin-left: 15px;
+        }
+    #profile > #profile-container > #profile-info {
+        margin-left: 22px;
+    }
 }
 .screen-login {
-	position: absolute;
-	width: 100%;
-	top: 44px;
-	bottom: 0;
+    position: absolute;
+    width: 100%;
+    top: 44px;
+    bottom: 0;
 }
-	.screen-login > .login-container {
-		height: 50%;
-		position: relative;
-	}
-		.screen-login > .login-container > .login-option {
-			position: absolute;
-			bottom: 0;
-			width: 100%;
-			height: 44px;
-			text-align: center;
-		}
-			.fb-login {
-				height: 44px;
-				color: whitesmoke;
-				background-color: #3B579D;
-				border-radius: 5px;
-			}
-			.fb-login:hover {
-				background-color: #4864B1;
-			}
-				.fb-login > i {
-					font-size: 28px;
-					margin: 8px;
-					float: left;
-				}
-				.fb-login > span {
-					float: left;
-					line-height: 44px;
-					font-size: 16px;
-					font-family: Optima, Corbel, sans-serif;
-					margin-right: 8px;
-				}
+    .screen-login > .login-container {
+        height: 50%;
+        position: relative;
+    }
+        .screen-login > .login-container > .login-option {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 44px;
+            text-align: center;
+        }
+            .fb-login {
+                height: 44px;
+                color: whitesmoke;
+                background-color: #3B579D;
+                border-radius: 5px;
+            }
+            .fb-login:hover {
+                background-color: #4864B1;
+            }
+                .fb-login > i {
+                    font-size: 28px;
+                    margin: 8px;
+                    float: left;
+                }
+                .fb-login > span {
+                    float: left;
+                    line-height: 44px;
+                    font-size: 16px;
+                    font-family: Optima, Corbel, sans-serif;
+                    margin-right: 8px;
+                }

@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <link rel="apple-touch-icon" href="img/logo-60.png">
     <link rel="apple-touch-icon" sizes="120x120" href="img/logo-120.png">
-	<title>RideSqirl</title>
+    <title>RideSqirl</title>
     <link rel="stylesheet" href="css/compass.css" />
     <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKbju-lHWKmxZc9zB1J8LSg8p2dG2HcMQ&v=3.16&sensor=true&libraries=places"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKbju-lHWKmxZc9zB1J8LSg8p2dG2HcMQ&v=3.16&sensor=true&libraries=places"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.2/fastclick.min.js"></script>
     <script type="text/javascript" src="https://ridesqirl.com/socket.io/socket.io.js"></script>
-	<script type="text/javascript" src="js/compass.js"></script>
-    
+    <script type="text/javascript" src="js/compass.js"></script>
+
     <link rel="stylesheet" href="css/pay.css" />
     <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
     <script type="text/javascript" src="js/jquery.payment.js"></script>
     <script type="text/javascript" src="js/pay.js"></script>
-    
+
     <!-- iPhone SPLASHSCREEN-->
     <link href="img/splash/320x460.png" media="(device-width: 320px)" rel="apple-touch-startup-image">
     <!-- iPhone (Retina) SPLASHSCREEN-->
@@ -36,41 +36,41 @@
     <!-- iPad (Retina, landscape) SPLASHSCREEN--
     <link href="img/splash/2048x1496.png" media="(device-width: 1536px) and (orientation: landscape) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image">
     <!-- -->
-    
+
 </head>
 
 <body>
-	<div id="main" class="screen">
-    	<div class="header">
-        	<h1>RideSqirl</h1>
-        	<button class="menu"><i class="fa fa-bars"></i></button>
+    <div id="main" class="screen">
+        <div class="header">
+            <h1>RideSqirl</h1>
+            <button class="menu"><i class="fa fa-bars"></i></button>
         </div>
         <div id="map-canvas"></div>
         <div id="main-footer">
-        	<button class="Change Pick-up" data-address="calculating...">Change Pick-up</button>
-        	<button class="Change Drop-off" data-address="calculating...">Enter Drop-off</button>
+            <button class="Change Pick-up" data-address="calculating...">Change Pick-up</button>
+            <button class="Change Drop-off" data-address="calculating...">Enter Drop-off</button>
             <input class="Pick-up" value="calculating..." readonly />
             <input class="Drop-off" value="calculating..." readonly />
             <button class="clear">&times;</button>
             <button class="collapse"><i class="fa fa-caret-down"></i></button>
-        	<button id="requestRide">Request Ride</button>
+            <button id="requestRide">Request Ride</button>
             <p id="contacting">
-            	<!--
-            	<i class="fa fa-spinner fa-spin"></i>
+                <!--
+                <i class="fa fa-spinner fa-spin"></i>
                 -->
                 <span data-ellipses="...">contacting Sqirls</span>
             </p>
             <button id="cancelRequest">Cancel Request</button>
         </div>
         <div id="driver-footer">
-        	<img class="riderPic" src="img/blank.png" />
-        	<div id="pricing">
-	        	<p id="cost">
-                	<sup class="currency fa fa-usd"></sup>
+            <img class="riderPic" src="img/blank.png" />
+            <div id="pricing">
+                <p id="cost">
+                    <sup class="currency fa fa-usd"></sup>
                     <span data-base="2.50">2.50</span>
                 </p>
-        		<button class="decrease fare"><i class="fa fa-minus"></i></button>
-            	<button class="increase fare"><i class="fa fa-plus"></i></button>
+                <button class="decrease fare"><i class="fa fa-minus"></i></button>
+                <button class="increase fare"><i class="fa fa-plus"></i></button>
             </div>
             <button class="offerRide">Offer Ride</button>
             <div id="riderResponse">
@@ -79,13 +79,13 @@
                 <button class="getDirections">Get Directions</button>
             </div>
         </div>
-        
+
         <div id="ride-offers">
             <div class="rideOffer">
                 <div class="driverPic"></div>
                 <p class="driverTime">11</p>
                 <p class="ridePrice">
-                	<sup class="currency fa fa-usd"></sup>
+                    <sup class="currency fa fa-usd"></sup>
                     <span>2.50</span>
                 </p>
                 <button class="acceptRide">Accept Ride</button>
@@ -95,7 +95,7 @@
                 <div class="driverPic"></div>
                 <p class="driverTime">11</p>
                 <p class="ridePrice">
-                	<sup class="currency fa fa-usd"></sup>
+                    <sup class="currency fa fa-usd"></sup>
                     <span>2.50</span>
                 </p>
                 <button class="acceptRide">Accept Ride</button>
@@ -105,36 +105,36 @@
                 <div class="driverPic"></div>
                 <p class="driverTime">11</p>
                 <p class="ridePrice">
-                	<sup class="currency fa fa-usd"></sup>
+                    <sup class="currency fa fa-usd"></sup>
                     <span>2.50</span>
                 </p>
                 <button class="acceptRide">Accept Ride</button>
                 <p class="driverCar"><span class="carYear">2005</span> <span class="carMake">Mercury</span> <span class="carModel">Montego</span></p>
             </div>
         </div>
-        
+
         <img id="center_icon" src="img/Google Maps Markers/red_MarkerA.png" />
     </div>
-    
+
     <div id="profile" class="screen">
-    	<div class="header">
-        	<h1>RideSqirl</h1>
-        	<button class="menu"><i class="fa fa-bars"></i></button>
+        <div class="header">
+            <h1>RideSqirl</h1>
+            <button class="menu"><i class="fa fa-bars"></i></button>
         </div>
         <div id="profile-container">
-        	<div id="profile-pic">
-        		<img />
+            <div id="profile-pic">
+                <img />
             </div>
             <div id="profile-info">
-            	<p><i class="fa fa-fw fa-user"></i><span>Ben Pedersen</span></p>
-            	<p><i class="fa fa-fw fa-envelope"></i><span>ben@okeebo.com</span></p>
+                <p><i class="fa fa-fw fa-user"></i><span>Ben Pedersen</span></p>
+                <p><i class="fa fa-fw fa-envelope"></i><span>ben@okeebo.com</span></p>
                 <p><i class="fa fa-fw fa-phone"></i><span>712-358-2736</span></p>
                 <p class="clickable"><i class="fa fa-fw fa-car"></i><span>Become a Sqirl</span></p>
                 <p class="clickable" id="profile-logout"><i class="fa fa-fw fa-sign-out"></i><span>Sign out</span></p>
             </div>
         </div>
         <div class="screen-login">
-        	<div class="login-container">
+            <div class="login-container">
                 <div class="login-option">
                     <button class="fb-login needsclick">
                         <i class="fa fa-facebook-square needsclick"></i>
@@ -144,14 +144,14 @@
             </div>
         </div>
     </div>
-    
+
     <div id="payment" class="screen">
-    	<div class="header">
-        	<h1>RideSqirl</h1>
-        	<button class="menu"><i class="fa fa-bars"></i></button>
+        <div class="header">
+            <h1>RideSqirl</h1>
+            <button class="menu"><i class="fa fa-bars"></i></button>
         </div>
         <div class="screen-login">
-        	<div class="login-container">
+            <div class="login-container">
                 <div class="login-option">
                     <button class="fb-login needsclick">
                         <i class="fa fa-facebook-square needsclick"></i>
@@ -161,9 +161,9 @@
             </div>
         </div>
         <div id="payment-info">
-        	<h2>Payment Information</h2>
+            <h2>Payment Information</h2>
             <div id="payment-add-card">
-            	<button>Add a Card</button>
+                <button>Add a Card</button>
             </div>
         </div>
     </div>
@@ -195,16 +195,16 @@
         </form>
         <div class="declinedCard">Card Declined!</div>
     </div>
-    
+
     <div id="sidebar">
-    	<p id="test">Back to Map</p>
+        <p id="test">Back to Map</p>
         <p id="becomeDriver">Active Sqirl</p>
         <p id="showProfile">Profile</p>
         <p id="makePayment">Payment</p>
         <p>FAQ</p>
         <p id="inviteFriends">Invite friends</p>
     </div>
-    
+
 </body>
 
 </html>
