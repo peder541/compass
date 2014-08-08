@@ -4,6 +4,8 @@ var map = false;
 var me = false;
 var drop = false;
 var route = false;
+var pickup = false;
+var dropoff = false;
 var watchID = false;
 var cars = {};
 var driver = false;
@@ -71,8 +73,12 @@ function connect() {
             }
         })
         .on('rideRequested', function(data) {
-            rideRequests.showRequest(data);
-            console.log(data);
+            if (rideRequests.current) {
+                rideRequests.queue.push(data);
+            }
+            else {
+                rideRequests.showRequest(data);
+            }
         })
         .on('rideOffered', function(data) {
             rideOffers.showOffer(data);
@@ -81,6 +87,9 @@ function connect() {
             console.log('Ride accepted', JSON.stringify(data));
             $('#offerAccepted,.getDirections').show();
             $('#waitingForResponse').hide();
+        })
+        .on('rideCanceled', function(data) {
+            rideRequests.cancelRequest(data.rider);
         })
         .on('cardDeclined', function(data) {
             console.log('Card declined:', data.code);
@@ -129,12 +138,16 @@ function connect() {
                 cars[data.id].setMap();
                 delete cars[data.id];
             }
+            else if (driver) {
+                rideRequests.cancelRequest(data.id);
+            }
         });
     }
 }
 
 var rideRequests = {
     showRequest: function(data) {
+        if (!data) return false;
         function drawSpot(endpoint) {
             if (window[endpoint]) window[endpoint].setMap();
             var markerOptions = {
@@ -150,6 +163,9 @@ var rideRequests = {
         $(window).resize();
         drawSpot('pickup');
         drawSpot('dropoff');
+        this.current = data;
+        
+        $('#driver-footer').find('*').css('display','');
 
         getProfileImage(data, function(src) {
             $('#driver-footer').css('bottom','-120px').show().animate({'bottom':'0'}, {
@@ -195,17 +211,52 @@ var rideRequests = {
             }
         });
     },
-    hideRequest: function() {
+    cancelRequest: function(rider, rider_received_three_offers) {
+        if (this.current && this.current.rider == rider) {
+            if (!rider_received_three_offers) {
+                var data = this.queue.shift();
+                this.current = false;
+                this.hideRequest(function() {
+                    rideRequests.showRequest(data);
+                });
+            }
+        }
+        else {
+            for (var i=0; i<this.queue.length; ++i) {
+                if (this.queue[i].rider == rider) {
+                    this.queue.splice(i,1);
+                    return;
+                }
+            }
+        }
+    },
+    hideRequest: function(callback) {
         $('#driver-footer').animate({'bottom':'-120px'}, {
             progress: function() {
                 $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);	
             },
             complete: function() {
                 $('#driver-footer').hide();
+                if (typeof callback === 'function') callback();
             }
         });
+        if (route) {
+            route.setMap();
+            route = false;
+        }
+        if (dropoff) {
+            dropoff.setMap();
+            dropoff = false;
+        }
+        if (pickup) {
+            pickup.setMap();
+            pickup = false;
+        }
+        if (window.info) for (var i=0, l=info.length; i<l; ++i) info[i].setMap();
+        info = [];
     },
-    queue: []
+    queue: [],
+    current: false
 };
 
 function draw(index, latitude, longitude, accuracy) {
@@ -603,8 +654,10 @@ function getDriverTime() {
     });
 }
 function deactivateRide() {
-    deactiveCar(rideOffers.driverID);
-    delete rideOffers.driverID;
+    if (rideOffers.driverID) {
+        deactiveCar(rideOffers.driverID);
+        delete rideOffers.driverID;
+    }
     pickupTimer = false;
     $('#contacting span').html('contacting Sqirls').attr('data-ellipses','...');
 }
@@ -705,6 +758,7 @@ $(document).ready(function() {
             $('#main-footer').children('.Change,#requestRide').show();
             $('#cancelRequest,#contacting,.rideOffer,#ride-offers').hide();
             socket.emit('cancelRide');
+            deactivateRide();
         }
     })
     .on('click', '.collapse', function(event) {
