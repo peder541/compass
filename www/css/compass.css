@@ -254,6 +254,42 @@ input, input:focus {
 .currency.usd:before {
 	content: '$';
 }
+#driver-footer #riderResponse {
+    position: absolute;
+	top: 8.33%;
+    left: calc(10% + 100px);
+    bottom: 8.33%;  
+	right: 5%;
+    display: none;
+    font-family: Optima, Corbel, sans-serif;
+    color: whitesmoke;
+}
+#riderResponse #waitingForResponse {
+    line-height: 100px;
+    text-align: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+#riderResponse #offerAccepted {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 44px;
+    width: 100%;
+    line-height: 44px;
+    text-align: center;
+    display: none;
+}
+#riderResponse .getDirections {
+    position: absolute;
+    bottom: 0;
+    height: 44px;
+    width: 100%;
+    left: 0;
+    display: none;
+}
 #driver-footer .offerRide {
 	width: 175px;
 	height: 44px;
@@ -353,7 +389,7 @@ input, input:focus {
 }
 .header > h1 {
 	font-size: 28px;
-	font-family: Candara;
+	font-family: Optima, Candara, sans-serif;
 	text-align: center;
 	width: 100%;
 	position: absolute;
@@ -508,7 +544,7 @@ input, input:focus {
 		margin-top: 10px;
 		margin-left: 44px;
 		color: whitesmoke;
-		font-family: Corbel;
+		font-family: Optima, Corbel, sans-serif;
 		line-height: 44px;
 	}
 		#profile > #profile-container > #profile-info > .clickable {

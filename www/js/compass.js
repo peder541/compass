@@ -27,8 +27,8 @@ var geo = {
 			draw(0, crds.latitude, crds.longitude, crds.accuracy);
 		}
 		else {
-			geo.latitude = crds.latitude,
-			geo.longitude = crds.longitude
+			geo.latitude = crds.latitude;
+			geo.longitude = crds.longitude;
 		}
 		connect();
 	},
@@ -70,68 +70,15 @@ function connect() {
 			}
 		})
 		.on('rideRequested', function(data) {
-			function drawSpot(endpoint) {
-				if (window[endpoint]) window[endpoint].setMap();
-				var markerOptions = {
-					clickable: false,
-					map: map,
-					icon: 'img/Google Maps Markers/' + (endpoint == 'pickup' ? 'blue_MarkerB' : 'green_MarkerC') + '.png',
-					optimized: false,
-					position: new google.maps.LatLng(data[endpoint][0], data[endpoint][1])
-				};
-				var obj = new google.maps.Marker(markerOptions);
-				window[endpoint] = obj;
-			}
-			$(window).resize();
-			drawSpot('pickup');
-			drawSpot('dropoff');
-			
-			getProfileImage(data, function(src) {
-				$('#driver-footer').css('bottom','-120px').show().animate({'bottom':'0'}, {
-					progress: function() {
-						$('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);	
-					}
-				});
-				$('.riderPic').attr('src', src);
-			});
-			
-			var destination = dropoff.getPosition();
-			var waypoints = [{location: pickup.getPosition()}];
-			getRoute(destination, waypoints, 0, data.traffic);
-			$('.offerRide').off('click').one('click', function(event) {
-				var d = {
-					rider: data.rider,
-					price: $('#cost span').html(),
-					time: $('#cost span').attr('data-time')	
-				}
-				socket.emit('offerRide',d);
-				$('#driver-footer').animate({'bottom':'-120px'}, {
-					progress: function() {
-						$('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);	
-					},
-					complete: function() {
-						$('#driver-footer').hide();
-					}
-				});
-			});
-			$('#map-canvas').css('height',window.innerHeight - 44);
-			
-			// Realtime routing violates Google's Terms of Service. Link to actual navigation apps instead.
-			// "geo://" , "waze://" , "comgooglemaps-x-callback://"
-			/*
-			if (!realtimeRoutesListener) realtimeRoutesListener = realtimeRoutes(destination, waypoints);
-			stopDrive = function() {
-				google.maps.event.removeListener(realtimeRoutesListener);
-				realtimeRoutesListener = false;
-				delete stopDrive;	
-			}
-			/**/
+			rideRequests.showRequest(data);
 		})
 		.on('rideOffered', function(data) {
 			rideOffers.showOffer(data);
 		})
 		.on('rideAccepted', function(data) {
 			console.log('Ride accepted', JSON.stringify(data));
+            $('#offerAccepted,.getDirections').show();
+            $('#waitingForResponse').hide();
 		})
 		.on('cardDeclined', function(data) {
 			console.log('Card declined:', data.code);
@@ -183,6 +130,82 @@ function connect() {
 		});
 	}
 }
+
+var rideRequests = {
+    showRequest: function(data) {
+        function drawSpot(endpoint) {
+            if (window[endpoint]) window[endpoint].setMap();
+            var markerOptions = {
+                clickable: false,
+                map: map,
+                icon: 'img/Google Maps Markers/' + (endpoint == 'pickup' ? 'blue_MarkerB' : 'green_MarkerC') + '.png',
+                optimized: false,
+                position: new google.maps.LatLng(data[endpoint][0], data[endpoint][1])
+            };
+            var obj = new google.maps.Marker(markerOptions);
+            window[endpoint] = obj;
+        }
+        $(window).resize();
+        drawSpot('pickup');
+        drawSpot('dropoff');
+
+        getProfileImage(data, function(src) {
+            $('#driver-footer').css('bottom','-120px').show().animate({'bottom':'0'}, {
+                progress: function() {
+                    $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);	
+                }
+            });
+            $('.riderPic').attr('src', src);
+        });
+
+        var destination = dropoff.getPosition();
+        var waypoints = [{location: pickup.getPosition()}];
+        getRoute(destination, waypoints, 0, data.traffic);
+        $('.offerRide').off('click').one('click', function(event) {
+            var d = {
+                rider: data.rider,
+                price: $('#cost span').html(),
+                time: $('#cost span').attr('data-time')	
+            }
+            socket.emit('offerRide',d);
+            $('#riderResponse').show();
+            $('#pricing,.offerRide').hide();
+        });
+        $('#map-canvas').css('height',window.innerHeight - 44);
+
+        // Link to navigation apps.
+        $('.getDirections').off('click').on('click', function(event) {
+            var url = {
+                apple: 'http://maps.apple.com/',
+                google_ios: 'comgooglemaps-x-callback://',
+                google_droid: 'https://maps.google.com/maps',
+                waze: 'waze://'
+            };
+            for (var i in url) {
+                url[i] += '?saddr=' + me.getPosition().lat() + ',' + me.getPosition().lng()
+                url[i] += '&daddr=' + data.pickup[0] + ',' + data.pickup[1];
+            }
+            if (window.navigator && window.navigator.standalone) {
+                window.open(url.apple, '', null);
+            }
+            else {
+                window.open(url.google_droid, '', null);
+            }
+        });
+    },
+    hideRequest: function() {
+        $('#driver-footer').animate({'bottom':'-120px'}, {
+            progress: function() {
+                $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);	
+            },
+            complete: function() {
+                $('#driver-footer').hide();
+            }
+        });
+    },
+    queue: []
+};
+
 function draw(index, latitude, longitude, accuracy) {
 	var spot = new google.maps.LatLng(latitude, longitude);
 	if (!map) {
