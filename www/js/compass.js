@@ -55,6 +55,7 @@ function connect() {
 				draw(id, data[id][0], data[id][1]);
 			}
 			$(window).trigger('loginFB');
+            if (driver) activateDriver();
 		})
 		.on('update', function(data) {
 			draw(data.id, data.coordinates[0], data.coordinates[1]);
@@ -71,6 +72,7 @@ function connect() {
 		})
 		.on('rideRequested', function(data) {
 			rideRequests.showRequest(data);
+            console.log(data);
 		})
 		.on('rideOffered', function(data) {
 			rideOffers.showOffer(data);
@@ -738,7 +740,8 @@ $(document).ready(function() {
 		changeScreen('main');
 	})
 	.on('click', '#becomeDriver', function(event) {
-		becomeDriver();
+        if (driver) hibernateDriver();
+		else activateDriver();
 	})
 	.on('click', '#inviteFriends', function(event) {
 		/* FB */
@@ -920,26 +923,45 @@ function trueCenterIcon(obj) {
 	}
 }
 
-function becomeDriver() {
-	driver = true;
-	if (window.confirmPosition) confirmPosition();
-	if (drop) {
-		drop.setMap();
-		drop = false;
-	}
-	geo.active = true;
-	$('#main-footer').animate({'bottom': '-120px'}, { 
-		progress: function() { 
-			$('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#main-footer').css('bottom'),10) - 120);
-		},
-		complete: function() {
-			$('#main-footer').hide();	
-		}
-	});
-	//$('#driver-footer').show();
-	socket.emit('becomeDriver');
-	emitPositionUpdates();
-	google.maps.event.trigger(me, 'position_changed');
+function hibernateDriver() {
+    driver = false;
+    rideRequests.hideRequest();
+    rideRequests.queue = [];
+    $('#main-footer').css('bottom','-120px').show().animate({'bottom': '0px'}, { 
+        progress: function() { 
+            $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#main-footer').css('bottom'),10) - 120);
+        },
+        complete: function() {
+            $('#main-footer').css('bottom','');	
+        }
+    });
+    editPosition();
+    google.maps.event.removeListener(drivingListener);
+    drivingListener = false;
+    socket.emit('hibernateDriver');
+    $('#becomeDriver').html('Active Sqirl');
+}
+function activateDriver() {
+    driver = true;
+    if (window.confirmPosition) confirmPosition();
+    if (drop) {
+        drop.setMap();
+        drop = false;
+    }
+    geo.active = true;
+    $('#main-footer').filter(':visible').animate({'bottom': '-120px'}, { 
+        progress: function() { 
+            $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#main-footer').css('bottom'),10) - 120);
+        },
+        complete: function() {
+            $('#main-footer').hide();	
+        }
+    });
+    //$('#driver-footer').show();
+    socket.emit('activateDriver');
+    emitPositionUpdates();
+    google.maps.event.trigger(me, 'position_changed');
+    $('#becomeDriver').html('Hibernate Sqirl');
 }
 function emitPositionUpdates(obj) {
 	if (!obj) obj = me;
