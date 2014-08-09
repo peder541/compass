@@ -211,15 +211,13 @@ var rideRequests = {
             }
         });
     },
-    cancelRequest: function(rider, rider_received_three_offers) {
+    cancelRequest: function(rider) {
         if (this.current && this.current.rider == rider) {
-            if (!rider_received_three_offers) {
-                var data = this.queue.shift();
-                this.current = false;
-                this.hideRequest(function() {
-                    rideRequests.showRequest(data);
-                });
-            }
+            var data = this.queue.shift();
+            this.current = false;
+            this.hideRequest(function() {
+                rideRequests.showRequest(data);
+            });
         }
         else {
             for (var i=0; i<this.queue.length; ++i) {
