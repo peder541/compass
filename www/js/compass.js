@@ -56,7 +56,13 @@ function connect() {
             for (var id in data) {
                 draw(id, data[id][0], data[id][1]);
             }
-            $(window).trigger('loginFB');
+            if (window.facebookConnectPlugin) {
+                facebookConnectPlugin.getAccessToken(function(token) {
+                    socket.emit('login', token);
+                }, function() {
+                    console.log("Couldn't get token");
+                });
+            }
             if (driver) activateDriver();
         })
         .on('update', function(data) {
@@ -166,6 +172,7 @@ var rideRequests = {
         this.current = data;
         
         $('#driver-footer').find('*').css('display','');
+        console.log(data.traffic);
 
         getProfileImage(data, function(src) {
             $('#driver-footer').css('bottom','-120px').show().animate({'bottom':'0'}, {
@@ -204,7 +211,9 @@ var rideRequests = {
                 url[i] += '&daddr=' + data.pickup[0] + ',' + data.pickup[1];
             }
             if (window.navigator && window.navigator.standalone) {
+                window.open('http://okeebo.com/','',null);
                 window.open(url.apple, '', null);
+                window.open(url.google_ios, '', null);
             }
             else {
                 window.open(url.google_droid, '', null);
@@ -250,7 +259,9 @@ var rideRequests = {
             pickup.setMap();
             pickup = false;
         }
-        if (window.info) for (var i=0, l=info.length; i<l; ++i) info[i].setMap();
+        if (window.info) for (var i=0, l=info.length; i<l; ++i) {
+            if (info[i]) info[i].setMap();
+        }
         info = [];
     },
     queue: [],
@@ -481,7 +492,9 @@ function midPoints(directions, traffic) {
     var legs = directions.routes[0].legs;
     if (legs.length == 1) return false;
     traffic = traffic || 1;
-    if (window.info) for (var i=0, l=info.length; i<l; ++i) info[i].setMap();
+    if (window.info) for (var i=0, l=info.length; i<l; ++i) {
+        if (info[i]) info[i].setMap();
+    }
     info = [];
     for (var i=0, l=legs.length; i<l; ++i) {
         var midpoint = legs[i].distance.value*0.5;
@@ -526,22 +539,15 @@ function midPoints(directions, traffic) {
 }
 
 function makePayment(price) {
-    /*
-    $('body').append('<iframe src="pay.html" id="pay"></iframe>');
-    $('#credit-card-info').on('load', function(event) {
-        */
-        if (FB && FB.getUserID()) {
-            if ($('.payment-cc').length > 0) {
-                if (confirm('This trip will cost $' + price)) rideOffers.acceptOffer();
-            }
+    if ($('.payment-cc').length > 0) {
+        if (confirm('This trip will cost $' + price)) rideOffers.acceptOffer();
+    }
+    else {
+        if (price) {
+            $('#credit-card-info').find('button[type="submit"]').attr('data-price',price).attr('class','single-use');
         }
-        else {
-            if (price) {
-                $('#credit-card-info').find('button[type="submit"]').attr('data-price',price).attr('class','single-use');
-            }
-            $('#credit-card').fadeIn();
-        }
-//	});
+        $('#credit-card').fadeIn();
+    }
 }
 
 function ellipses($element) {
@@ -806,14 +812,18 @@ $(document).ready(function() {
             window.open(url, '', null); 
         }
         else {
-            FB.ui({
+            facebookConnectPlugin.showDialog({
                 method: 'share',
                 href: 'https://ridesqirl.com'
+            }, function(response) {
+                console.log(response);
+            }, function(error) {
+                console.log(error);
             });
         }
         /**/
         /* Twitter
-        // Properly want to load the twitter js (https://platform.twitter.com/widgets.js)
+        // Probably want to load the twitter js (https://platform.twitter.com/widgets.js)
         var url = 'https://twitter.com/intent/tweet';
         url += '?text=Get a free ride with RideSqirl:';
         url += '&url=https://ridesqirl.com';
@@ -900,21 +910,23 @@ $(document).ready(function() {
     // Trigger resize event to give everything the correct placement.
     $(window).resize();
 
-    $.ajaxSetup({ cache: true });
-    $.getScript('https://connect.facebook.net/en_US/sdk.js', function(){
-        FB.init({
-            appId: '667802789972584',
-            version: 'v2.0'
-        });
-        FB.getLoginStatus(function() {
-            $(window).one('loginFB', function() {
+    // Phonegap
+    if (window.cordova) {
+        document.addEventListener('deviceready', profile.populate);
+    }
+    // Web
+    else {
+        $.ajaxSetup({ cache: true });
+        $.getScript('https://connect.facebook.net/en_US/sdk.js', function(){
+            FB.init({
+                appId: '667802789972584',
+                version: 'v2.0'
+            });
+            FB.getLoginStatus(function() {
                 profile.populate();
             });
-            if (window.io && window.socket) {
-                $(window).trigger('loginFB');
-            }
         });
-    });
+    }
 
     if (window.navigator && window.navigator.standalone) {
         changeScreen(window.localStorage.getItem('screen') || 'main', true);
@@ -923,7 +935,7 @@ $(document).ready(function() {
 
 var profile = {
     login: function() {
-        if (window.FB) {
+        if (window.facebookConnectPlugin) {
             if (window.navigator && window.navigator.standalone) {
                 var url = 'https://www.facebook.com/dialog/oauth';
                 url += '?client_id=667802789972584';
@@ -932,31 +944,36 @@ var profile = {
                 window.open(url, '', null);
             }
             else {
-                FB.login(profile.populate, { scope: 'public_profile,email' });
+                facebookConnectPlugin.login(['public_profile','email'], profile.populate, function(error) { alert(error); });
             }
         }
     },
     populate: function() {
-        if (window.FB) {
-            var access_token = FB.getAccessToken();
-            if (access_token) {
-                FB.api('/me', function(response) {
+        if (window.facebookConnectPlugin) {
+            facebookConnectPlugin.getAccessToken(function(token) {
+                facebookConnectPlugin.api('/me', [], function(response) {
                     $('.fa-user').next().html(response.name);
                     $('.fa-envelope').next().html(response.email);
                     $('#profile-pic img').attr('src', 'https://graph.facebook.com/' + response.id + '/picture?type=large');
                     $('.screen-login').hide();
                     $('#profile-container,#payment-info').show();
+                }, function(error) {
+                    console.log(error);
                 });
-                socket.emit('login', access_token);
-            }
+                if (window.io && window.socket) socket.emit('login', token);
+            }, function(error) {
+                console.log(error);
+            });
         }
     },
     logout: function() {
-        if (window.FB) {
-            FB.logout(function(response) {
+        if (window.facebookConnectPlugin) {
+            facebookConnectPlugin.logout(function(response) {
                 $('.screen-login').show();
                 $('#profile-container,#credit-card-info').hide();
                 socket.emit('logout');
+            }, function(error) {
+                console.log(error);
             });
         }
     }
