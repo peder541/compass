@@ -397,7 +397,7 @@ input, input:focus {
     top: 0;
     line-height: 44px;
 }
-.menu {
+.menu, .call {
     font-size: 28px;
     height: 44px;
     width: 44px;
@@ -408,11 +408,15 @@ input, input:focus {
     left: 0;
     top: 0;
 }
-.menu.hover {
+.menu.hover, .call.hover {
     background-color: #20CFF0;	
 }
-.menu.active {
+.menu.active, .call.active {
     background-color: #2FDDFF;
+}
+.call {
+    left: auto;
+    right: 0;
 }
 
 #sidebar {

@@ -59,8 +59,8 @@ function connect() {
             if (window.facebookConnectPlugin) {
                 facebookConnectPlugin.getAccessToken(function(token) {
                     socket.emit('login', token);
-                }, function() {
-                    console.log("Couldn't get token");
+                }, function(error) {
+                    console.log("Couldn't get token: " + error);
                 });
             }
             if (driver) activateDriver();
@@ -137,6 +137,14 @@ function connect() {
                     class: 'payment-cc ' + brand + (data[i].default_card ? ' checked' : ''), 
                     text: data[i].last4
                 }));
+            }
+        })
+        .on('TwilioToken', function(token) {
+            try {
+                Twilio.Device.setup(token);
+            }
+            catch(e) {
+                console.log('Twilio is not active.');
             }
         })
         .on('leave', function(data) {
@@ -845,6 +853,9 @@ $(document).ready(function() {
     .on('click', '#payment-add-card button', function(event) {
         $('#credit-card').fadeIn();
     })
+    .on('click', '.call', function(event) {
+        Twilio.Device.connect();
+    })
     .on('keydown', function(event) {
         // Esc
         if (event.which == 27) small_input();
@@ -912,7 +923,10 @@ $(document).ready(function() {
 
     // Phonegap
     if (window.cordova) {
-        document.addEventListener('deviceready', profile.populate);
+        document.addEventListener('deviceready', function() {
+            profile.populate();
+            TwilioHandlers();
+        });
     }
     // Web
     else {
@@ -926,12 +940,39 @@ $(document).ready(function() {
                 profile.populate();
             });
         });
+        $.getScript('https://static.twilio.com/libs/twiliojs/1.2/twilio.min.js', TwilioHandlers);
     }
 
     if (window.navigator && window.navigator.standalone) {
         changeScreen(window.localStorage.getItem('screen') || 'main', true);
     }
 });
+
+function TwilioHandlers() {
+    Twilio.Device.ready(function() {
+        $('.header').append('<button class="call"><i class="fa fa-phone"></i></button>');
+    });
+    Twilio.Device.error(function() {
+        $('.call').remove();
+    });
+    Twilio.Device.offline(function() {
+        $('.call').remove();
+    });
+    Twilio.Device.incoming(function (conn) {
+        if (confirm('Do you want to take this call?')) {
+            conn.accept();
+        }
+        else {
+            conn.reject();
+        }
+    });
+    Twilio.Device.connect(function (conn) {
+        setTimeout(function() {
+            console.log('Key press to continue after demo message.');
+            conn.sendDigits('0');
+        }, 10000);
+    });
+}
 
 var profile = {
     login: function() {
