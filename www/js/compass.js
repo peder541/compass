@@ -980,11 +980,35 @@ function TwilioHandlers() {
         $('.call').remove();
     });
     Twilio.Device.incoming(function (conn) {
-        if (confirm('Do you want to take this call?')) {
-            conn.accept();
+        if (window.cordova) {
+            window.plugin.notification.local.add({
+                message: 'Incoming call...',
+                date: new Date(),
+                autoCancel: true
+            });
+            function answerCallback(buttonIndex) {
+                if (buttonIndex == 1) {
+                    conn.reject();
+                }
+                else if (buttonIndex == 2) {
+                    conn.accept();
+                    function hangupCallback(bIndex) {
+                        if (bIndex == 1) {
+                            Twilio.Device.disconnectAll();
+                        }
+                    }
+                    navigator.notification.confirm(null, hangupCallback, 'Call in Progress', ['Hangup']);
+                }
+            }
+            navigator.notification.confirm(null, answerCallback, 'Incoming call...', ['Ignore','Answer']);
         }
         else {
-            conn.reject();
+            if (confirm('Do you want to take this call?')) {
+                conn.accept();
+            }
+            else {
+                conn.reject();
+            }
         }
     });
     Twilio.Device.connect(function (conn) {
