@@ -205,6 +205,8 @@ input, input:focus {
     position: absolute;
     bottom: 50%;
     left: 50%;
+    width: 20px;
+    height: 34px;
     display: none;
     pointer-events: none;	
 }

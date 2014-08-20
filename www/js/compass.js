@@ -70,7 +70,11 @@ function connect() {
             // Say how much long it will take the driver to arrive at the rider's pickup location
             if (data.id == rideOffers.driverID && pickupTimer) {
                 if (getDistance(me.getPosition(), cars[data.id].getPosition()) < 50) {
-                    $('#contacting span').html('Sqirl has arrived').attr('data-ellipses','.');	
+                    $('#contacting span').html('Sqirl has arrived').attr('data-ellipses','.');
+                    console.log('Arrival: socket');
+                    if (window.plugin && window.plugin.notification && window.plugin.notification.local) {
+                        window.plugin.notification.local.add({date: new Date(), message: 'Sqirl has arrived', autoCancel: true});
+                    }
                     pickupTimer = false;
                 }
                 else if ((new Date()).getTime() > pickupTimer + 10000) {
@@ -167,7 +171,9 @@ var rideRequests = {
             var markerOptions = {
                 clickable: false,
                 map: map,
-                icon: 'img/Google Maps Markers/' + (endpoint == 'pickup' ? 'blue_MarkerB' : 'green_MarkerC') + '.png',
+                icon: {
+                    url: 'img/Google Maps Markers/' + (endpoint == 'pickup' ? 'blue_MarkerB' : 'green_MarkerC') + '.png'
+                },
                 optimized: false,
                 position: new google.maps.LatLng(data[endpoint][0], data[endpoint][1])
             };
@@ -306,7 +312,10 @@ function draw(index, latitude, longitude, accuracy) {
             var markerOptions = {
                 clickable: false,
                 map: map,
-                icon: 'img/Google Maps Markers/red_MarkerA.png',
+                icon: {
+                    url: 'img/Google Maps Markers/red_MarkerA.png',
+                    scaledSize: new google.maps.Size(20,34)
+                },
                 optimized: false,
                 position: map.center
             };
@@ -319,7 +328,9 @@ function draw(index, latitude, longitude, accuracy) {
             var markerOptions = {
                 clickable: false,
                 map: map,
-                icon: 'img/Google Maps Markers/black_Marker.png',
+                icon: {
+                    url: 'img/Google Maps Markers/black_Marker.png'
+                },
                 optimized: false,
                 position: map.center
             };
@@ -347,17 +358,20 @@ function editPosition(setDrop) {
             var markerOptions = {
                 clickable: false,
                 map: map,
-                icon: 'img/Google Maps Markers/blue_MarkerB.png',
+                icon: {
+                    url: 'img/Google Maps Markers/blue_MarkerB.png',
+                    scaledSize: new google.maps.Size(20,34)
+                },
                 optimized: false,
                 position: map.center
             };
             drop = new google.maps.Marker(markerOptions);
             $('.Change.Drop-off').html('Change Drop-off');
-        }
+        };
         obj = drop;
     }
     map.panTo(obj.getPosition());
-    $('#center_icon').attr('src', obj.getIcon());
+    $('#center_icon').attr('src', obj.getIcon().url);
     $('#map-canvas').one('mousedown', function() {
         trueCenterIcon(obj);	
     });
@@ -519,7 +533,9 @@ function midPoints(directions, traffic) {
                     var markerOptions = {
                         map: map,
                         position: position,
-                        icon: 'https://ridesqirl.com/svg?text=' + Math.ceil(time/60 * legTraffic)
+                        icon: {
+                            url: 'https://ridesqirl.com/svg?text=' + Math.ceil(time/60 * legTraffic)
+                        }
                     };
                     return new google.maps.Marker(markerOptions);
                 }
@@ -654,7 +670,12 @@ function getDriverTime() {
         if (status == google.maps.DirectionsStatus.OK) {
             var leg = directions.routes[0].legs[0];
             if (leg.distance.value < 50) {
-                $('#contacting span').html('Sqirl has arrived').attr('data-ellipses','.');	
+                // This may be unnecessary since the socket check might always cover this case
+                $('#contacting span').html('Sqirl has arrived').attr('data-ellipses','.');
+                console.log('Arrival: google query');
+                if (window.plugin && window.plugin.notification && window.plugin.notification.local) {
+                    window.plugin.notification.local.add({date: new Date(), message: 'Sqirl has arrived', autoCancel: true});
+                }
                 pickupTimer = false;
             }
             else {
@@ -854,7 +875,7 @@ $(document).ready(function() {
         $('#credit-card').fadeIn();
     })
     .on('click', '.call', function(event) {
-        Twilio.Device.connect();
+        Twilio.Device.connect({});
     })
     .on('keydown', function(event) {
         // Esc
@@ -1028,7 +1049,7 @@ function trueCenterIcon(obj) {
         'left': $map.width()*0.5 - $center.width()*0.5
     }).show();
     if (obj) {
-        $center.attr('src', obj.getIcon());
+        $center.attr('src', obj.getIcon().url);
         obj.setVisible(false);
     }
 }
