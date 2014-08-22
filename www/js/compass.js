@@ -277,6 +277,7 @@ var rideRequests = {
             if (info[i]) info[i].setMap();
         }
         info = [];
+        Twilio.Device.setup(0);
     },
     queue: [],
     current: false
@@ -798,6 +799,7 @@ $(document).ready(function() {
             socket.emit('cancelRide');
             deactivateRide();
         }
+        Twilio.Device.setup(0);
     })
     .on('click', '.collapse', function(event) {
         small_input();
@@ -836,7 +838,23 @@ $(document).ready(function() {
         else activateDriver();
     })
     .on('click', '#inviteFriends', function(event) {
-        /* FB */
+        changeScreen('invite');
+        /**/
+        /* Twitter *
+        // Probably want to load the twitter js (https://platform.twitter.com/widgets.js)
+        var url = 'https://twitter.com/intent/tweet';
+        url += '?text=Get a free ride with RideSqirl:';
+        url += '&url=https://ridesqirl.com';
+        window.open(url, '', null);
+        /**/
+    })
+    .on('click', '#showProfile', function(event) {
+        changeScreen('profile');
+    })
+    .on('click', '.fb-login', function(event) {
+        profile.login();
+    })
+    .on('click', '.fb-invite', function(event) {
         if (window.navigator && window.navigator.standalone) {
             var url = 'https://www.facebook.com/dialog/share';
             url += '?app_id=667802789972584';
@@ -855,20 +873,12 @@ $(document).ready(function() {
                 console.log(error);
             });
         }
-        /**/
-        /* Twitter
-        // Probably want to load the twitter js (https://platform.twitter.com/widgets.js)
+    })
+    .on('click', '.twitter-invite', function(event) {
         var url = 'https://twitter.com/intent/tweet';
         url += '?text=Get a free ride with RideSqirl:';
         url += '&url=https://ridesqirl.com';
-        window.open(url, '', null);
-        /**/
-    })
-    .on('click', '#showProfile', function(event) {
-        changeScreen('profile');
-    })
-    .on('click', '.fb-login', function(event) {
-        profile.login();
+        window.open(url, '', 'location=no,width=550,height=420');
     })
     .on('click', '#profile-logout', function(event) {
         profile.logout();

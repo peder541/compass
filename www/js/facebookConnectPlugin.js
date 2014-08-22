@@ -58,6 +58,7 @@ if (!window.cordova) {
                         options.description
                     ),
                     link: options.link,
+                    href: options.href,
                     picture: options.picture
                 },
                 function (response) {
