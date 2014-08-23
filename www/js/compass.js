@@ -137,11 +137,20 @@ function connect() {
                 else {
                     brand = brand.toLowerCase().replace(/\s/g,'');
                 }
-                $('#payment-info #payment-add-card').before($('<p />', {
-                    class: 'payment-cc ' + brand + (data[i].default_card ? ' checked' : ''), 
-                    text: data[i].last4
-                }));
+                if ($('.payment-cc[data-id="' + data[i].id + '"]').length == 0) {
+                    $('#payment-info #payment-add-card').before($('<p />', {
+                        'data-id': data[i].id,
+                        class: 'payment-cc ' + brand + (data[i].default_card ? ' checked' : ''), 
+                        text: data[i].last4
+                    }));
+                }
             }
+        })
+        .on('defaultCard', function(data) {
+            var $cards = $('.payment-cc');
+            var $defaultCard = $cards.filter('[data-id="' + data + '"]');
+            $cards.not($defaultCard).removeClass('checked');
+            $defaultCard.addClass('checked');
         })
         .on('TwilioToken', function(token) {
             try {
@@ -199,6 +208,8 @@ var rideRequests = {
 
         var destination = dropoff.getPosition();
         var waypoints = [{location: pickup.getPosition()}];
+        $('#map-canvas').css('height',window.innerHeight - 164);
+        google.maps.event.trigger(map, 'resize');
         getRoute(destination, waypoints, 0, data.traffic);
         $('.offerRide').off('click').one('click', function(event) {
             var d = {
@@ -277,7 +288,7 @@ var rideRequests = {
             if (info[i]) info[i].setMap();
         }
         info = [];
-        Twilio.Device.setup(0);
+        $('.call').remove();
     },
     queue: [],
     current: false
@@ -799,7 +810,7 @@ $(document).ready(function() {
             socket.emit('cancelRide');
             deactivateRide();
         }
-        Twilio.Device.setup(0);
+        $('.call').remove();
     })
     .on('click', '.collapse', function(event) {
         small_input();
@@ -859,14 +870,14 @@ $(document).ready(function() {
             var url = 'https://www.facebook.com/dialog/share';
             url += '?app_id=667802789972584';
             url += '&display=popup';
-            url += '&href=https://ridesqirl.com';
+            url += '&href=' + $('#invite-link').val();
             url += '&redirect_uri=' + document.location.href;
             window.open(url, '', null); 
         }
         else {
             facebookConnectPlugin.showDialog({
                 method: 'share',
-                href: 'https://ridesqirl.com'
+                href: $('#invite-link').val()
             }, function(response) {
                 console.log(response);
             }, function(error) {
@@ -877,8 +888,21 @@ $(document).ready(function() {
     .on('click', '.twitter-invite', function(event) {
         var url = 'https://twitter.com/intent/tweet';
         url += '?text=Get a free ride with RideSqirl:';
-        url += '&url=https://ridesqirl.com';
-        window.open(url, '', 'location=no,width=550,height=420');
+        url += '&url=' + $('#invite-link').val();
+        var top = 0;
+        var left = 0;
+        if (screen.height > 420) {
+            top = Math.round((screen.height - 420) / 2);
+        }
+        if (screen.width > 550) {
+            left = Math.round((screen.width - 550) / 2);
+        }
+        var ref = window.open(url, '_blank', 'location=no,width=550,height=420,top=' + top + ',left=' + left + ',closebuttoncaption=Cancel');
+        ref.addEventListener('loadstart', function(event) {
+            if (event.url.split('?')[0] == 'https://twitter.com/intent/tweet/complete') {
+                ref.close();
+            }
+        });
     })
     .on('click', '#profile-logout', function(event) {
         profile.logout();
@@ -888,6 +912,11 @@ $(document).ready(function() {
     })
     .on('click', '#payment-add-card button', function(event) {
         $('#credit-card').fadeIn();
+    })
+    .on('click', '.payment-cc', function(event) {
+        if (window.io && window.socket) {
+            socket.emit('defaultCard', $(this).attr('data-id'));
+        }
     })
     .on('click', '.call', function(event) {
         Twilio.Device.connect({});
@@ -952,6 +981,11 @@ $(document).ready(function() {
 
     $('.menu').on('click', function(event) {
         toggleMenu();
+    });
+    
+    $('#invite-link').on('blur', function(event) {
+        var $this = $(this);
+        $this.val($this.attr('data-url'));
     });
 
     // Trigger resize event to give everything the correct placement.
@@ -1071,7 +1105,8 @@ var profile = {
         if (window.facebookConnectPlugin) {
             facebookConnectPlugin.logout(function(response) {
                 $('.screen-login').show();
-                $('#profile-container,#credit-card-info').hide();
+                $('#profile-container,#payment-info').hide();
+                $('.payment-cc').remove();
                 socket.emit('logout');
             }, function(error) {
                 console.log(error);
@@ -1127,7 +1162,6 @@ function activateDriver() {
         },
         complete: function() {
             $('#main-footer').hide();
-            google.maps.event.trigger(map, 'resize');
         }
     });
     //$('#driver-footer').show();
