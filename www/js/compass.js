@@ -236,9 +236,10 @@ var rideRequests = {
                 url[i] += '&daddr=' + data.pickup[0] + ',' + data.pickup[1];
             }
             if (window.navigator && window.navigator.standalone) {
-                window.open('http://okeebo.com/','',null);
                 window.open(url.apple, '', null);
-                window.open(url.google_ios, '', null);
+            }
+            else if (window.cordova) {
+                window.open(url.apple, '_system', null);
             }
             else {
                 window.open(url.google_droid, '', null);
@@ -708,10 +709,14 @@ function deactivateRide() {
 }
 
 function activeCar(driverID) {
-    cars[driverID].setIcon('img/Google Maps Markers/active_Marker.png');
+    if (cars[driverID]) {
+        cars[driverID].setIcon('img/Google Maps Markers/active_Marker.png');
+    }
 }
 function deactiveCar(driverID) {
-    cars[driverID].setIcon('img/Google Maps Markers/black_Marker.png');
+    if (cars[driverID]) {
+        cars[driverID].setIcon('img/Google Maps Markers/black_Marker.png');
+    }
 }
 
 function initialize() {
@@ -904,6 +909,9 @@ $(document).ready(function() {
             }
         });
     })
+    .on('click', '#profile-signup', function(event) {
+        changeScreen('signup', true);
+    })
     .on('click', '#profile-logout', function(event) {
         profile.logout();
     })
@@ -977,6 +985,38 @@ $(document).ready(function() {
                 map.panTo(results.geometry.location);
             });
         });
+    });
+    
+    $('.signup-checklist').on('click', 'p', function(event) {
+        var $this = $(this);
+        $this.toggleClass('checked');
+        
+        if ($this.siblings('p').not('.checked').length == 0) {
+            if ($this.parent('.signup-checklist').is('.personal')) {
+                $('.signup-checklist.personal').fadeOut();
+                $('.signup-checklist.vehicle').fadeIn();
+            }
+            else {
+                $('.signup-checklist.vehicle').fadeOut();
+                $('#signup-vehicle').fadeIn();
+            }
+        }
+    });
+    
+    $('#signup-vehicle').on('click', '.back', function(event) {
+        $('.signup-checklist.personal').fadeIn();
+        $('#signup-vehicle').fadeOut();
+        $('.signup-checklist p').removeClass('checked');
+    }).on('click', '.next', function(event) {
+        $('#signup-vehicle').fadeOut();
+        $('#signup-contact').fadeIn();
+    });
+    
+    $('#signup-contact').on('click', '.back', function(event) {
+        $('#signup-vehicle').fadeIn();
+        $('#signup-contact').fadeOut();
+    }).on('click', '.submit', function(event) {
+        
     });
 
     $('.menu').on('click', function(event) {
@@ -1092,6 +1132,12 @@ var profile = {
                     $('#profile-pic img').attr('src', 'https://graph.facebook.com/' + response.id + '/picture?type=large');
                     $('.screen-login').hide();
                     $('#profile-container,#payment-info').show();
+                    /* populate signup *
+                    var $signup = $('#signup-form');
+                    $signup.find('[name="firstName"]').val(response.first_name);
+                    $signup.find('[name="lastName"]').val(response.last_name);
+                    $signup.find('[name="email"]').val(response.email);
+                    /**/
                 }, function(error) {
                     console.log(error);
                 });
@@ -1127,6 +1173,73 @@ function trueCenterIcon(obj) {
         obj.setVisible(false);
     }
 }
+
+function easyGPS() {
+    $('#map-canvas').append('<button class="gps"><i class="fa fa-crosshairs"></i></button>');
+    $('.gps').on('click', function(event) {
+        if (geo.latitude && geo.longitude) {
+            map.panTo(new google.maps.LatLng(geo.latitude, geo.longitude));
+        }
+        else {
+            console.log('GPS is currently inactive.');
+        }
+    });
+}
+
+/**
+$(document).ready(function() {
+    $('[name="carMake"]').on('input', function(event) {
+        freebase.suggestMake(this.value);
+    });
+    $('[name="carModel"]').on('input', function(event) {
+        freebase.suggestModel(this.value, $('[name="carMake"]').val());
+    });
+});
+/**/
+var freebase = {
+    suggestMake: function(makeInput) {
+        var service_url = 'https://www.googleapis.com/freebase/v1/search';
+        var params = {
+            'query': makeInput,
+            'type': '/base/cars_refactor/make',
+            'prefixed': true,
+            'limit': 5
+        };
+        $.getJSON(service_url + '?callback=?', params, function(response) {
+            console.log('---');
+            $.each(response.result, function(i, make) {
+                //console.log(make);
+                console.log(make.name);
+            });
+        });
+    },
+    suggestModel: function(modelInput, makeInput) {
+        var service_url = 'https://www.googleapis.com/freebase/v1/mqlread';
+        var query = [{
+            'name': null,
+            'type': '/base/cars_refactor/model',
+            'name~=': modelInput + '*',
+            'make': [{
+                'name': null,
+                'name~=': makeInput
+            }],
+            'limit': 5
+        }];
+        $.getJSON(service_url + '?callback=?', {query:JSON.stringify(query)}, function(response) {
+            console.log('---');
+            $.each(response.result, function(i, model) {
+                var modelName = model.name;
+                for (var i=0, l = model.make.length; i<l; ++i) {
+                    modelName = modelName.replace(model.make[i].name,'');
+                }
+                modelName = modelName.replace(/^ /,'');
+                //console.log(model);
+                console.log(modelName);
+            });
+        });
+    }
+}
+
 
 function hibernateDriver() {
     driver = false;

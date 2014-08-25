@@ -121,6 +121,71 @@
 
         <img id="center_icon" src="img/Google Maps Markers/red_MarkerA.png" />
     </div>
+    
+    <div id="signup" class="screen">
+        <div class="header">
+            <h1>RideSqirl</h1>
+            <button class="menu"><i class="fa fa-bars"></i></button>
+        </div>
+        <div class="signup-checklist personal">
+            <p>I identify as female.</p>
+            <p>I am at least 21 years old.</p>
+            <p>I would consent to a background check.</p>
+            <p>I am kind and accepting of everyone.</p>
+            <p>I have never ran over a squirrel.</p>
+            <div>Click on an item to check it.<br>Check the entire list to continue.</div>
+        </div>
+        <div class="signup-checklist vehicle">
+            <p>My car doesn't make any funny noises</p>
+            <p>My car has all working functions, lights, seatbelts, etc.</p>
+            <p>I would drive my grandmother in this car.</p>
+            <p>My vehicle is visually pleasing.</p>
+            <p>My car smells good!</p>
+            <div>Click on an item to check it.<br>Check the entire list to continue.</div>
+        </div>
+        <form id="signup-form" action="https://ridesqirl.com/signup" method="post" novalidate>
+            <div id="signup-vehicle">
+                <label>
+                    <span>Car Year</span>
+                    <input name="carYear" type="text" placeholder="2005" />
+                </label>
+                <label>
+                    <span>Car Make</span>
+                    <input name="carMake" type="text" placeholder="Mercury" />
+                </label>
+                <label>
+                    <span>Car Model</span>
+                    <input name="carModel" type="text" placeholder="Montego" />
+                </label>
+                <label>
+                    <span>Driver's License Number</span>
+                    <input name="license" type="text" placeholder="856AA5350" />
+                </label>
+                <button type="button" class="back">Back</button>
+                <button type="button" class="next">Continue</button>
+            </div>
+            <div id="signup-contact">
+                <label>
+                    <span>First Name</span>
+                    <input name="firstName" type="text" placeholder="Jane" />
+                </label>
+                <label>
+                    <span>Last Name</span>
+                    <input name="lastName" type="text" placeholder="Doe" />
+                </label>
+                <label>
+                    <span>Email</span>
+                    <input name="email" type="text" placeholder="jane@email.com" />
+                </label>
+                <label>
+                    <span>Phone Number</span>
+                    <input name="phone" type="text" pattern="\d*" placeholder="612-555-0123" />
+                </label>
+                <button type="button" class="back">Back</button>
+                <button type="button" class="submit">Submit</button>
+            </div>
+        </form>
+    </div>
 
     <div id="profile" class="screen">
         <div class="header">
@@ -135,7 +200,7 @@
                 <p><i class="fa fa-fw fa-user"></i><span>Ben Pedersen</span></p>
                 <p><i class="fa fa-fw fa-envelope"></i><span>ben@okeebo.com</span></p>
                 <!--<p><i class="fa fa-fw fa-phone"></i><span>712-358-2736</span></p>-->
-                <p class="clickable"><i class="fa fa-fw fa-car"></i><span>Become a Sqirl</span></p>
+                <p class="clickable" id="profile-signup"><i class="fa fa-fw fa-car"></i><span>Become a Sqirl</span></p>
                 <p class="clickable" id="profile-logout"><i class="fa fa-fw fa-sign-out"></i><span>Sign out</span></p>
             </div>
         </div>
