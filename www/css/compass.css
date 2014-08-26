@@ -452,11 +452,11 @@ input, input:focus {
     background: transparent;
 }
 #sidebar > p.hover {
-    background-color: #07a; /*#0aa;/**/
+    background-color: #CF20F0;
 }
 #sidebar > p.active {
-    background-color: #08b; /*#0bb;/**/
-} 
+    background-color: #DD2FFF;
+}
 
 #sidebar > hr {
     color: whitesmoke;
@@ -644,6 +644,15 @@ input, input:focus {
         display: none;
         position: absolute;
         top: 0;
+    }
+    #signup-success {
+        color: whitesmoke;
+        position: relative;
+        top: 20px;
+        line-height: 180%;
+        font-size: 18px;
+        padding: 8px;
+        display: none;
     }
 
 #profile {

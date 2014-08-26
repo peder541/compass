@@ -146,6 +146,15 @@ function connect() {
                 }
             }
         })
+        .on('loginSuccess', function() {
+            console.log('Login successful');
+            // requestRide after logging in if the login was caused by clicking #requestRide
+            if (typeof window.requestRide === 'function') {
+                window.requestRide();
+                delete window.requestRide;
+                $('#main').find('.screen-login').remove();
+            }
+        })
         .on('defaultCard', function(data) {
             var $cards = $('.payment-cc');
             var $defaultCard = $cards.filter('[data-id="' + data + '"]');
@@ -342,7 +351,8 @@ function draw(index, latitude, longitude, accuracy) {
                 clickable: false,
                 map: map,
                 icon: {
-                    url: 'img/Google Maps Markers/black_Marker.png'
+                    url: 'img/availableSqirl.png', // 'img/Google Maps Markers/black_Marker.png',
+                    scaledSize: new google.maps.Size(60,38)
                 },
                 optimized: false,
                 position: map.center
@@ -710,12 +720,19 @@ function deactivateRide() {
 
 function activeCar(driverID) {
     if (cars[driverID]) {
-        cars[driverID].setIcon('img/Google Maps Markers/active_Marker.png');
+        cars[driverID].setIcon({
+            url: 'img/enrouteSqirl.png', // 'img/Google Maps Markers/black_Marker.png',
+            scaledSize: new google.maps.Size(60,38)
+        });
+    //    cars[driverID].setIcon('img/Google Maps Markers/active_Marker.png');
     }
 }
 function deactiveCar(driverID) {
     if (cars[driverID]) {
-        cars[driverID].setIcon('img/Google Maps Markers/black_Marker.png');
+        cars[driverID].setIcon({
+            url: 'img/availableSqirl.png',
+            scaledSize: new google.maps.Size(60,38)
+        });
     }
 }
 
@@ -777,33 +794,41 @@ $(document).ready(function() {
         editPosition($(this).hasClass('Drop-off'));
     })
     .on('click', '#requestRide', function(event) {
-        if (window.confirmPosition) confirmPosition();
-        getRoute();
+        function requestRide() {
+            if (window.confirmPosition) confirmPosition();
+            getRoute();
 
-        // Show "Aww, nuts" if there aren't any drivers
-        if (Object.keys(cars).length == 0) {
-            console.log('Aww nuts');
-            return false;
-        }
+            // Show "Aww, nuts" if there aren't any drivers
+            if (Object.keys(cars).length == 0) {
+                console.log('Aww nuts');
+                return false;
+            }
 
-        if (!drop) {
-            // Check if there's a default (home) address
-            // Otherwise, let the user know a drop-off is needed and return false
-            return false;
-        }
+            if (!drop) {
+                // Check if there's a default (home) address
+                // Otherwise, let the user know a drop-off is needed and return false
+                return false;
+            }
 
-        if (window.io && window.socket) {
-            $('#main-footer').children().hide();
-            $('#cancelRequest,#contacting').show();
-            //ellipses($('#contacting span'));
-            var data = {
-                pickup: me.getPosition(),
-                dropoff: drop.getPosition()
-            };
-            data.pickup = [data.pickup.lat(), data.pickup.lng()];
-            data.dropoff = [data.dropoff.lat(), data.dropoff.lng()];
-            socket.emit('requestRide', data);
+            if (window.io && window.socket) {
+                $('#main-footer').children().hide();
+                $('#cancelRequest,#contacting').show();
+                //ellipses($('#contacting span'));
+                var data = {
+                    pickup: me.getPosition(),
+                    dropoff: drop.getPosition()
+                };
+                data.pickup = [data.pickup.lat(), data.pickup.lng()];
+                data.dropoff = [data.dropoff.lat(), data.dropoff.lng()];
+                socket.emit('requestRide', data);
+            }
         }
+        facebookConnectPlugin.getAccessToken(requestRide, function() {
+            var $login = $('.screen-login').eq(0).clone();
+            $login.css('background-color','rgba(0,0,0,0.4)');
+            $('#main').append($login);
+            window.requestRide = requestRide;
+        });
     })
     .on('click', '#cancelRequest', function(event) {
         if (route) {
@@ -1016,7 +1041,11 @@ $(document).ready(function() {
         $('#signup-vehicle').fadeIn();
         $('#signup-contact').fadeOut();
     }).on('click', '.submit', function(event) {
-        
+        $.post('https://ridesqirl.com/signup', $('#signup-form').serialize(), function(response) {
+            console.log(response);
+            $('#signup-contact').fadeOut();
+            $('#signup-success').fadeIn();
+        });
     });
 
     $('.menu').on('click', function(event) {
