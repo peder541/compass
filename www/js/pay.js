@@ -5,8 +5,8 @@ $(document).ready(function() {
 	$('.cc-exp').payment('formatCardExpiry');
 	$('.cc-cvc').payment('formatCardCVC');
 	
-	$('form').on('submit', function(event) {
-		var $form = $('form');
+	$('#credit-card-info').on('submit', function(event) {
+		var $form = $('#credit-card-info');
 		$form.find('button').prop('disabled', true);
 		var expiry = $('.cc-exp').payment('cardExpiryVal');
 		Stripe.card.createToken({
@@ -39,7 +39,7 @@ $(document).ready(function() {
 function stripeResponse(status, response) {
 	if (response.error) {
 		console.log('Error', response.error.message);
-		$('form button').prop('disabled', false);
+		$('#credit-card-info button').prop('disabled', false);
 	}
 	else {
 		console.log('Success');

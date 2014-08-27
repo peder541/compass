@@ -190,7 +190,8 @@ var rideRequests = {
                 clickable: false,
                 map: map,
                 icon: {
-                    url: 'img/Google Maps Markers/' + (endpoint == 'pickup' ? 'blue_MarkerB' : 'green_MarkerC') + '.png'
+                    url: 'img/' + (endpoint == 'pickup' ? 'dropoffAcorn' : 'dropoffTree') + '.png',
+                    scaledSize: new google.maps.Size(25,30)
                 },
                 optimized: false,
                 position: new google.maps.LatLng(data[endpoint][0], data[endpoint][1])
@@ -335,8 +336,8 @@ function draw(index, latitude, longitude, accuracy) {
                 clickable: false,
                 map: map,
                 icon: {
-                    url: 'img/Google Maps Markers/red_MarkerA.png',
-                    scaledSize: new google.maps.Size(20,34)
+                    url: 'img/dropoffAcorn.png',
+                    scaledSize: new google.maps.Size(25,30)
                 },
                 optimized: false,
                 position: map.center
@@ -352,7 +353,7 @@ function draw(index, latitude, longitude, accuracy) {
                 map: map,
                 icon: {
                     url: 'img/availableSqirl.png', // 'img/Google Maps Markers/black_Marker.png',
-                    scaledSize: new google.maps.Size(60,38)
+                    scaledSize: new google.maps.Size(57,36)
                 },
                 optimized: false,
                 position: map.center
@@ -382,8 +383,8 @@ function editPosition(setDrop) {
                 clickable: false,
                 map: map,
                 icon: {
-                    url: 'img/Google Maps Markers/blue_MarkerB.png',
-                    scaledSize: new google.maps.Size(20,34)
+                    url: 'img/dropoffTree.png',
+                    scaledSize: new google.maps.Size(25,30)
                 },
                 optimized: false,
                 position: map.center
@@ -722,7 +723,7 @@ function activeCar(driverID) {
     if (cars[driverID]) {
         cars[driverID].setIcon({
             url: 'img/enrouteSqirl.png', // 'img/Google Maps Markers/black_Marker.png',
-            scaledSize: new google.maps.Size(60,38)
+            scaledSize: new google.maps.Size(57,36)
         });
     //    cars[driverID].setIcon('img/Google Maps Markers/active_Marker.png');
     }
@@ -731,7 +732,7 @@ function deactiveCar(driverID) {
     if (cars[driverID]) {
         cars[driverID].setIcon({
             url: 'img/availableSqirl.png',
-            scaledSize: new google.maps.Size(60,38)
+            scaledSize: new google.maps.Size(57,36)
         });
     }
 }
@@ -884,7 +885,7 @@ $(document).ready(function() {
         /* Twitter *
         // Probably want to load the twitter js (https://platform.twitter.com/widgets.js)
         var url = 'https://twitter.com/intent/tweet';
-        url += '?text=Get a free ride with RideSqirl:';
+        url += '?text=RideSqirl is a new rideshare app in the Twin Cities. Get it out:';
         url += '&url=https://ridesqirl.com';
         window.open(url, '', null);
         /**/
@@ -900,14 +901,14 @@ $(document).ready(function() {
             var url = 'https://www.facebook.com/dialog/share';
             url += '?app_id=667802789972584';
             url += '&display=popup';
-            url += '&href=' + $('#invite-link').val();
+            url += '&href=https://ridesqirl.com';
             url += '&redirect_uri=' + document.location.href;
             window.open(url, '', null); 
         }
         else {
             facebookConnectPlugin.showDialog({
                 method: 'share',
-                href: $('#invite-link').val()
+                href: 'https://ridesqirl.com'
             }, function(response) {
                 console.log(response);
             }, function(error) {
@@ -917,8 +918,8 @@ $(document).ready(function() {
     })
     .on('click', '.twitter-invite', function(event) {
         var url = 'https://twitter.com/intent/tweet';
-        url += '?text=Get a free ride with RideSqirl:';
-        url += '&url=' + $('#invite-link').val();
+        url += '?text=RideSqirl is a new rideshare app in the Twin Cities. Get it out:';
+        url += '&url=https://ridesqirl.com';
         var top = 0;
         var left = 0;
         if (screen.height > 420) {
@@ -1282,6 +1283,10 @@ function hibernateDriver() {
             $('#main-footer').css('bottom','');
         }
     });
+    me.setIcon({
+        url: 'img/dropoffAcorn.png',
+        scaledSize: new google.maps.Size(25,30)
+    });
     $('#map-canvas').css('height', window.innerHeight - 164);
     google.maps.event.trigger(map, 'resize');
     editPosition();
@@ -1305,6 +1310,10 @@ function activateDriver() {
         complete: function() {
             $('#main-footer').hide();
         }
+    });
+    me.setIcon({
+        url: 'img/enrouteSqirl.png',
+        scaledSize: new google.maps.Size(57,36)
     });
     //$('#driver-footer').show();
     socket.emit('activateDriver');
