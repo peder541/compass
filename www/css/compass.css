@@ -32,6 +32,14 @@ button::-moz-focus-inner {
 input, input:focus {
     -webkit-user-modify: read-write-plaintext-only;
 }
+::-webkit-input-placeholder {
+    color: inherit;
+    opacity: 0.4;
+}
+:-ms-input-placeholder {
+    color: inherit;
+    opacity: 0.4;
+}
 
 .screen {
     position: absolute;
@@ -166,23 +174,23 @@ input, input:focus {
     position: absolute;
     left: 5%;
     top: 8.33%;
-    width: 52%;
-    padding-left: 8%;			/* padding-left + width = width of #main-footer > button */
+    width: 51%;
+    padding-left: 9%;			/* padding-left + width = width of #main-footer > button */
     font-family: PT Sans, Calibri, sans-serif;
     font-size: 0.9em;
     background-color: #609;
     color: rgb(255, 136, 255);
     border: 0;
     border-bottom: 1px solid rgb(255, 136, 255);
-    background-image: url("../img/dropoffAcorn.png");
+    background-image: url("../img/pinkAcorn.png");
     background-repeat: no-repeat;
     background-position: left center;
-    background-size: 25px 30px;
+    background-size: 20px 24px;
 }
 #main-footer input.Drop-off {
     top: auto;
     bottom: 8.33%;
-    background-image: url("../img/dropoffTree.png");	
+    background-image: url("../img/pinkTree.png");	
 }
 #main-footer > ul {
     width: 100%;
@@ -310,6 +318,20 @@ input, input:focus {
     left: 5%;
     width: 100px;
 }
+#driver-footer .riderPicOverlay {
+    font-family: PT Sans, sans-serif;
+    width: 100px;
+    position: absolute;
+    left: 5%;
+    bottom: 8.5%;
+    text-align: center;
+    border-radius: 0px 0px 5px 5px;
+    background-color: rgba(0, 0, 0, 0.6);
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: rgba(250, 250, 250, 0.8);
+    pointer-events: none;
+}
 
 #ride-offers {
     width: 100%;
@@ -347,6 +369,20 @@ input, input:focus {
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
+}
+.rideOffer .driverPic:after {
+    content: "More info";
+    background-color: rgba(102, 0, 153, 0.6);
+    color: rgba(250, 250, 250, 0.8);
+    font-family: PT Sans, sans-serif;
+    width: 100%;
+    position: absolute;
+    bottom: 0px;
+    text-align: center;
+    border-radius: 0px 0px 5px 5px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    pointer-events: none;
 }
 .rideOffer p {
     color: whitesmoke;
@@ -518,6 +554,7 @@ input, input:focus {
             font-size: 16px;
             max-width: 300px;
         }
+#bank-info,
 #credit-card-info {
     width: 100%;
     position: absolute;
@@ -537,6 +574,85 @@ input, input:focus {
 #payment {
     background-color: whitesmoke;	
 }
+
+#earnings {
+    background-color: whitesmoke;
+}
+
+#earnings-info {
+    font-size: 14px;
+    font-family: PT Sans, sans-serif;
+    color: #333;
+    padding: 20px;
+    display: none;
+}
+    #earnings-info > h2 {
+        font-size: 16px;
+        font-weight: 400;
+        margin-bottom: 10px;	
+    }
+    #earnings-info > #earnings-facts {
+        border-top: 1px solid #aaa;
+        border-bottom: 1px solid #aaa;
+        margin-bottom: 25px;
+        padding: 8px;
+        line-height: 25px;
+        position: relative;
+    }
+        #earnings-receivable,
+        #earnings-total {
+            position: absolute;
+            right: 0;
+        }
+    #earnings-info > .earnings-account {
+        background-repeat: no-repeat;
+        background-position: left center;
+        margin: 0px 10px;
+        padding: 10px 0px;
+        height: 24px;
+        line-height: 24px;
+        border-bottom: 1px solid #aaa;
+        cursor: pointer;
+    }
+        #earnings-info > .earnings-account > .earnings-account-bank_name {
+            width: 50%;
+            float: left;
+            white-space: nowrap;
+            overflow: hidden;
+            margin-right: 25px;
+        }
+        #earnings-info > .earnings-account > .earnings-account-last4:before {
+            content: '****';
+        }
+    #earnings-info > .earnings-account:first-of-type {
+        border-top: 1px solid #aaa;
+    }
+    #earnings-info > .earnings-account:after {
+        float: right;
+        width: 20px;
+        text-align: center;
+        font-size: 1.25em;
+    }
+    #earnings-info > .earnings-account.checked:after {
+        font-family: FontAwesome;
+        content: "\f00c";
+        color: #096;
+    }
+    #earnings-info > #earnings-add-account {
+        text-align: center;
+    }
+        #earnings-info > #earnings-add-account > button {
+            height: 44px;
+            line-height: 44px;
+            border-radius: 5px;
+            background-color: #096;
+            color: whitesmoke;
+            width: 100%;
+            margin: 5px 0;
+            font-family: PT Sans, sans-serif;
+            font-size: 16px;
+            max-width: 300px;
+        }
 
 #signup {
     background-color: #609;
@@ -751,6 +867,33 @@ input, input:focus {
             .twitter-invite.hover {
                 background-color: #fff;
             }
+        .screen-login > .login-option {
+            position: absolute;
+            bottom: 38px;
+            height: 44px;
+            width: 100%;
+            text-align: center;
+        }
+            .no-login {
+                color: #11C1E2;
+                background: 0;
+                font-family: Optima, Corbel, sans-serif;
+                text-decoration: underline;
+                cursor: pointer;
+                padding: 15px;
+                font-size: 14px;
+                line-height: 1;
+            }
+        .login-help {
+            font-size: 28px;
+            width: 44px;
+            height: 44px;
+            color: #11C1E2;
+            background: 0;
+            position: absolute;
+            bottom: 0;
+            right: 0; 
+        }
 #invite {
     background-color: rgba(17, 193, 226, 0.5);
 }

@@ -4,6 +4,8 @@ $(document).ready(function() {
 	$('.cc-number').payment('formatCardNumber');
 	$('.cc-exp').payment('formatCardExpiry');
 	$('.cc-cvc').payment('formatCardCVC');
+    
+    $('.routing-number,.account-number').payment('restrictNumeric');
 	
 	$('#credit-card-info').on('submit', function(event) {
 		var $form = $('#credit-card-info');
@@ -23,7 +25,7 @@ $(document).ready(function() {
 		if ($slider.hasClass('checked')) $slider.removeClass('checked');
 		else $slider.addClass('checked');
 	});
-	$('#cancel').on('click', function(event) {
+	$('.cancel').on('click', function(event) {
 		if (window.top.rideOffers.acceptOffer) {
 			delete window.top.rideOffers.acceptOffer;	
 		}

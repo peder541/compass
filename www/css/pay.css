@@ -1,9 +1,11 @@
 @charset "utf-8";
 /* CSS Document */
 
+#bank-info,
 #credit-card-info {
 	background-color: whitesmoke;
 }
+#bank-info > button,
 #credit-card-info > button {
 	position: absolute;
 	bottom: 0;
@@ -24,15 +26,18 @@
 	font-size: 25px;
 	line-height: 25px;
 }
+#bank-info > button[disabled],
 #credit-card-info > button[disabled] {
 	opacity: 0.3;	
 }
-#credit-card-info > #cancel {
+#bank-info > .cancel,
+#credit-card-info > .cancel {
 	left: 0;
 	background-color: #666;	
 	/* Rounder */
 	left: 4%;
 }
+#bank-info label,
 #credit-card-info label {
 	height: 25%; /*60px;*/
 	width: 100%;
@@ -44,16 +49,24 @@
 	left: 4%;
 	white-space: nowrap;
 }
+#bank-info label {
+    height: 37.5%;
+}
 #credit-card-info label > i {
 	width: 16%;
 	text-align: center;
 	color: #333;
 }
+#bank-info label > b,
 #credit-card-info label > b {
 	display: inline-block;
 	width: 23%;
 	color: #333;
 }
+#bank-info label > b {
+    width: 50%;
+}
+#bank-info label > input,
 #credit-card-info label > input {
 	height: 100%;
 	width: 54%;
@@ -66,6 +79,10 @@
 	width: 59%;
 	font-size: 14px;
 }
+#bank-info label > input {
+    width: 45%;
+}
+#bank-info label:not(:last-of-type),
 #credit-card-info label:not(:last-of-type) {
 	border-bottom: 1px solid rgba(51, 51, 51, 0.3);	
 }

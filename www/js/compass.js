@@ -40,6 +40,7 @@ var geo = {
     },
     options: {
         enableHighAccuracy: true,
+        maximumAge: 3000,
         timeout: 5000
     },
     active: true
@@ -248,7 +249,7 @@ var rideRequests = {
             if (window.navigator && window.navigator.standalone) {
                 window.open(url.apple, '', null);
             }
-            else if (window.cordova) {
+            else if (window.cordova /* && device.platform == 'iOS' */) {
                 window.open(url.apple, '_system', null);
             }
             else {
@@ -847,7 +848,7 @@ $(document).ready(function() {
         small_input();
     })
     .on('click', '.clear', function(event) {
-        $('#main-footer input').filter(':visible').val('').focus();
+        $('#main-footer input').filter(':visible').val('').attr('placeholder','').focus();
     })
     .on('click', '.fare', function(event) {
         var $this = $(this);
@@ -918,7 +919,7 @@ $(document).ready(function() {
     })
     .on('click', '.twitter-invite', function(event) {
         var url = 'https://twitter.com/intent/tweet';
-        url += '?text=RideSqirl is a new rideshare app in the Twin Cities. Get it out:';
+        url += '?text=RideSqirl is a new rideshare app in the Twin Cities. Check it out:';
         url += '&url=https://ridesqirl.com';
         var top = 0;
         var left = 0;
@@ -951,6 +952,12 @@ $(document).ready(function() {
         if (window.io && window.socket) {
             socket.emit('defaultCard', $(this).attr('data-id'));
         }
+    })
+    .on('click', '#checkEarnings', function(event) {
+        changeScreen('earnings');
+    })
+    .on('click', '#earnings-add-account button', function(event) {
+        $('#bank').fadeIn();
     })
     .on('click', '.call', function(event) {
         Twilio.Device.connect({});
@@ -1053,6 +1060,32 @@ $(document).ready(function() {
         toggleMenu();
     });
     
+    $('#bank-info').on('submit', function(event) {
+        var $form = $('#bank-info');
+		$form.find('button').prop('disabled', true);
+        Stripe.bankAccount.createToken({
+            country: 'US',
+            routingNumber: $('.routing-number').val(),
+            accountNumber: $('.account-number').val()
+        }, function(status, response) {
+            if (response.error) {
+                console.log(status, response.error);
+            }
+            else {
+                console.log(response.id, response.bank_account);
+            }
+            $form.find('button').prop('disabled', false);
+        });
+        return false;
+    }).on('click', '.cancel', function(event) {
+		$('#bank').fadeOut({
+			complete: function() {
+				$('#bank-info input').val('');	
+				$('#bank-info button').prop('disabled', false);
+			}
+		});
+	});
+    
     $('#invite-link').on('blur', function(event) {
         var $this = $(this);
         $this.val($this.attr('data-url'));
@@ -1066,6 +1099,7 @@ $(document).ready(function() {
         document.addEventListener('deviceready', function() {
             profile.populate();
             TwilioHandlers();
+            document.addEventListener('backbutton', onBackKeyDown, false);
         });
     }
     // Web
@@ -1087,6 +1121,18 @@ $(document).ready(function() {
         changeScreen(window.localStorage.getItem('screen') || 'main', true);
     }
 });
+
+function onBackKeyDown() {
+    if ($('#sidebar').is(':visible')) {
+        toggleMenu();
+    }
+    else if ($('#main').is(':visible')) {
+        navigator.app.exitApp();
+    }
+    else {
+        changeScreen('main', true);
+    }
+}
 
 function TwilioHandlers() {
     Twilio.Device.ready(function() {
@@ -1149,7 +1195,7 @@ var profile = {
                 window.open(url, '', null);
             }
             else {
-                facebookConnectPlugin.login(['public_profile','email'], profile.populate, function(error) { alert(error); });
+                facebookConnectPlugin.login(['public_profile','email'], profile.populate, function(error) { console.log(error); });
             }
         }
     },
@@ -1161,7 +1207,7 @@ var profile = {
                     $('.fa-envelope').next().html(response.email);
                     $('#profile-pic img').attr('src', 'https://graph.facebook.com/' + response.id + '/picture?type=large');
                     $('.screen-login').hide();
-                    $('#profile-container,#payment-info').show();
+                    $('#profile-container,#payment-info,#earnings-info').show();
                     /* populate signup *
                     var $signup = $('#signup-form');
                     $signup.find('[name="firstName"]').val(response.first_name);
@@ -1181,7 +1227,7 @@ var profile = {
         if (window.facebookConnectPlugin) {
             facebookConnectPlugin.logout(function(response) {
                 $('.screen-login').show();
-                $('#profile-container,#payment-info').hide();
+                $('#profile-container,#payment-info,#earnings-info').hide();
                 $('.payment-cc').remove();
                 socket.emit('logout');
             }, function(error) {
@@ -1287,6 +1333,7 @@ function hibernateDriver() {
         url: 'img/dropoffAcorn.png',
         scaledSize: new google.maps.Size(25,30)
     });
+    $('#checkEarnings').html('Payment').attr('id','makePayment');
     $('#map-canvas').css('height', window.innerHeight - 164);
     google.maps.event.trigger(map, 'resize');
     editPosition();
@@ -1297,6 +1344,7 @@ function hibernateDriver() {
 }
 function activateDriver() {
     driver = true;
+    $('#cancelRequest').click();
     if (window.confirmPosition) confirmPosition();
     if (drop) {
         drop.setMap();
@@ -1315,6 +1363,7 @@ function activateDriver() {
         url: 'img/enrouteSqirl.png',
         scaledSize: new google.maps.Size(57,36)
     });
+    $('#makePayment').html('Earnings').attr('id','checkEarnings');
     //$('#driver-footer').show();
     socket.emit('activateDriver');
     emitPositionUpdates();
@@ -1479,6 +1528,8 @@ function fullscreen_input() {
             complete: function() { 
                 $input.removeAttr('readonly');
                 setTimeout(function() {
+                    $input.attr('placeholder',$input.val());
+                    $input.val('');
                     $input.select()/*[0].setSelectionRange(0,9999)*/;
                 }, 10);
                 $('.clear,.collapse').show();
