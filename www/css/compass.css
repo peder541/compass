@@ -505,6 +505,58 @@ input, input:focus {
     border-style: dotted;	
 }
 
+#tip {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+    #tip > h1 {
+        font-family: Optima, Candara, sans-serif;
+        font-size: 28px;
+        color: whitesmoke;
+        height: 44px;
+        line-height: 44px;
+        width: 100%;
+        text-align: center;
+    }
+        #tip > h1 > span {
+            background-color: #0A7387;
+        }
+    .preset-tip {
+        background-color: whitesmoke;
+        color: #11C1E2;
+        border-radius: 8px;
+        font-family: PT Sans;
+        font-size: 24px;
+        height: 66px;
+        width: 25%;
+        float: left;
+        margin: 22px;
+        margin-left: 6.25%;
+        margin-right: 0;
+    }
+        .preset-tip span {
+            display: block;
+            color: #888;
+            font-size: 12px;
+        }
+    .custom-tip, .no-tip {
+        height: 44px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-family: PT Sans;
+        width: 87.5%;
+        color: #11C1E2;
+        font-weight: bold;
+        margin: 0;
+        margin-left: 6.25%;
+        margin-bottom: 22px;
+        float: left;
+    }
+    @media (max-height: 275px) {
+        .custom-tip, .no-tip {
+            width: 40.625%;
+        }
+    }
+
 #payment-info {
     font-size: 14px;
     font-family: PT Sans, sans-serif;

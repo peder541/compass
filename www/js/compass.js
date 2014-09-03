@@ -72,17 +72,22 @@ function connect() {
         .on('update', function(data) {
             draw(data.id, data.coordinates[0], data.coordinates[1]);
             // Say how much long it will take the driver to arrive at the rider's pickup location
-            if (data.id == rideOffers.driverID && pickupTimer) {
-                if (getDistance(me.getPosition(), cars[data.id].getPosition()) < 50) {
-                    $('#contacting span').html('Sqirl has arrived').attr('data-ellipses','.');
-                    console.log('Arrival: socket');
-                    if (window.plugin && window.plugin.notification && window.plugin.notification.local) {
-                        window.plugin.notification.local.add({date: new Date(), message: 'Sqirl has arrived', autoCancel: true});
+            if (data.id == rideOffers.driverID) {
+                if (pickupTimer) {
+                    if (getDistance(me.getPosition(), cars[data.id].getPosition()) < 50) {
+                        $('#contacting span').html('Sqirl has arrived').attr('data-ellipses','.');
+                        console.log('Arrival: socket');
+                        if (window.plugin && window.plugin.notification && window.plugin.notification.local) {
+                            window.plugin.notification.local.add({date: new Date(), message: 'Sqirl has arrived', autoCancel: true});
+                        }
+                        pickupTimer = false;
                     }
-                    pickupTimer = false;
+                    else if ((new Date()).getTime() > pickupTimer + 10000) {
+                        getDriverTime();
+                    }
                 }
-                else if ((new Date()).getTime() > pickupTimer + 10000) {
-                    getDriverTime();
+                if (rideOffers.rideInProgress) {
+                    me.setPosition(new google.maps.LatLng(data.coordinates[0], data.coordinates[1]));
                 }
             }
         })
@@ -101,6 +106,12 @@ function connect() {
             console.log('Ride accepted', JSON.stringify(data));
             $('#offerAccepted,.getDirections').show();
             $('#waitingForResponse').hide();
+        })
+        .on('rideStarted', function(data) {
+            if (data == rideOffers.driverID) {
+                rideOffers.rideInProgress = true;
+                $('#contacting span').html('Ride in progress').attr('data-ellipses','.');
+            }
         })
         .on('rideCanceled', function(data) {
             rideRequests.cancelRequest(data.rider);
@@ -685,6 +696,7 @@ function deactivateRide() {
     if (rideOffers.driverID) {
         deactiveCar(rideOffers.driverID);
         delete rideOffers.driverID;
+        delete rideOffers.rideInProgress;
     }
     pickupTimer = false;
     $('#contacting span').html('contacting Sqirls').attr('data-ellipses','...');
@@ -874,6 +886,9 @@ $(document).ready(function() {
     .on('click', '.startRide', function(event) { 
         $('#arrived-Pick-up,.startRide').hide();
         $('#drive-in-progress,.getDirections').show();
+        if (window.io && window.socket) {
+            socket.emit('startRide', rideRequests.current.rider);
+        }
     })
     .on('click', '.finishRide', function(event) {
         rideRequests.cancelRequest(rideRequests.current.rider);
