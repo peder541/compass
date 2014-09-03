@@ -66,6 +66,9 @@ function connect() {
             }
             if (driver) activateDriver();
         })
+        .on('canDrive', function() {
+            $('#becomeDriver').attr('id','toggleDriver').html('Active Sqirl');
+        })
         .on('update', function(data) {
             draw(data.id, data.coordinates[0], data.coordinates[1]);
             // Say how much long it will take the driver to arrive at the rider's pickup location
@@ -222,40 +225,7 @@ var rideRequests = {
         $('#map-canvas').css('height',window.innerHeight - 164);
         google.maps.event.trigger(map, 'resize');
         getRoute(destination, waypoints, 0, data.traffic);
-        $('.offerRide').off('click').one('click', function(event) {
-            var d = {
-                rider: data.rider,
-                price: $('#cost span').html(),
-                time: $('#cost span').attr('data-time')	
-            }
-            socket.emit('offerRide',d);
-            $('#riderResponse').show();
-            $('#pricing,.offerRide').hide();
-        });
         $('#map-canvas').css('height',window.innerHeight - 44);
-
-        // Link to navigation apps.
-        $('.getDirections').off('click').on('click', function(event) {
-            var url = {
-                apple: 'http://maps.apple.com/',
-                google_ios: 'comgooglemaps-x-callback://',
-                google_droid: 'https://maps.google.com/maps',
-                waze: 'waze://'
-            };
-            for (var i in url) {
-                url[i] += '?saddr=' + me.getPosition().lat() + ',' + me.getPosition().lng()
-                url[i] += '&daddr=' + data.pickup[0] + ',' + data.pickup[1];
-            }
-            if (window.navigator && window.navigator.standalone) {
-                window.open(url.apple, '', null);
-            }
-            else if (window.cordova /* && device.platform == 'iOS' */) {
-                window.open(url.apple, '_system', null);
-            }
-            else {
-                window.open(url.google_droid, '', null);
-            }
-        });
     },
     cancelRequest: function(rider) {
         if (this.current && this.current.rider == rider) {
@@ -869,6 +839,45 @@ $(document).ready(function() {
         var diff = Math.abs(base - fare);
         if (diff <= base*0.2) $cost.html(fare.toFixed(2));
     })
+    .on('click', '.offerRide', function(event) {
+        var d = {
+            rider: rideRequests.current && rideRequests.current.rider,
+            price: $('#cost span').html(),
+            time: $('#cost span').attr('data-time')	
+        }
+        socket.emit('offerRide',d);
+        $('#riderResponse').show();
+        $('#pricing,.offerRide').hide();
+    })
+    .on('click', '.getDirections', function(event) {
+        var destination = ($('#drive-in-progress').is(':visible') ? dropoff : pickup).getPosition();
+        var url = {
+            apple: 'http://maps.apple.com/',
+            google_ios: 'comgooglemaps-x-callback://',
+            google_droid: 'https://maps.google.com/maps',
+            waze: 'waze://'
+        };
+        for (var i in url) {
+            url[i] += '?saddr=' + me.getPosition().lat() + ',' + me.getPosition().lng()
+            url[i] += '&daddr=' + destination.lat() + ',' + destination.lng();
+        }
+        if (window.navigator && window.navigator.standalone) {
+            window.open(url.apple, '', null);
+        }
+        else if (window.cordova /* && device.platform == 'iOS' */) {
+            window.open(url.apple, '_system', null);
+        }
+        else {
+            window.open(url.google_droid, '', null);
+        }
+    })
+    .on('click', '.startRide', function(event) { 
+        $('#arrived-Pick-up,.startRide').hide();
+        $('#drive-in-progress,.getDirections').show();
+    })
+    .on('click', '.finishRide', function(event) {
+        rideRequests.cancelRequest(rideRequests.current.rider);
+    })
     .on('click', '#test', function(event) {
         if (!me) {
             draw(0, 45.03293, -93.18358, 100);
@@ -877,6 +886,9 @@ $(document).ready(function() {
         changeScreen('main');
     })
     .on('click', '#becomeDriver', function(event) {
+        changeScreen('signup');
+    })
+    .on('click', '#toggleDriver', function(event) {
         if (driver) hibernateDriver();
         else activateDriver();
     })
@@ -934,7 +946,7 @@ $(document).ready(function() {
             if (event.url.split('?')[0] == 'https://twitter.com/intent/tweet/complete') {
                 ref.close();
             }
-        });
+        }, false);
     })
     .on('click', '#profile-signup', function(event) {
         changeScreen('signup', true);
@@ -1100,7 +1112,9 @@ $(document).ready(function() {
             profile.populate();
             TwilioHandlers();
             document.addEventListener('backbutton', onBackKeyDown, false);
-        });
+            document.addEventListener('pause', onPause, false);
+            document.addEventListener('resume', onResume, false);
+        }, false);
     }
     // Web
     else {
@@ -1122,12 +1136,27 @@ $(document).ready(function() {
     }
 });
 
+function onPause() {
+    // Turn off geolocation to save power
+    if (!driver && !rideRequests.driverID) {
+        navigator.geolocation.clearWatch(watchID);
+        watchID = false;
+    }
+}
+function onResume() {
+    if (!watchID) initialize();
+}
 function onBackKeyDown() {
     if ($('#sidebar').is(':visible')) {
         toggleMenu();
     }
     else if ($('#main').is(':visible')) {
-        navigator.app.exitApp();
+        if ($('.collapse').is(':visible')) {
+            $('.collapse').click();
+        }
+        else {
+            navigator.app.exitApp();
+        }
     }
     else {
         changeScreen('main', true);
@@ -1340,7 +1369,7 @@ function hibernateDriver() {
     google.maps.event.removeListener(drivingListener);
     drivingListener = false;
     socket.emit('hibernateDriver');
-    $('#becomeDriver').html('Active Sqirl');
+    $('#toggleDriver').html('Active Sqirl');
 }
 function activateDriver() {
     driver = true;
@@ -1368,13 +1397,26 @@ function activateDriver() {
     socket.emit('activateDriver');
     emitPositionUpdates();
     google.maps.event.trigger(me, 'position_changed');
-    $('#becomeDriver').html('Hibernate Sqirl');
+    $('#toggleDriver').html('Hibernate Sqirl');
 }
 function emitPositionUpdates(obj) {
     if (!obj) obj = me;
     if (!drivingListener) {
         drivingListener = google.maps.event.addListener(obj, 'position_changed', function() {
             var spot = obj.getPosition();
+            if (pickup && $('#offerAccepted').is(':visible') && getDistance(pickup.getPosition(),spot) < 50) {
+                console.log('Arrived at Pick-up!');
+                $('#offerAccepted,.getDirections').hide();
+                $('#arrived-Pick-up,.startRide').show();
+            }
+            if (pickup && $('#drive-in-progress').is(':visible')) {
+                pickup.setPosition(me.getPosition());
+            }
+            if (dropoff && $('#drive-in-progress').is(':visible') && getDistance(dropoff.getPosition(),spot) < 50) {
+                console.log('Arrived at Drop-off!');
+                $('#drive-in-progress,.getDirections').hide();
+                $('#arrived-Drop-off,.finishRide').show();
+            }
             if (window.io && window.socket) socket.emit('update', [spot.lat(), spot.lng()]);
         });
     }

@@ -286,7 +286,10 @@ input, input:focus {
     left: 0;
     width: 100%;
 }
-#riderResponse #offerAccepted {
+#riderResponse #offerAccepted,
+#riderResponse #arrived-Pick-up, 
+#riderResponse #drive-in-progress, 
+#riderResponse #arrived-Drop-off {
     position: absolute;
     top: 0;
     left: 0;
@@ -296,7 +299,9 @@ input, input:focus {
     text-align: center;
     display: none;
 }
-#riderResponse .getDirections {
+#riderResponse .getDirections,
+#riderResponse .startRide,
+#riderResponse .finishRide {
     position: absolute;
     bottom: 0;
     height: 44px;
