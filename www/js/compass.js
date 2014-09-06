@@ -570,7 +570,10 @@ function midPoints(directions, traffic) {
 
 function makePayment(price) {
     if ($('.payment-cc').length > 0) {
-        if (confirm('This trip will cost $' + price)) rideOffers.acceptOffer();
+        if (window.cordova) {
+            navigator.notification.confirm(null, function() { rideOffers.acceptOffer(); }, 'This trip will cost $' + price, ['Cancel','OK']);
+        }
+        else if (confirm('This trip will cost $' + price)) rideOffers.acceptOffer();
     }
     else {
         if (price) {

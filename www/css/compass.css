@@ -878,78 +878,69 @@ input, input:focus {
     top: 44px;
     bottom: 0;
 }
-    .screen-login > .login-container {
-        height: 50%;
-        position: relative;
+    .screen-login > .login-option {
+        position: absolute;
+        top: 50%;
+        height: 44px;
+        width: 100%;
+        text-align: center;
     }
-        .screen-login > .login-container > .login-option {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
+        .fb-login,
+        .phone-login,
+        .fb-invite,
+        .twitter-invite {
             height: 44px;
-            text-align: center;
+            color: whitesmoke;
+            background-color: #3B579D;
+            border-radius: 5px;
         }
-            .fb-login,
-            .fb-invite,
-            .twitter-invite {
-                height: 44px;
-                color: whitesmoke;
-                background-color: #3B579D;
-                border-radius: 5px;
-            }
-                .fb-login > i,
-                .fb-invite > i,
-                .twitter-invite > i {
-                    font-size: 28px;
-                    margin: 8px;
-                    float: left;
-                }
-                .fb-login > span,
-                .fb-invite > span,
-                .twitter-invite > span {
-                    float: left;
-                    line-height: 44px;
-                    font-size: 16px;
-                    font-family: Optima, Corbel, sans-serif;
-                    margin-right: 8px;
-                }
-            .twitter-invite {
-                background-color: #F5F8FA;
-                color: #55ACEE;
-            }
-            .fb-login.hover,
-            .fb-invite.hover {
-                background-color: #4864B1;
-            }
-            .twitter-invite.hover {
-                background-color: #fff;
-            }
-        .screen-login > .login-option {
-            position: absolute;
-            bottom: 38px;
-            height: 44px;
-            width: 100%;
-            text-align: center;
+        .fb-login {
+            position: relative;
+            top: -88px;
         }
-            .no-login {
-                color: #11C1E2;
-                background: 0;
+        .phone-login {
+            background-color: whitesmoke;
+            color: #3B579D;
+        }
+            .fb-login > i,
+            .phone-login > i,
+            .fb-invite > i,
+            .twitter-invite > i {
+                font-size: 28px;
+                margin: 8px;
+                float: left;
+            }
+            .phone-login > i {
+                font-size: 23px;
+                margin-top: 10.5px;
+            }
+            .fb-login > span,
+            .phone-login > span,
+            .fb-invite > span,
+            .twitter-invite > span {
+                float: left;
+                line-height: 44px;
+                font-size: 16px;
                 font-family: Optima, Corbel, sans-serif;
-                text-decoration: underline;
-                cursor: pointer;
-                padding: 15px;
-                font-size: 14px;
-                line-height: 1;
+                margin-right: 8px;
             }
-        .login-help {
-            font-size: 28px;
-            width: 44px;
-            height: 44px;
-            color: #11C1E2;
-            background: 0;
-            position: absolute;
-            bottom: 0;
-            right: 0; 
+            .phone-login > span {
+                font-size: 14px;
+            }
+        .twitter-invite {
+            background-color: #F5F8FA;
+            color: #55ACEE;
+        }
+        .fb-login.hover,
+        .fb-invite.hover {
+            background-color: #4864B1;
+        }
+        .twitter-invite.hover {
+            background-color: #fff;
+        }
+        #payment .phone-login,
+        #earnings .phone-login {
+            border: 1px solid rgba(59, 87, 157, 0.25);
         }
 #invite {
     background-color: rgba(17, 193, 226, 0.5);
