@@ -161,6 +161,15 @@ function connect() {
                 }
             }
         })
+        .on('phoneRegistered', function(phoneNumber) {
+            var verificationCode = prompt('A verification code has been sent to ' + phoneNumber + '\nEnter that code here:');
+            socket.emit('verifyPhone', verificationCode);
+        })
+        .on('phoneVerified', function(data) {
+            console.log(data);
+            //window.localStorage.setItem('key', data);
+            socket.emit('provePhone', data);
+        })
         .on('loginSuccess', function() {
             console.log('Login successful');
             // requestRide after logging in if the login was caused by clicking #requestRide
@@ -926,6 +935,10 @@ $(document).ready(function() {
     })
     .on('click', '.fb-login', function(event) {
         profile.login();
+    })
+    .on('click', '.phone-login', function(event) {
+        var phoneNumber = prompt('Phone number:');
+        socket.emit('registerPhone', phoneNumber);
     })
     .on('click', '.fb-invite', function(event) {
         if (window.navigator && window.navigator.standalone) {
