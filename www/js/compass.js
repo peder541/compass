@@ -47,7 +47,9 @@ var geo = {
 };
 function connect() {
     if (window.io && !window.socket) {
-        socket = io.connect('https://ridesqirl.com');
+        socket = io.connect('https://ridesqirl.com', {
+            query: 'token=' + jwt
+        });
         socket.on('news', function(data) {
             console.log(data);
         })
@@ -64,6 +66,7 @@ function connect() {
                     console.log("Couldn't get token: " + error);
                 });
             }
+            profile.provePhone();
             if (driver) activateDriver();
         })
         .on('canDrive', function() {
@@ -88,6 +91,13 @@ function connect() {
                 }
                 if (rideOffers.rideInProgress) {
                     me.setPosition(new google.maps.LatLng(data.coordinates[0], data.coordinates[1]));
+                    if (getDistance(me.getPosition(), drop.getPosition()) < 50) {
+                        $('#contacting span').html('You have arrived at your destination').attr('data-ellipses','.');
+                        rideOffers.rideInProgress = false;
+                        $('#cancelRequest').hide();
+                        $('#main-footer .thanks').show();
+                        $('#tip').fadeIn();
+                    }
                 }
             }
         })
@@ -166,9 +176,15 @@ function connect() {
             socket.emit('verifyPhone', verificationCode);
         })
         .on('phoneVerified', function(data) {
-            console.log(data);
-            //window.localStorage.setItem('key', data);
+            window.localStorage.setItem('phone', data.phone);
+            window.localStorage.setItem('proof', data.proof);
             socket.emit('provePhone', data);
+        })
+        .on('phoneProved', function(data) {
+            var phoneDisplay = data.phone.slice(0,3) + '-' + data.phone.slice(3,6) + '-' + data.phone.slice(6);
+            $('#profile-phone .fa-phone').next().html(phoneDisplay);
+            $('#profile-container,#profile-phone,#payment-info,#earnings-info').show();
+            $('.screen-login,#profile-info,#profile-signup').hide();
         })
         .on('loginSuccess', function() {
             console.log('Login successful');
@@ -290,7 +306,8 @@ var rideRequests = {
             if (info[i]) info[i].setMap();
         }
         info = [];
-        $('.call').remove();
+        Twilio.Device.destroy();
+        // Twilio.Device.setup('');
     },
     queue: [],
     current: false
@@ -580,7 +597,10 @@ function midPoints(directions, traffic) {
 function makePayment(price) {
     if ($('.payment-cc').length > 0) {
         if (window.cordova) {
-            navigator.notification.confirm(null, function() { rideOffers.acceptOffer(); }, 'This trip will cost $' + price, ['Cancel','OK']);
+            function resultCallback(buttonIndex) {
+                if (buttonIndex == 2) rideOffers.acceptOffer();
+            }
+            navigator.notification.confirm(null, resultCallback, 'This trip will cost $' + price, ['Cancel','OK']);
         }
         else if (confirm('This trip will cost $' + price)) rideOffers.acceptOffer();
     }
@@ -659,6 +679,9 @@ var rideOffers = {
                 }
             };
             makePayment(data.price);
+            $('.low.preset-tip').children('span').html((data.price*0.15).toFixed(2));
+            $('.med.preset-tip').children('span').html((data.price*0.20).toFixed(2));
+            $('.high.preset-tip').children('span').html((data.price*0.25).toFixed(2));
         });
     }
 }
@@ -704,11 +727,21 @@ function getDriverTime() {
         }
     });
 }
-function deactivateRide() {
+function deactivateRide(resetDrop) {
+    $('#tip').fadeOut();
+    if (resetDrop) {
+        drop.setMap();
+        drop = false;
+    }
+    $('#main-footer').children('.Change,#requestRide').show();
+    $('#cancelRequest,#contacting,.rideOffer,#ride-offers,#main-footer .thanks').hide();
     if (rideOffers.driverID) {
         deactiveCar(rideOffers.driverID);
         delete rideOffers.driverID;
         delete rideOffers.rideInProgress;
+    }
+    if (route) {
+        route.setMap();
     }
     pickupTimer = false;
     $('#contacting span').html('contacting Sqirls').attr('data-ellipses','...');
@@ -824,6 +857,7 @@ $(document).ready(function() {
             $login.css('background-color','rgba(0,0,0,0.4)');
             $('#main').append($login);
             window.requestRide = requestRide;
+            profile.provePhone();
         });
     })
     .on('click', '#cancelRequest', function(event) {
@@ -831,12 +865,11 @@ $(document).ready(function() {
             route.setMap();	
         }
         if (window.io && window.socket) {
-            $('#main-footer').children('.Change,#requestRide').show();
-            $('#cancelRequest,#contacting,.rideOffer,#ride-offers').hide();
             socket.emit('cancelRide');
             deactivateRide();
         }
-        $('.call').remove();
+        Twilio.Device.destroy();
+        // Twilio.Device.setup('');
     })
     .on('click', '.collapse', function(event) {
         small_input();
@@ -905,6 +938,9 @@ $(document).ready(function() {
     .on('click', '.finishRide', function(event) {
         rideRequests.cancelRequest(rideRequests.current.rider);
     })
+    .on('click', '.no-tip', function(event) {
+        deactivateRide(true);
+    })
     .on('click', '#test', function(event) {
         if (!me) {
             draw(0, 45.03293, -93.18358, 100);
@@ -938,7 +974,12 @@ $(document).ready(function() {
     })
     .on('click', '.phone-login', function(event) {
         var phoneNumber = prompt('Phone number:');
-        socket.emit('registerPhone', phoneNumber);
+        if (phoneNumber) {
+            phoneNumber = phoneNumber.replace(/\D/g,'');
+            if (phoneNumber.length == 10) {
+                socket.emit('registerPhone', phoneNumber);
+            }
+        }
     })
     .on('click', '.fb-invite', function(event) {
         if (window.navigator && window.navigator.standalone) {
@@ -1198,8 +1239,8 @@ function TwilioHandlers() {
     Twilio.Device.ready(function() {
         $('.header').append('<button class="call"><i class="fa fa-phone"></i></button>');
     });
-    Twilio.Device.error(function() {
-        $('.call').remove();
+    Twilio.Device.error(function(error) {
+        console.log(error);
     });
     Twilio.Device.offline(function() {
         $('.call').remove();
@@ -1259,6 +1300,18 @@ var profile = {
             }
         }
     },
+    provePhone: function() {
+        if (window.localStorage && window.localStorage.getItem) {
+            var phone = window.localStorage.getItem('phone');
+            var proof = window.localStorage.getItem('proof');
+            if (phone && proof) {
+                socket.emit('provePhone', {
+                    phone: phone,
+                    proof: proof
+                });
+            }
+        }
+    },
     populate: function() {
         if (window.facebookConnectPlugin) {
             facebookConnectPlugin.getAccessToken(function(token) {
@@ -1284,15 +1337,24 @@ var profile = {
         }
     },
     logout: function() {
-        if (window.facebookConnectPlugin) {
-            facebookConnectPlugin.logout(function(response) {
-                $('.screen-login').show();
-                $('#profile-container,#payment-info,#earnings-info').hide();
-                $('.payment-cc').remove();
-                socket.emit('logout');
-            }, function(error) {
-                console.log(error);
-            });
+        function onsuccess() {
+            $('.screen-login').show();
+            $('#profile-container,#payment-info,#earnings-info').hide();
+            $('.payment-cc').remove();
+            socket.emit('logout');
+            $('#toggleDriver').attr('id','becomeDriver').html('Become a Sqirl');
+        }
+        function onerror(error) {
+            console.log(error);
+        }
+        if ($('#profile-phone').is(':visible') && !$('#profile-info').is(':visible')) {
+            onsuccess();
+            $('#profile-container').find('*').css('display','');
+            window.localStorage.removeItem('phone');
+            window.localStorage.removeItem('proof');
+        }
+        else if (window.facebookConnectPlugin) {
+            facebookConnectPlugin.logout(onsuccess, onerror);
         }
     }
 }

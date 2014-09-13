@@ -127,6 +127,18 @@ input, input:focus {
     position: absolute;
     content: attr(data-ellipses);	
 }
+#main-footer > .thanks {
+    display: none;
+    position: absolute;
+    bottom: 8.33%;
+    left: 5%;
+    width: 90%;
+    height: 37.5%;
+    text-align: center;
+    color: whitesmoke;
+    font-family: Optima, Corbel, sans-serif;
+    line-height: 44px;
+}
 #main-footer > #cancelRequest {
     display: none;
     height: 37.5%;
@@ -538,6 +550,9 @@ input, input:focus {
             color: #888;
             font-size: 12px;
         }
+        .preset-tip span:before {
+            content: '$';
+        }
     .custom-tip, .no-tip {
         height: 44px;
         border-radius: 8px;
@@ -550,6 +565,7 @@ input, input:focus {
         margin-left: 6.25%;
         margin-bottom: 22px;
         float: left;
+        background-color: whitesmoke;
     }
     @media (max-height: 275px) {
         .custom-tip, .no-tip {
@@ -837,6 +853,7 @@ input, input:focus {
     position: absolute;
     top: 44px;	
     display: none;
+    padding-top: 10px;
 }
     #profile > #profile-container > #profile-pic {
         text-align: center;
@@ -844,23 +861,27 @@ input, input:focus {
         #profile > #profile-container > #profile-pic > img {
             border-radius: 10px;
             height: 160px;
-            margin-top: 15px;
+            margin-top: 5px;
+            margin-bottom: 10px;
         }
-    #profile > #profile-container > #profile-info {
+    #profile > #profile-container > .profile-section {
         float: left;
-        margin-top: 10px;
         margin-left: 44px;
         color: whitesmoke;
         font-family: Optima, Corbel, sans-serif;
         line-height: 44px;
+        min-width: 50%;
     }
-        #profile > #profile-container > #profile-info > .clickable {
-            cursor: pointer;
-            color: #11C1E2;	
-        }
-        #profile > #profile-container > #profile-info span {
+        #profile > #profile-container > .profile-section span {
              padding-left: 10px;
         }
+    #profile-phone {
+        display: none;
+    }
+    #profile > #profile-container > #profile-actions {
+        cursor: pointer;
+        color: #11C1E2;	
+    }
 @media (orientation: landscape) {
     #profile > #profile-container > #profile-pic {
         float: left;
@@ -868,7 +889,7 @@ input, input:focus {
         #profile > #profile-container > #profile-pic > img {
             margin-left: 15px;
         }
-    #profile > #profile-container > #profile-info {
+    #profile > #profile-container > .profile-section {
         margin-left: 22px;
     }
 }

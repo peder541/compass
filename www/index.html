@@ -14,6 +14,7 @@
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKbju-lHWKmxZc9zB1J8LSg8p2dG2HcMQ&v=3.17&sensor=true&libraries=places"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.2/fastclick.min.js"></script>
     <script type="text/javascript" src="https://ridesqirl.com/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="https://ridesqirl.com/auth/jwt.js"></script>
     <script type="text/javascript" src="js/compass.js"></script>
 
     <link rel="stylesheet" href="css/pay.css" />
@@ -49,24 +50,25 @@
     <div id="main" class="screen">
         <div class="header">
             <h1>RideSqirl</h1>
-            <button class="menu"><i class="fa fa-bars"></i></button>
+            <button type="button" class="menu"><i class="fa fa-bars"></i></button>
         </div>
         <div id="map-canvas"></div>
         <div id="main-footer">
-            <button class="Change Pick-up" data-address="calculating...">Change Pick-up</button>
-            <button class="Change Drop-off" data-address="calculating...">Enter Drop-off</button>
+            <button type="button" class="Change Pick-up" data-address="calculating...">Change Pick-up</button>
+            <button type="button" class="Change Drop-off" data-address="calculating...">Enter Drop-off</button>
             <input class="Pick-up" value="calculating..." readonly />
             <input class="Drop-off" value="calculating..." readonly />
-            <button class="clear">&times;</button>
-            <button class="collapse"><i class="fa fa-caret-down"></i></button>
-            <button id="requestRide">Request Ride</button>
+            <button type="button" class="clear">&times;</button>
+            <button type="button" class="collapse"><i class="fa fa-caret-down"></i></button>
+            <button type="button" id="requestRide">Request Ride</button>
             <p id="contacting">
                 <!--
                 <i class="fa fa-spinner fa-spin"></i>
                 -->
                 <span data-ellipses="...">contacting Sqirls</span>
             </p>
-            <button id="cancelRequest">Cancel Request</button>
+            <button type="button" id="cancelRequest">Cancel Request</button>
+            <p class="thanks">Thank you for using RideSqirl!</p>
         </div>
         <div id="driver-footer">
             <img class="riderPic" src="img/blank.png" />
@@ -76,19 +78,19 @@
                     <sup class="currency fa fa-usd"></sup>
                     <span data-base="2.50">2.50</span>
                 </p>
-                <button class="decrease fare"><i class="fa fa-minus"></i></button>
-                <button class="increase fare"><i class="fa fa-plus"></i></button>
+                <button type="button" class="decrease fare"><i class="fa fa-minus"></i></button>
+                <button type="button" class="increase fare"><i class="fa fa-plus"></i></button>
             </div>
-            <button class="offerRide">Offer Ride</button>
+            <button type="button" class="offerRide">Offer Ride</button>
             <div id="riderResponse">
                 <p id="waitingForResponse">Waiting for a response...</p>
                 <p id="offerAccepted">Your offer was accepted.</p>
                 <p id="arrived-Pick-up">Arrived at pick-up.</p>
                 <p id="drive-in-progress">Trip in progress.</p>
                 <p id="arrived-Drop-off">Arrived at drop-off.</p>
-                <button class="getDirections">Get Directions</button>
-                <button class="startRide">Start Trip</button>
-                <button class="finishRide">Finish Trip</button>
+                <button type="button" class="getDirections">Get Directions</button>
+                <button type="button" class="startRide">Start Trip</button>
+                <button type="button" class="finishRide">Finish Trip</button>
             </div>
         </div>
 
@@ -100,7 +102,7 @@
                     <sup class="currency fa fa-usd"></sup>
                     <span>2.50</span>
                 </p>
-                <button class="acceptRide">Accept Ride</button>
+                <button type="button" class="acceptRide">Accept Ride</button>
                 <p class="driverCar"><span class="carYear">2005</span> <span class="carMake">Mercury</span> <span class="carModel">Montego</span></p>
             </div>
             <div class="rideOffer">
@@ -110,7 +112,7 @@
                     <sup class="currency fa fa-usd"></sup>
                     <span>2.50</span>
                 </p>
-                <button class="acceptRide">Accept Ride</button>
+                <button type="button" class="acceptRide">Accept Ride</button>
                 <p class="driverCar"><span class="carYear">2005</span> <span class="carMake">Mercury</span> <span class="carModel">Montego</span></p>
             </div>
             <div class="rideOffer">
@@ -120,7 +122,7 @@
                     <sup class="currency fa fa-usd"></sup>
                     <span>2.50</span>
                 </p>
-                <button class="acceptRide">Accept Ride</button>
+                <button type="button" class="acceptRide">Accept Ride</button>
                 <p class="driverCar"><span class="carYear">2005</span> <span class="carMake">Mercury</span> <span class="carModel">Montego</span></p>
             </div>
         </div>
@@ -130,17 +132,17 @@
     
     <div id="tip" class="screen">
         <h1><span>Add a tip</span></h1>
-        <button class="preset-tip">15%<span>$1.50</span></button>
-        <button class="preset-tip">20%<span>$2.00</span></button>
-        <button class="preset-tip">25%<span>$2.50</span></button>
-        <button class="custom-tip">Custom Tip Amount</button>
-        <button class="no-tip">No Tip</button>
+        <button type="button" class="preset-tip low">15%<span>1.50</span></button>
+        <button type="button" class="preset-tip med">20%<span>2.00</span></button>
+        <button type="button" class="preset-tip high">25%<span>2.50</span></button>
+        <button type="button" class="custom-tip">Custom Tip Amount</button>
+        <button type="button" class="no-tip">No Tip</button>
     </div>
     
     <div id="signup" class="screen">
         <div class="header">
             <h1>RideSqirl</h1>
-            <button class="menu"><i class="fa fa-bars"></i></button>
+            <button type="button" class="menu"><i class="fa fa-bars"></i></button>
         </div>
         <div class="signup-checklist personal">
             <p>I identify as female.</p>
@@ -208,29 +210,33 @@
     <div id="profile" class="screen">
         <div class="header">
             <h1>RideSqirl</h1>
-            <button class="menu"><i class="fa fa-bars"></i></button>
+            <button type="button" class="menu"><i class="fa fa-bars"></i></button>
         </div>
         <div id="profile-container">
             <div id="profile-pic">
                 <img />
             </div>
-            <div id="profile-info">
-                <p><i class="fa fa-fw fa-user"></i><span>Ben Pedersen</span></p>
-                <p><i class="fa fa-fw fa-envelope"></i><span>ben@okeebo.com</span></p>
-                <!--<p><i class="fa fa-fw fa-phone"></i><span>712-358-2736</span></p>-->
-                <p class="clickable" id="profile-signup"><i class="fa fa-fw fa-car"></i><span>Become a Sqirl</span></p>
-                <p class="clickable" id="profile-logout"><i class="fa fa-fw fa-sign-out"></i><span>Sign out</span></p>
+            <div class="profile-section" id="profile-info">
+                <p><i class="fa fa-fw fa-user"></i><span>Jane Doe</span></p>
+                <p><i class="fa fa-fw fa-envelope"></i><span>jane@email.com</span></p>
+            </div>
+            <div class="profile-section" id="profile-phone">
+                <p><i class="fa fa-fw fa-phone"></i><span>612-555-0123</span></p>
+            </div>
+            <div class="profile-section" id="profile-actions">
+                <p id="profile-signup"><i class="fa fa-fw fa-car"></i><span>Become a Sqirl</span></p>
+                <p id="profile-logout"><i class="fa fa-fw fa-sign-out"></i><span>Sign out</span></p>
             </div>
         </div>
         <div class="screen-login">
             <div class="login-option">
-                <button class="fb-login needsclick">
+                <button type="button" class="fb-login needsclick">
                     <i class="fa fa-facebook-square needsclick"></i>
                     <span class="needsclick">Log in with Facebook</span>
                 </button>
             </div>
             <div class="login-option">
-                <button class="phone-login needsclick">
+                <button type="button" class="phone-login needsclick">
                     <i class="fa fa-phone needsclick"></i>
                     <span class="needsclick">Log in with phone #</span>
                 </button>
@@ -241,17 +247,17 @@
     <div id="payment" class="screen">
         <div class="header">
             <h1>RideSqirl</h1>
-            <button class="menu"><i class="fa fa-bars"></i></button>
+            <button type="button" class="menu"><i class="fa fa-bars"></i></button>
         </div>
         <div class="screen-login">
             <div class="login-option">
-                <button class="fb-login needsclick">
+                <button type="button" class="fb-login needsclick">
                     <i class="fa fa-facebook-square needsclick"></i>
                     <span class="needsclick">Log in with Facebook</span>
                 </button>
             </div>
             <div class="login-option">
-                <button class="phone-login needsclick">
+                <button type="button" class="phone-login needsclick">
                     <i class="fa fa-phone needsclick"></i>
                     <span class="needsclick">Log in with phone #</span>
                 </button>
@@ -267,17 +273,17 @@
     <div id="earnings" class="screen">
         <div class="header">
             <h1>RideSqirl</h1>
-            <button class="menu"><i class="fa fa-bars"></i></button>
+            <button type="button" class="menu"><i class="fa fa-bars"></i></button>
         </div>
         <div class="screen-login">
             <div class="login-option">
-                <button class="fb-login needsclick">
+                <button type="button" class="fb-login needsclick">
                     <i class="fa fa-facebook-square needsclick"></i>
                     <span class="needsclick">Log in with Facebook</span>
                 </button>
             </div>
             <div class="login-option">
-                <button class="phone-login needsclick">
+                <button type="button" class="phone-login needsclick">
                     <i class="fa fa-phone needsclick"></i>
                     <span class="needsclick">Log in with phone #</span>
                 </button>
@@ -316,7 +322,7 @@
         </div>
     </div>
     <div id="credit-card" class="screen">
-        <form id="credit-card-info" method="post" action="http://ridesqirl.com/test" novalidate autocomplete="on">
+        <form id="credit-card-info" method="post" action="https://ridesqirl.com/test" novalidate autocomplete="on">
             <label>
                 <i class="fa fa-credit-card"></i><b>Card</b>
                 <input type="text" class="cc-number" pattern="\d*" x-autocompletetype="cc-number" placeholder="•••• •••• •••• ••••" required>
@@ -344,7 +350,7 @@
         <div class="declinedCard">Card Declined!</div>
     </div>
     <div id="bank" class="screen">
-        <form id="bank-info" method="post" action="http://ridesqirl.com/test" novalidate autocomplete="off">
+        <form id="bank-info" method="post" action="https://ridesqirl.com/test" novalidate autocomplete="off">
             <label>
                 <b>Routing Number</b>
                 <input type="text" class="routing-number" pattern="\d*" placeholder="110000000" maxlength="9">
@@ -362,19 +368,19 @@
     <div id="invite" class="screen">
         <div class="header">
             <h1>RideSqirl</h1>
-            <button class="menu"><i class="fa fa-bars"></i></button>
+            <button type="button" class="menu"><i class="fa fa-bars"></i></button>
         </div>
         <p id="invite-intro">
             Share the word and help us provide a network of safe transportation.
         </p>
         <div class="invite-container">
-            <button class="fb-invite needsclick">
+            <button type="button" class="fb-invite needsclick">
                 <i class="fa fa-facebook-square needsclick"></i>
                 <span class="needsclick">Post It</span>
             </button>
         </div>
         <div class="invite-container">
-            <button class="twitter-invite needsclick">
+            <button type="button" class="twitter-invite needsclick">
                 <i class="fa fa-twitter needsclick"></i>
                 <span class="needsclick">Tweet It</span>
             </button>
