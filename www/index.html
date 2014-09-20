@@ -130,15 +130,6 @@
         <img id="center_icon" src="img/dropoffAcorn.png" />
     </div>
     
-    <div id="tip" class="screen">
-        <h1><span>Add a tip</span></h1>
-        <button type="button" class="preset-tip low">15%<span>1.50</span></button>
-        <button type="button" class="preset-tip med">20%<span>2.00</span></button>
-        <button type="button" class="preset-tip high">25%<span>2.50</span></button>
-        <button type="button" class="custom-tip">Custom Tip Amount</button>
-        <button type="button" class="no-tip">No Tip</button>
-    </div>
-    
     <div id="signup" class="screen">
         <div class="header">
             <h1>RideSqirl</h1>
@@ -390,6 +381,45 @@
             If someone signs up with your code, you'll both get a free ride!
         </p>
         -->
+    </div>
+            
+    <div id="tip" class="screen">
+        <h1><span>Add a tip</span></h1>
+        <div class="select-tip">
+            <button type="button" class="preset-tip low">15%<span class="usd">1.50</span></button>
+            <button type="button" class="preset-tip med">20%<span class="usd">2.00</span></button>
+            <button type="button" class="preset-tip high">25%<span class="usd">2.50</span></button>
+            <button type="button" class="custom-tip">Custom Tip Amount</button>
+            <button type="button" class="no-tip">No Tip</button>
+        </div>
+        <div class="confirm-tip">
+            <div>
+                <p class="tip-fare">
+                    Fare:
+                    <span>
+                        <sup class="currency fa fa-usd"></sup>
+                        <span>10.00</span>
+                    </span>
+                </p>
+                <p class="tip-tip">
+                    Tip:
+                    <span>
+                        <sup class="currency fa fa-usd"></sup>
+                        <span>2.00</span>
+                        <input pattern="\d*" />
+                    </span>
+                </p>
+                <p class="tip-total">
+                    Total:
+                    <span>
+                        <sup class="currency fa fa-usd"></sup>
+                        <span>12.00</span>
+                    </span>
+                </p>
+            </div>
+            <button type="button" class="tip-back">Back</button>
+            <button type="button" class="tip-confirm">Confirm</button>
+        </div>
     </div>
 
     <div id="sidebar">

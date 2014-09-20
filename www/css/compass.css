@@ -277,7 +277,7 @@ input, input:focus {
     font-size: 0.5em;
     font-family: Verdana, Geneva, sans-serif;
 }
-.currency.usd:before {
+.usd:before {
     content: '$';
 }
 #driver-footer #riderResponse {
@@ -532,46 +532,108 @@ input, input:focus {
         #tip > h1 > span {
             background-color: #0A7387;
         }
-    .preset-tip {
-        background-color: whitesmoke;
-        color: #11C1E2;
-        border-radius: 8px;
-        font-family: PT Sans;
-        font-size: 24px;
-        height: 66px;
-        width: 25%;
-        float: left;
-        margin: 22px;
-        margin-left: 6.25%;
-        margin-right: 0;
+    .select-tip {
+        display: block;
+        position: absolute;
+        width: 100%;
     }
-        .preset-tip span {
-            display: block;
-            color: #888;
-            font-size: 12px;
+        .preset-tip {
+            background-color: whitesmoke;
+            color: #11C1E2;
+            border-radius: 8px;
+            font-family: PT Sans;
+            font-size: 24px;
+            height: 66px;
+            width: 25%;
+            float: left;
+            margin: 22px;
+            margin-left: 6.25%;
+            margin-right: 0;
         }
-        .preset-tip span:before {
-            content: '$';
-        }
-    .custom-tip, .no-tip {
-        height: 44px;
-        border-radius: 8px;
-        font-size: 16px;
-        font-family: PT Sans;
-        width: 87.5%;
-        color: #11C1E2;
-        font-weight: bold;
-        margin: 0;
-        margin-left: 6.25%;
-        margin-bottom: 22px;
-        float: left;
-        background-color: whitesmoke;
-    }
-    @media (max-height: 275px) {
+            .preset-tip span {
+                display: block;
+                color: #888;
+                font-size: 12px;
+            }
         .custom-tip, .no-tip {
-            width: 40.625%;
+            height: 44px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: PT Sans;
+            width: 87.5%;
+            color: #11C1E2;
+            font-weight: bold;
+            margin: 0;
+            margin-left: 6.25%;
+            margin-bottom: 22px;
+            float: left;
+            background-color: whitesmoke;
         }
+        @media (max-height: 275px) {
+            .custom-tip, .no-tip {
+                width: 40.625%;
+            }
+        }
+    .confirm-tip {
+        display: none;
+        background-color: whitesmoke;
+        color: #888;
+        border-radius: 8px;
+        width: 250px;
+        margin: 22px auto;
+        line-height: 44px;
+        font-family: Optima, Calibri, sans-serif;
     }
+        .confirm-tip div {
+            padding: 8px 0;
+        }
+            .confirm-tip p {
+                font-size: 16px;
+                margin: 0px 44px;
+                font-family: PT Sans;
+                position: relative;
+            }
+                .confirm-tip p > span {
+                    position: absolute;
+                    right: 0;
+                }
+                    .confirm-tip p span span {
+                        padding-left: 4px;
+                    }
+                    .confirm-tip p span input {
+                        background-color: transparent;
+                        border: 0;
+                        text-align: right;
+                        font-family: inherit;
+                        font-size: inherit;
+                        display: none;
+                        padding-left: 4px;
+                        width: 72px;
+                        line-height: inherit;
+                    }
+            .confirm-tip p:last-of-type {
+                border-top: 1px solid #aaa;
+            }
+            .confirm-tip p:first-of-type {
+                line-height: 19px;
+                padding-top: 12.5px;
+            }
+        .confirm-tip button {
+            background-color: whitesmoke;
+            font-family: Optima, Corbel, sans-serif;
+            font-size: 17px;
+            border-radius: 0 0 0 8px;
+            color: #555;
+            width: 50%;
+            border-top: 1px solid #ddd;
+            line-height: 44px;
+        }
+        .confirm-tip button.tip-confirm {
+            color: #11C1E2;
+            border-left: 1px solid #ddd;
+            border-radius: 0 0 8px 0;
+            float: right;
+        }
 
 #payment-info {
     font-size: 14px;

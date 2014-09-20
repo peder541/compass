@@ -64,9 +64,9 @@ function connect() {
                     socket.emit('login', token);
                 }, function(error) {
                     console.log("Couldn't get token: " + error);
+                    profile.provePhone();
                 });
             }
-            profile.provePhone();
             if (driver) activateDriver();
         })
         .on('canDrive', function() {
@@ -99,6 +99,17 @@ function connect() {
                         $('#tip').fadeIn();
                     }
                 }
+                else if ($('#contacting span').html() == 'Sqirl has arrived') {
+                    var currentGPS = new google.maps.LatLng(geo.latitude, geo.longitude);
+                    var carGPS = cars[data.id].getPosition();
+                    if (getDistance(currentGPS, carGPS) * 2 < getDistance(me.getPosition(), carGPS)) {
+                        // ride has most likely started by now
+                        rideOffers.rideInProgress = true;
+                        $('#contacting span').html('Ride in progress').attr('data-ellipses','.');
+                        pickupTimer = false;
+                        socket.emit('rideStarted', rideOffers.driverID);
+                    }
+                }
             }
         })
         .on('rideRequested', function(data) {
@@ -121,6 +132,10 @@ function connect() {
             if (data == rideOffers.driverID) {
                 rideOffers.rideInProgress = true;
                 $('#contacting span').html('Ride in progress').attr('data-ellipses','.');
+            }
+            else if (data == rideRequests.current.rider) {
+                $('#arrived-Pick-up,.startRide').hide();
+                $('#drive-in-progress,.getDirections').show();
             }
         })
         .on('rideCanceled', function(data) {
@@ -275,7 +290,7 @@ var rideRequests = {
             for (var i=0; i<this.queue.length; ++i) {
                 if (this.queue[i].rider == rider) {
                     this.queue.splice(i,1);
-                    return;
+                    return true;
                 }
             }
         }
@@ -306,8 +321,12 @@ var rideRequests = {
             if (info[i]) info[i].setMap();
         }
         info = [];
-        Twilio.Device.destroy();
-        // Twilio.Device.setup('');
+        if (Twilio.Device.destroy) {
+            Twilio.Device.destroy();
+        }
+        else {
+            Twilio.Device.setup('');
+        }
     },
     queue: [],
     current: false
@@ -682,7 +701,25 @@ var rideOffers = {
             $('.low.preset-tip').children('span').html((data.price*0.15).toFixed(2));
             $('.med.preset-tip').children('span').html((data.price*0.20).toFixed(2));
             $('.high.preset-tip').children('span').html((data.price*0.25).toFixed(2));
+            $('.tip-fare span span').html(data.price);
         });
+    },
+    showTipConfirmation: function(tip, callback) {
+        rideOffers.farePlusTip(tip);
+        $('.select-tip').fadeOut();
+        $('.confirm-tip').fadeIn({
+            complete: function() {
+                if (typeof callback === 'function') {
+                    callback();
+                }
+            }
+        });
+    },
+    farePlusTip: function(tip) {
+        $('.tip-tip span span').html(tip);
+        tip = Number(tip);
+        var fare = Number($('.tip-fare span span').html());
+        $('.tip-total span span').html((fare + tip).toFixed(2));
     }
 }
 
@@ -739,6 +776,12 @@ function deactivateRide(resetDrop) {
         deactiveCar(rideOffers.driverID);
         delete rideOffers.driverID;
         delete rideOffers.rideInProgress;
+    }
+    if (Twilio.Device.destroy) {
+        Twilio.Device.destroy();
+    }
+    else {
+        Twilio.Device.setup('');
     }
     if (route) {
         route.setMap();
@@ -868,8 +911,6 @@ $(document).ready(function() {
             socket.emit('cancelRide');
             deactivateRide();
         }
-        Twilio.Device.destroy();
-        // Twilio.Device.setup('');
     })
     .on('click', '.collapse', function(event) {
         small_input();
@@ -900,7 +941,8 @@ $(document).ready(function() {
         var d = {
             rider: rideRequests.current && rideRequests.current.rider,
             price: $('#cost span').html(),
-            time: $('#cost span').attr('data-time')	
+            time: $('#cost span').attr('data-time'),
+            base: $('#cost span').attr('data-base')
         }
         socket.emit('offerRide',d);
         $('#riderResponse').show();
@@ -938,7 +980,35 @@ $(document).ready(function() {
     .on('click', '.finishRide', function(event) {
         rideRequests.cancelRequest(rideRequests.current.rider);
     })
+    .on('click', '.custom-tip', function(event) {
+        /*
+        var tip = prompt('Custom tip:');
+        if (tip) {
+            tip = Number(tip).toFixed(2);
+            rideOffers.showTipConfirmation(tip);
+        }
+        */
+        rideOffers.showTipConfirmation('0.00', function() {
+            $('.tip-tip input').focus();
+        });
+        $('.tip-tip input').show().val('');
+        $('.tip-tip span span').hide();
+    })
+    .on('click', '.preset-tip', function(event) {
+        var tip = $(this).children('span').html();
+        rideOffers.showTipConfirmation(tip);
+    })
     .on('click', '.no-tip', function(event) {
+        var tip = '0.00';
+        rideOffers.showTipConfirmation(tip);
+    })
+    .on('click', '.tip-back', function(event) {
+        $('.tip-tip input').hide();
+        $('.tip-tip span span').show();
+        $('.confirm-tip').fadeOut();
+        $('.select-tip').fadeIn();
+    })
+    .on('click', '.tip-confirm', function(event) {
         deactivateRide(true);
     })
     .on('click', '#test', function(event) {
@@ -1170,6 +1240,13 @@ $(document).ready(function() {
 		});
 	});
     
+    $('.tip-tip input').on('input', function(event) {
+        var $this = $(this);
+        var tip = ($this.val().replace('.','') / 100).toFixed(2);
+        $this.val(tip);
+        rideOffers.farePlusTip(tip);
+    }).payment('restrictNumeric');
+    
     $('#invite-link').on('blur', function(event) {
         var $this = $(this);
         $this.val($this.attr('data-url'));
@@ -1210,7 +1287,7 @@ $(document).ready(function() {
 
 function onPause() {
     // Turn off geolocation to save power
-    if (!driver && !rideRequests.driverID) {
+    if (!driver && !rideOffers.driverID) {
         navigator.geolocation.clearWatch(watchID);
         watchID = false;
     }
@@ -1243,6 +1320,7 @@ function TwilioHandlers() {
         console.log(error);
     });
     Twilio.Device.offline(function() {
+        Twilio.Device.disconnectAll();
         $('.call').remove();
     });
     Twilio.Device.incoming(function (conn) {
