@@ -245,7 +245,7 @@ var rideRequests = {
                 clickable: false,
                 map: map,
                 icon: {
-                    url: 'img/' + (endpoint == 'pickup' ? 'dropoffAcorn' : 'dropoffTree') + '.png',
+                    url: 'img/markers/' + (endpoint == 'pickup' ? 'dropoffAcorn' : 'dropoffTree') + '.png',
                     scaledSize: new google.maps.Size(25,30)
                 },
                 optimized: false,
@@ -363,7 +363,7 @@ function draw(index, latitude, longitude, accuracy) {
                 clickable: false,
                 map: map,
                 icon: {
-                    url: 'img/dropoffAcorn.png',
+                    url: 'img/markers/dropoffAcorn.png',
                     scaledSize: new google.maps.Size(25,30)
                 },
                 optimized: false,
@@ -379,8 +379,8 @@ function draw(index, latitude, longitude, accuracy) {
                 clickable: false,
                 map: map,
                 icon: {
-                    url: 'img/availableSqirl.png', // 'img/Google Maps Markers/black_Marker.png',
-                    scaledSize: new google.maps.Size(57,36)
+                    url: 'img/markers/availableSqirl.png', // 'img/Google Maps Markers/black_Marker.png',
+                    scaledSize: new google.maps.Size(51,38)//(57,36)
                 },
                 optimized: false,
                 position: map.center
@@ -410,7 +410,7 @@ function editPosition(setDrop) {
                 clickable: false,
                 map: map,
                 icon: {
-                    url: 'img/dropoffTree.png',
+                    url: 'img/markers/dropoffTree.png',
                     scaledSize: new google.maps.Size(25,30)
                 },
                 optimized: false,
@@ -422,7 +422,7 @@ function editPosition(setDrop) {
         obj = drop;
     }
     map.panTo(obj.getPosition());
-    $('#center_icon').attr('src', obj.getIcon().url);
+    $('#center_icon').css('background-image', 'url("' + obj.getIcon().url + '")');
     $('#map-canvas').one('mousedown', function() {
         trueCenterIcon(obj);	
     });
@@ -539,7 +539,7 @@ function realtimeRoutes(destination, waypoints) {
 
 
 function getCost(directions, traffic) {
-    var initial_cost = 2.5;
+    var initial_cost = 1.5;
     var distance_cost = 0.001;	// $ per meter						= 1.609/mile
     var duration_cost = 0.005;	// $ per second (experimental)		= 0.300/minute
 
@@ -793,8 +793,8 @@ function deactivateRide(resetDrop) {
 function activeCar(driverID) {
     if (cars[driverID]) {
         cars[driverID].setIcon({
-            url: 'img/enrouteSqirl.png', // 'img/Google Maps Markers/black_Marker.png',
-            scaledSize: new google.maps.Size(57,36)
+            url: 'img/markers/enrouteSqirl.png', // 'img/Google Maps Markers/black_Marker.png',
+            scaledSize: new google.maps.Size(51,38)//(57,36)
         });
     //    cars[driverID].setIcon('img/Google Maps Markers/active_Marker.png');
     }
@@ -802,8 +802,8 @@ function activeCar(driverID) {
 function deactiveCar(driverID) {
     if (cars[driverID]) {
         cars[driverID].setIcon({
-            url: 'img/availableSqirl.png',
-            scaledSize: new google.maps.Size(57,36)
+            url: 'img/markers/availableSqirl.png',
+            scaledSize: new google.maps.Size(51,38)//(57,36)
         });
     }
 }
@@ -1445,7 +1445,7 @@ function trueCenterIcon(obj) {
         'left': $map.width()*0.5 - $center.width()*0.5
     }).show();
     if (obj) {
-        $center.attr('src', obj.getIcon().url);
+        $center.css('background-image', 'url("' + obj.getIcon().url + '")');
         obj.setVisible(false);
     }
 }
@@ -1530,7 +1530,7 @@ function hibernateDriver() {
         }
     });
     me.setIcon({
-        url: 'img/dropoffAcorn.png',
+        url: 'img/markers/dropoffAcorn.png',
         scaledSize: new google.maps.Size(25,30)
     });
     $('#checkEarnings').html('Payment').attr('id','makePayment');
@@ -1560,8 +1560,8 @@ function activateDriver() {
         }
     });
     me.setIcon({
-        url: 'img/enrouteSqirl.png',
-        scaledSize: new google.maps.Size(57,36)
+        url: 'img/markers/enrouteSqirl.png',
+        scaledSize: new google.maps.Size(51,38)//(57,36)
     });
     $('#makePayment').html('Earnings').attr('id','checkEarnings');
     //$('#driver-footer').show();

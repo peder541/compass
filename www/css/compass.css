@@ -232,7 +232,10 @@ input, input:focus {
     width: 25px;
     height: 30px;
     display: none;
-    pointer-events: none;	
+    pointer-events: none;
+    background-image: url("../img/markers/dropoffAcorn.png");
+    background-repeat: no-repeat;
+    background-size: 100%;
 }
 
 #driver-footer {
@@ -455,7 +458,19 @@ input, input:focus {
     left: 0;
     top: 0;
     line-height: 44px;
+    /* Using Wordmark */
+    background-size: auto 34px;
+    background-image: url('../img/wordmark.whitesmoke.png');
+    background-repeat: no-repeat;
+    background-position: center 6px;
+    color: transparent;
+    /**/
 }
+    .header > h1 > img {
+        height: 32px;
+        position: relative;
+        top: 9px;
+    }
 .menu, .call, .gps {
     font-size: 28px;
     height: 44px;
@@ -531,6 +546,14 @@ input, input:focus {
     }
         #tip > h1 > span {
             background-color: #0A7387;
+            /* Make Tip title match RideSqirl wordmark */
+            font-family: Hipster Script Pro;
+            padding: 8px 0px 0px;
+            margin: 0px;
+            font-size: 26px;
+            line-height: 1;
+            display: inline-block;
+            /**/
         }
     .select-tip {
         display: block;
