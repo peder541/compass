@@ -21,6 +21,8 @@ var realtimeRoutesListener = false;
 var drivingListener = false;
 var startApp = true;
 
+var pickupTimer = false;
+var dropoffTimer = false;
 
 var geo = {
     success: function(position) {
@@ -77,26 +79,25 @@ function connect() {
             // Say how much long it will take the driver to arrive at the rider's pickup location
             if (data.id == rideOffers.driverID) {
                 if (pickupTimer) {
-                    if (getDistance(me.getPosition(), cars[data.id].getPosition()) < 50) {
-                        $('#contacting span').html('Sqirl has arrived').attr('data-ellipses','.');
-                        console.log('Arrival: socket');
-                        if (window.plugin && window.plugin.notification && window.plugin.notification.local) {
-                            window.plugin.notification.local.add({date: new Date(), message: 'Sqirl has arrived', autoCancel: true});
-                        }
-                        pickupTimer = false;
+                    // Using the route endpoints gives better precision, but loses the ability to take other routes. Might want to mix tests.
+                    var origin = (route && route.directions.routes[0].legs[0].start_location) || me.getPosition();
+                    
+                    if (getDistance(origin, cars[data.id].getPosition()) < 25) {
+                        console.log('Proximity detection: socket');
+                        rideOffers.callbacks.arrived_at_pickup();
                     }
-                    else if ((new Date()).getTime() > pickupTimer + 10000) {
+                    else if (Date.now() > pickupTimer + 10000) {
                         getDriverTime();
                     }
                 }
                 if (rideOffers.rideInProgress) {
                     me.setPosition(new google.maps.LatLng(data.coordinates[0], data.coordinates[1]));
-                    if (getDistance(me.getPosition(), drop.getPosition()) < 50) {
-                        $('#contacting span').html('You have arrived at your destination').attr('data-ellipses','.');
-                        rideOffers.rideInProgress = false;
-                        $('#cancelRequest').hide();
-                        $('#main-footer .thanks').show();
-                        $('#tip').fadeIn();
+                    // Using the route endpoints gives better precision, but loses the ability to take other routes. Might want to mix tests.
+                    var destination = (route && route.directions.routes[0].legs[0].end_location) || drop.getPosition();
+                    
+                    if (getDistance(me.getPosition(), destination) < 25) {
+                        console.log('Proximity detection: socket');
+                        rideOffers.callbacks.arrived_at_dropoff();
                     }
                 }
                 else if ($('#contacting span').html() == 'Sqirl has arrived') {
@@ -104,21 +105,65 @@ function connect() {
                     var carGPS = cars[data.id].getPosition();
                     if (getDistance(currentGPS, carGPS) * 2 < getDistance(me.getPosition(), carGPS)) {
                         // ride has most likely started by now
-                        rideOffers.rideInProgress = true;
-                        $('#contacting span').html('Ride in progress').attr('data-ellipses','.');
-                        pickupTimer = false;
+                        rideOffers.startRide();
                         socket.emit('rideStarted', rideOffers.driverID);
                     }
                 }
             }
         })
+        .on('migrateRider', function(newRiderID) {
+            var oldRiderID = rideRequests.current.rider;
+            rideRequests.current.rider = newRiderID;
+            console.log('Migrated rider from ' + oldRiderID + ' to ' + newRiderID);
+        })
+        .on('resumeRide', function(data) {
+            if (window.confirmPosition) confirmPosition();
+            if (geo.active) {
+                geo.active = false;
+            }
+            for (var i=0; i<2; ++i) {
+                var markerName = (i==0) ? 'me' : 'drop';
+                var spotType = (i==0) ? 'pickup' : 'dropoff';
+                var spot = new google.maps.LatLng(data[spotType][0], data[spotType][1]);
+                if (!window[markerName]) {
+                    var markerOptions = {
+                        clickable: false,
+                        map: map,
+                        icon: {
+                            url: 'img/markers/dropoffTree.png',
+                            scaledSize: new google.maps.Size(25,30)
+                        },
+                        optimized: false,
+                        position: spot
+                    };
+                    window[markerName] = new google.maps.Marker(markerOptions);
+                }
+                else {
+                    window[markerName].setPosition(spot);
+                }
+            }
+            getRoute();
+            if (data.driverID) {
+                rideOffers.driverID = data.driverID;
+                activeCar(data.driverID);
+            }
+            $('#main-footer').children().hide();
+            $('#cancelRequest,#contacting').show();
+            switch(data.status) {
+                case 'accepted':
+                    console.log('Status:','accepted');
+                    getDriverTime();
+                    break;
+                case 'enroute':
+                    console.log('Status:','enroute');
+                    rideOffers.startRide();
+                    break;
+                default:
+                    break;
+            }
+        })
         .on('rideRequested', function(data) {
-            if (rideRequests.current) {
-                rideRequests.queue.push(data);
-            }
-            else {
-                rideRequests.showRequest(data);
-            }
+            rideRequests.receiveRequest(data);
         })
         .on('rideOffered', function(data) {
             rideOffers.showOffer(data);
@@ -130,12 +175,10 @@ function connect() {
         })
         .on('rideStarted', function(data) {
             if (data == rideOffers.driverID) {
-                rideOffers.rideInProgress = true;
-                $('#contacting span').html('Ride in progress').attr('data-ellipses','.');
+                rideOffers.startRide();
             }
             else if (data == rideRequests.current.rider) {
-                $('#arrived-Pick-up,.startRide').hide();
-                $('#drive-in-progress,.getDirections').show();
+                rideRequests.startRide();
             }
         })
         .on('rideCanceled', function(data) {
@@ -230,13 +273,39 @@ function connect() {
                 delete cars[data.id];
             }
             else if (driver) {
-                rideRequests.cancelRequest(data.id);
+                if (rideRequests.current && rideRequests.current.rider == data.id) {
+                    console.log('Your rider has lost connection');
+                    // I think it makes sense to cancel requests of rides that haven't been accepted yet.
+                    if ($('.offerRide,#waitingForResponse').is(':visible')) {
+                        rideRequests.cancelRequest(data.id);
+                    }
+                }
+                // Cancel any lost connections in queue
+                else {
+                    rideRequests.cancelRequest(data.id);
+                }
             }
         });
     }
 }
 
+// DRIVER
 var rideRequests = {
+    receiveRequest: function(data) {
+        if (this.current) {
+            if (this.current.rider == data.rider) {
+                this.current = data;
+                this.showRequest(data);
+            }
+            else {
+                this.removeRiderFromQueue(data.rider);
+                this.queue.push(data);
+            }
+        }
+        else {
+            this.showRequest(data);
+        }
+    },
     showRequest: function(data) {
         if (!data) return false;
         function drawSpot(endpoint) {
@@ -263,7 +332,7 @@ var rideRequests = {
         console.log(data.traffic);
 
         getProfileImage(data, function(src) {
-            $('#driver-footer').css('bottom','-120px').show().animate({'bottom':'0'}, {
+            $('#driver-footer').css('bottom','-120px').show().stop().animate({'bottom':'0'}, {
                 progress: function() {
                     $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);	
                 }
@@ -285,18 +354,17 @@ var rideRequests = {
             this.hideRequest(function() {
                 rideRequests.showRequest(data);
             });
+            me.setIcon({
+                url: 'img/markers/enrouteSqirl.png',
+                scaledSize: new google.maps.Size(51,38)//(57,36)
+            });
         }
         else {
-            for (var i=0; i<this.queue.length; ++i) {
-                if (this.queue[i].rider == rider) {
-                    this.queue.splice(i,1);
-                    return true;
-                }
-            }
+            this.removeRiderFromQueue(rider);
         }
     },
     hideRequest: function(callback) {
-        $('#driver-footer').animate({'bottom':'-120px'}, {
+        $('#driver-footer').stop().animate({'bottom':'-120px'}, {
             progress: function() {
                 $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);	
             },
@@ -328,8 +396,42 @@ var rideRequests = {
             Twilio.Device.setup('');
         }
     },
+    removeRiderFromQueue: function(rider) {
+        for (var i=0; i<this.queue.length; ++i) {
+            if (this.queue[i].rider == rider) {
+                this.queue.splice(i,1);
+                break;
+            }
+        }
+    },
     queue: [],
-    current: false
+    current: false,
+    startRide: function() {
+        me.setIcon({
+            url: 'img/markers/enrouteSqirl.withAcorn.png',
+            scaledSize: new google.maps.Size(63,38)
+        });
+        pickup.setVisible(false);
+        $('#arrived-Pick-up,.startRide').hide();
+        $('#drive-in-progress,.getDirections').show();
+        rideRequests.rideInProgress = true;
+        rideRequests.measured_distance = 0;
+        rideRequests.last_point = me.getPosition();
+        rideRequests.start_time = Date.now();
+    },
+    measured_distance: 0,
+    last_point: false,
+    finishRide: function() {
+        var measured = {
+            time: (Date.now() - rideRequests.start_time) / 1000,
+            distance: rideRequests.measured_distance
+        };
+        rideRequests.rideInProgress = false;
+        delete rideRequests.start_time;
+        console.log('Measured Distance:', measured.distance);
+        console.log('Measured Time:', measured.time); 
+        rideRequests.cancelRequest(rideRequests.current.rider);
+    }
 };
 
 function draw(index, latitude, longitude, accuracy) {
@@ -418,7 +520,7 @@ function editPosition(setDrop) {
             };
             drop = new google.maps.Marker(markerOptions);
             $('.Change.Drop-off').html('Change Drop-off');
-        };
+        }
         obj = drop;
     }
     map.panTo(obj.getPosition());
@@ -520,10 +622,10 @@ function drawRoute(directions, noZoom, traffic) {
         directions: directions,
         map: map,
         suppressMarkers: true,
-        preserveViewport: !!noZoom/*,
+        preserveViewport: !!noZoom/**/,
         polylineOptions: {
-            strokeColor: 'rgb(0, 94, 255)',				// 'rgb(0, 94, 255)' is the default color Google uses
-            strokeOpacity: 0.55,						//	with an opacity of 0.55
+            strokeColor: '#555',				// 'rgb(0, 94, 255)' is the default color Google uses
+            strokeOpacity: 0.45,						//	with an opacity of 0.55
             strokeWeight: 6								//	and strokeWidth of 6	
         }/**/
     };
@@ -553,7 +655,9 @@ function getCost(directions, traffic) {
         var j = (l > 1) ? 1 : 0;
         for (j; j < l; ++j) {	
             cost += legs[j].distance.value * distance_cost;
+            console.log('Estimated Distance:', legs[j].distance.value);
             cost += legs[j].duration.value * duration_cost * traffic;
+            console.log('Estimated Time:', legs[j].duration.value);
         }
     }
     cost /= N;
@@ -671,6 +775,7 @@ function getProfileImage(data, callback) {
     return img.src;
 }
 
+// RIDER
 var rideOffers = {
     resize: function() {
         $('#ride-offers').height($('#map-canvas').height());
@@ -720,6 +825,43 @@ var rideOffers = {
         tip = Number(tip);
         var fare = Number($('.tip-fare span span').html());
         $('.tip-total span span').html((fare + tip).toFixed(2));
+    },
+    startRide: function() {
+        rideOffers.rideInProgress = true;
+        cars[rideOffers.driverID].setIcon({
+            url: 'img/markers/enrouteSqirl.withAcorn.png',
+            scaledSize: new google.maps.Size(63,38)
+        });
+        me.setVisible(false);
+        $('#contacting span').html('Ride in progress').attr('data-ellipses','.');
+    },
+    callbacks: {
+        // Maybe want to move back to getDriverTime()
+        approaching: function(leg) {
+            var duration = leg.duration;
+            $('#contacting span').html(duration.text + ' until Sqirl arrives').attr('data-ellipses','.');
+            pickupTimer = Date.now();
+        },
+        arrived_at_pickup: function() {
+            $('#contacting span').html('Sqirl has arrived').attr('data-ellipses','.');
+            
+            if (window.plugin && window.plugin.notification && window.plugin.notification.local) {
+                window.plugin.notification.local.add({date: new Date(), message: 'Sqirl has arrived', autoCancel: true});
+                window.plugin.notification.local.hasPermission(function(granted) {
+                    if (!granted) window.plugin.notification.local.promptForPermission();
+                });
+            }
+            pickupTimer = false;
+            dropoffTimer = Date.now();
+        },
+        arrived_at_dropoff: function() {
+            $('#contacting span').html('You have arrived at your destination').attr('data-ellipses','.');
+            rideOffers.rideInProgress = false;
+            $('#cancelRequest').hide();
+            $('#main-footer .thanks').show();
+            $('#tip').fadeIn().children().css('display','');
+            dropoffTimer = false;
+        }
     }
 }
 
@@ -737,10 +879,18 @@ function constructRideActivator(driverID) {
     };
     return f;
 }
-function getDriverTime() {
+function getDriverTime(obj, onsuccess, onfail, car) {
+    if (!obj) obj = me;
+    if (!car) car = cars[rideOffers.driverID];
+    if (typeof onsuccess !== 'function') {
+        onsuccess = rideOffers.callbacks.arrived_at_pickup;
+    }
+    if (typeof onfail !== 'function') {
+        onfail = rideOffers.callbacks.approaching;
+    }
     var directionsRequest = {
-        origin: cars[rideOffers.driverID].getPosition(),
-        destination: me.getPosition(),
+        origin: car.getPosition(),
+        destination: obj.getPosition(),
         travelMode: 'DRIVING'
     };
     var query = new google.maps.DirectionsService();
@@ -748,18 +898,12 @@ function getDriverTime() {
         if (status == google.maps.DirectionsStatus.OK) {
             var leg = directions.routes[0].legs[0];
             if (leg.distance.value < 50) {
-                // This may be unnecessary since the socket check might always cover this case
-                $('#contacting span').html('Sqirl has arrived').attr('data-ellipses','.');
-                console.log('Arrival: google query');
-                if (window.plugin && window.plugin.notification && window.plugin.notification.local) {
-                    window.plugin.notification.local.add({date: new Date(), message: 'Sqirl has arrived', autoCancel: true});
-                }
-                pickupTimer = false;
+                // Covers a tiny portion of edge cases, but doesn't really cost anything
+                console.log('Proximity detection: google query');
+                onsuccess();
             }
             else {
-                var duration = leg.duration;
-                $('#contacting span').html(duration.text + ' until Sqirl arrives').attr('data-ellipses','.');
-                pickupTimer = (new Date()).getTime();
+                onfail(leg);
             }
         }
     });
@@ -806,6 +950,7 @@ function deactiveCar(driverID) {
             scaledSize: new google.maps.Size(51,38)//(57,36)
         });
     }
+    me.setVisible(true);
 }
 
 function initialize() {
@@ -971,14 +1116,13 @@ $(document).ready(function() {
         }
     })
     .on('click', '.startRide', function(event) { 
-        $('#arrived-Pick-up,.startRide').hide();
-        $('#drive-in-progress,.getDirections').show();
+        rideRequests.startRide();
         if (window.io && window.socket) {
             socket.emit('startRide', rideRequests.current.rider);
         }
     })
     .on('click', '.finishRide', function(event) {
-        rideRequests.cancelRequest(rideRequests.current.rider);
+        rideRequests.finishRide();
     })
     .on('click', '.custom-tip', function(event) {
         /*
@@ -1010,6 +1154,8 @@ $(document).ready(function() {
     })
     .on('click', '.tip-confirm', function(event) {
         deactivateRide(true);
+        var tip = $('.tip-tip span span').html();
+        socket.emit('tipForRide', tip);
     })
     .on('click', '#test', function(event) {
         if (!me) {
@@ -1330,6 +1476,9 @@ function TwilioHandlers() {
                 date: new Date(),
                 autoCancel: true
             });
+            window.plugin.notification.local.hasPermission(function(granted) {
+                if (!granted) window.plugin.notification.local.promptForPermission();
+            });
             function answerCallback(buttonIndex) {
                 if (buttonIndex == 1) {
                     conn.reject();
@@ -1521,7 +1670,7 @@ function hibernateDriver() {
     driver = false;
     rideRequests.hideRequest();
     rideRequests.queue = [];
-    $('#main-footer').css('bottom','-120px').show().animate({'bottom': '0px'}, { 
+    $('#main-footer').css('bottom','-120px').show().stop().animate({'bottom': '0px'}, { 
         progress: function() { 
             $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#main-footer').css('bottom'),10) - 120);
         },
@@ -1551,7 +1700,7 @@ function activateDriver() {
         drop = false;
     }
     geo.active = true;
-    $('#main-footer').animate({'bottom': '-120px'}, { 
+    $('#main-footer').stop().animate({'bottom': '-120px'}, { 
         progress: function() { 
             $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#main-footer').css('bottom'),10) - 120);
         },
@@ -1575,7 +1724,11 @@ function emitPositionUpdates(obj) {
     if (!drivingListener) {
         drivingListener = google.maps.event.addListener(obj, 'position_changed', function() {
             var spot = obj.getPosition();
-            if (pickup && $('#offerAccepted').is(':visible') && getDistance(pickup.getPosition(),spot) < 50) {
+            // Using the route endpoints gives better precision, but loses the ability to take other routes. Might want to mix tests.
+            var pickup_location = (route && route.directions.routes[0].legs[1].start_location) || (pickup && pickup.getPosition());
+            var dropoff_location = (route && route.directions.routes[0].legs[1].end_location) || (dropoff && dropoff.getPosition());
+            
+            if (pickup && $('#offerAccepted').is(':visible') && getDistance(pickup_location,spot) < 25) {
                 console.log('Arrived at Pick-up!');
                 $('#offerAccepted,.getDirections').hide();
                 $('#arrived-Pick-up,.startRide').show();
@@ -1583,12 +1736,16 @@ function emitPositionUpdates(obj) {
             if (pickup && $('#drive-in-progress').is(':visible')) {
                 pickup.setPosition(me.getPosition());
             }
-            if (dropoff && $('#drive-in-progress').is(':visible') && getDistance(dropoff.getPosition(),spot) < 50) {
+            if (dropoff && $('#drive-in-progress').is(':visible') && getDistance(dropoff_location,spot) < 25) {
                 console.log('Arrived at Drop-off!');
                 $('#drive-in-progress,.getDirections').hide();
                 $('#arrived-Drop-off,.finishRide').show();
             }
             if (window.io && window.socket) socket.emit('update', [spot.lat(), spot.lng()]);
+            if (rideRequests.last_point && rideRequests.rideInProgress) {
+                rideRequests.measured_distance += getDistance(spot, rideRequests.last_point);
+                rideRequests.last_point = spot;
+            }
         });
     }
 }
@@ -1649,8 +1806,8 @@ function toggleMenu() {
     var $screen = $('.screen').filter(':visible');
     if ($sidebar.is(':visible')) {
         /**/
-        $screen.animate({'left':''});
-        $sidebar.animate({'left':-$sidebar.width()}, function() { 
+        $screen.stop().animate({'left':''});
+        $sidebar.stop().animate({'left':-$sidebar.width()}, function() { 
             $sidebar.hide();
         });
         /*
@@ -1662,8 +1819,8 @@ function toggleMenu() {
     }
     else {
         /**/
-        $screen.animate({'left':$sidebar.width()});
-        $sidebar.css({'left':-$sidebar.width()}).show().animate({'left':''});
+        $screen.stop().animate({'left':$sidebar.width()});
+        $sidebar.css({'left':-$sidebar.width()}).show().stop().animate({'left':''});
         /*
         $sidebar.show();
         $sidebar.add($screen).css({'transition': 'left 0.4s ease-in-out'});
@@ -1734,7 +1891,7 @@ function fullscreen_input() {
         if (!window.autocomplete) {
             autocomplete = new google.maps.places.AutocompleteService();
         }
-        $input.css({'height': $input.height()}).animate({'top': '1%', 'left': '2%', 'width': '88%'}, {
+        $input.css({'height': $input.height()}).stop().animate({'top': '1%', 'left': '2%', 'width': '88%'}, {
             progress: function() {
                 $(window).scrollTop(0);
             },
@@ -1748,7 +1905,7 @@ function fullscreen_input() {
                 $('.clear,.collapse').show();
             }
         });
-        $('#main-footer').animate({'height': '100%'}).children().not($input).hide();
+        $('#main-footer').stop().animate({'height': '100%'}).children().not($input).hide();
         return true;
     }
 }
@@ -1758,13 +1915,13 @@ function small_input(callback) {
     $('#main-footer ul').remove();
     $('.clear,.collapse').hide();
     if ($input.offset().top < 12) {
-        $input.animate({
+        $input.stop().animate({
             'top': ($input.hasClass('Pick-up') ? '8.33%' : '54.17%'),
             'width': '52%', 
             'left': '5%',
             'height': '45px'
         });
-        $('#main-footer').animate({'height': '120px'}, function() {
+        $('#main-footer').stop().animate({'height': '120px'}, function() {
             $input.css({'top': '', 'left': '', 'width': '', 'height': ''});
             $('.Change' + ($input.hasClass('Drop-off') ? '.Pick-up' : '.Drop-off') + ',#requestRide').show();
             if (typeof(callback) === 'function') callback();
