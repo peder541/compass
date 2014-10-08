@@ -51,6 +51,9 @@ input, input:focus {
 }
 #main {
     display: block;
+    /**/
+    background-color: #E5E3DF;
+    /**/
 }
 #map-canvas {
     height: 90%;
@@ -541,7 +544,7 @@ input, input:focus {
 }
     #tip > h1 {
         font-family: Optima, Candara, sans-serif;
-        font-size: 28px;
+        font-size: 26px;
         color: whitesmoke;
         height: 44px;
         line-height: 44px;
@@ -550,8 +553,6 @@ input, input:focus {
     }
         #tip > h1 > span {
             background-color: #0A7387;
-            line-height: 44px;
-            font-size: 26px;
             display: inline-block;
             font-weight: 400;
             /* Make Tip title match RideSqirl wordmark *
@@ -612,7 +613,7 @@ input, input:focus {
         line-height: 44px;
         font-family: Optima, Calibri, sans-serif;
     }
-        .confirm-tip div {
+        .confirm-tip div:first-of-type {
             padding: 8px 0;
         }
             .confirm-tip p {
@@ -646,22 +647,28 @@ input, input:focus {
                 line-height: 19px;
                 padding-top: 12.5px;
             }
-        .confirm-tip button {
-            background-color: whitesmoke;
-            font-family: Optima, Corbel, sans-serif;
-            font-size: 17px;
-            border-radius: 0 0 0 8px;
-            color: #555;
-            width: 50%;
-            border-top: 1px solid #ddd;
-            line-height: 44px;
+        .confirm-tip div:last-of-type {
+            width: 100%;
+            height: 44px;
+            position: relative;
         }
-        .confirm-tip button.tip-confirm {
-            color: #11C1E2;
-            border-left: 1px solid #ddd;
-            border-radius: 0 0 8px 0;
-            float: right;
-        }
+            .confirm-tip button {
+                position: absolute;
+                background-color: whitesmoke;
+                font-family: Optima, Corbel, sans-serif;
+                font-size: 17px;
+                border-radius: 0 0 0 8px;
+                color: #555;
+                width: 50%;
+                border-top: 1px solid #ddd;
+                line-height: 44px;
+            }
+            .confirm-tip button.tip-confirm {
+                color: #11C1E2;
+                border-left: 1px solid #ddd;
+                border-radius: 0 0 8px 0;
+                right: 0;
+            }
 
 #payment-info {
     font-size: 14px;
@@ -1110,3 +1117,112 @@ input, input:focus {
         }
 }
     
+#modal {
+    background-color: rgba(0, 0, 0, 0.4);
+    width: 100%;
+    box-sizing: border-box;
+    padding: 24px;
+}
+#modal.phone {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+    #popup {
+        background-color: #F5F5F5;
+        color: #000;
+        border-radius: 8px;
+        font-family: PT Sans;
+        width: 100%;
+        max-width: 275px;
+        margin: auto;
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+        -webkit-transform: translateY(-50%);
+    }
+    .phone #popup {
+        background-color: transparent;
+        color: white;
+    }
+        #popup div:first-of-type {
+            padding: 8px 0 6px;
+        }
+            #popup p {
+                font-size: 16px;
+                position: relative;
+                line-height: 22px;
+                margin: 12px 24px;
+                text-align: center;
+            }
+        #popup div:last-of-type {
+            width: 100%;
+            height: 44px;
+            position: relative;
+        }
+        .phone #popup div:last-of-type {
+            height: 66px;
+        }
+            #popup button {
+                position: absolute;
+                background-color: whitesmoke;
+                font-family: Optima, Corbel, sans-serif;
+                font-size: 17px;
+                border-radius: 0 0 0 8px;
+                color: #555;
+                width: 50%;
+                border-top: 1px solid #ddd;
+                line-height: 44px;
+            }
+            #popup button#popup-confirm {
+                color: #11C1E2;
+                border-left: 1px solid #ddd;
+                border-radius: 0 0 8px 0;
+                right: 0;
+            }
+            .phone #popup button {
+                width: auto;
+                border-radius: 0;
+                left: 33%;
+                color: white;
+                background-color: transparent;
+                border-top: 0;
+                line-height: 1;
+                transform: translateX(-50%);
+                -webkit-transform: translateX(-50%);
+            }
+                .phone #popup button i {
+                    font-size: 28px;
+                    text-align: center;
+                    width: 44px;
+                    height: 44px;
+                    line-height: 48px;
+                    border-radius: 22px;
+                }
+                .phone #popup button#popup-cancel i {
+                    background-color: #f23;
+                    transform: rotate(135deg);
+                    -webkit-transform: rotate(135deg);
+                }
+                .phone #popup button#popup-confirm i {
+                    background-color: #4d5;
+                }
+                .phone #popup button span {
+                    font-size: 10px;
+                    line-height: 2;
+                    font-family: sans-serif;
+                    font-weight: 300;
+                }
+            .phone #popup button#popup-confirm {
+                color: white;
+                left: auto;
+                right: 33%;
+                border-left: 0;
+                transform: translateX(50%);
+                -webkit-transform: translateX(50%);
+            }
+            .phone.connected #popup button {
+                left: 50%;
+            }
+            .phone.connected #popup button#popup-confirm {
+                opacity: 0;
+                pointer-events: none;
+            }

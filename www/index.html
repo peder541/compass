@@ -5,8 +5,8 @@
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <link rel="apple-touch-icon" href="img/logo-60.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="img/logo-120.png">
+    <link rel="apple-touch-icon" href="img/logo60.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="img/logo120.png">
     <title>RideSqirl</title>
     <link rel="stylesheet" href="css/compass.css" />
     <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
@@ -417,8 +417,10 @@
                     </span>
                 </p>
             </div>
-            <button type="button" class="tip-back">Back</button>
-            <button type="button" class="tip-confirm">Confirm</button>
+            <div>
+                <button type="button" class="tip-back">Back</button>
+                <button type="button" class="tip-confirm">Confirm</button>
+            </div>
         </div>
     </div>
 
@@ -429,6 +431,18 @@
         <p id="makePayment">Payment</p>
         <p>FAQ</p>
         <p id="inviteFriends">Invite friends</p>
+    </div>
+            
+    <div id="modal" class="screen">
+        <div id="popup">
+            <div>
+                <p>This trip will cost $6.25</p>
+            </div>
+            <div>
+                <button type="button" id="popup-cancel">Cancel</button>
+                <button type="button" id="popup-confirm">OK</button>
+            </div>
+        </div>
     </div>
 
 </body>
