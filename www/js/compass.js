@@ -426,6 +426,11 @@ var rideRequests = {
         rideRequests.measured_distance = 0;
         rideRequests.last_point = me.getPosition();
         rideRequests.start_time = Date.now();
+        
+        // Just for aesthetics when demo'ing
+        if (window.confirmPosition) {
+            $('#center_icon').css('background-image', 'url("' + me.getIcon().url + '")');
+        }
     },
     measured_distance: 0,
     last_point: false,
@@ -439,6 +444,11 @@ var rideRequests = {
         console.log('Measured Distance:', measured.distance);
         console.log('Measured Time:', measured.time); 
         rideRequests.cancelRequest(rideRequests.current.rider);
+        
+        // Just for aesthetics when demo'ing
+        if (window.confirmPosition) {
+            confirmPosition();
+        }
     }
 };
 
@@ -742,6 +752,7 @@ function midPoints(directions, traffic) {
 
 function makePayment(price) {
     if ($('.payment-cc').length > 0) {
+        /*
         if (window.cordova) {
             function resultCallback(buttonIndex) {
                 if (buttonIndex == 2) rideOffers.acceptOffer();
@@ -749,6 +760,9 @@ function makePayment(price) {
             navigator.notification.confirm(null, resultCallback, 'This trip will cost $' + price, ['Cancel','OK']);
         }
         else if (confirm('This trip will cost $' + price)) rideOffers.acceptOffer();
+        */
+        customDialog.cost(price);
+        $('#modal').fadeIn(100);
     }
     else {
         if (price) {
@@ -806,12 +820,17 @@ var rideOffers = {
     },
     showOffer: function(data) {
         $('#ride-offers').show();
-        var $rideOffer = $('.rideOffer').not(':visible').eq(0);
+        var $rideOffer = $('.rideOffer').not(':visible,.wasVisible').eq(0);
 
         getProfileImage(data, function(src) {
-            $rideOffer.fadeIn({
-                start: rideOffers.resize
-            });
+            if ($('.rideOffer.expanded').length > 0) {
+                $rideOffer.addClass('wasVisible');
+            }
+            else {
+                $rideOffer.fadeIn({
+                    start: rideOffers.resize
+                });
+            }
             $rideOffer.children('.driverPic').css('background-image','url("' + src + '")');
         });
 
@@ -830,6 +849,74 @@ var rideOffers = {
             $('.med.preset-tip').children('span').html((data.price*0.20).toFixed(2));
             $('.high.preset-tip').children('span').html((data.price*0.25).toFixed(2));
             $('.tip-fare span span').html(data.price);
+        });
+        $rideOffer.off('click', '.driverPic').on('click', '.driverPic', function(event) {
+            if ($rideOffer.hasClass('expanded')) {
+                rideOffers.shrinkOffer($rideOffer);
+            }
+            else {
+                rideOffers.expandOffer($rideOffer);
+            }
+        });
+    },
+    expandOffer: function($offer) {
+        if (!$offer) $offer = $('.rideOffer').eq(0);
+        $offer.children().each(function() {
+            var $this = $(this);
+            $this.css({
+                height: this.getBoundingClientRect().height,
+                top: $this.position().top + 'px'
+            });
+        });
+        $offer.css({
+            position: 'absolute',
+            top: $offer.index() * 33.33 + '%'
+        }).animate({
+            height: '100%',
+            top: 0
+        }, function() {
+            $offer.addClass('expanded').css({
+                position: '',
+                height: '',
+                top: ''
+            });
+            $offer.children().css({
+                height: '',
+                top: ''
+            });
+        });
+        $('.rideOffer').filter(':visible').addClass('wasVisible');
+        $('.rideOffer').not($offer).hide();
+    },
+    shrinkOffer: function($offer) {
+        if (!$offer) $offer = $('.rideOffer').eq(0);
+        $offer.children().each(function() {
+            var $this = $(this);
+            $this.css({
+                height: this.getBoundingClientRect().height,
+                top: $this.position().top + 'px'
+            });
+        });
+        $offer.css({
+            position: 'absolute',
+            top: 0
+        }).animate({
+            height: '33.33%',
+            top: $offer.index() * 33.33 + '%'
+        }, function() {
+            $offer.removeClass('expanded').css({
+                position: '',
+                height: '',
+                top: ''
+            });
+            $offer.children().css({
+                height: '',
+                top: ''
+            });
+            $('.rideOffer.wasVisible').fadeIn({
+                duration: 200,
+                start: rideOffers.resize
+            }).removeClass('wasVisible');
         });
     },
     showTipConfirmation: function(tip, callback) {
@@ -956,6 +1043,8 @@ function deactivateRide(resetDrop) {
     }
     pickupTimer = false;
     $('#contacting span').html('contacting Sqirls').attr('data-ellipses','...');
+    $('.rideOffer').removeClass('expanded');
+    editPosition();
 }
 
 function activeCar(driverID) {
@@ -1303,6 +1392,15 @@ $(document).ready(function() {
             else lng += delta * (event.which - 38);
             map.setCenter(new google.maps.LatLng(lat,lng));
         }
+        // special shortcuts for demo'ing
+        else if (event.altKey && driver) {
+            if (event.which == 69) {
+                editPosition();
+            }
+            if (event.which == 67) {
+                if (window.confirmPosition) confirmPosition();
+            }
+        }
     });
 
     $('#main-footer input').on('touchstart mousedown', function(event) {
@@ -1482,6 +1580,12 @@ function onPause() {
     if (!driver && !rideOffers.driverID) {
         navigator.geolocation.clearWatch(watchID);
         watchID = false;
+        // Clear marker of current position (in order to pinpoint location when resuming the app)
+        // if (condition) {
+            me.setMap();
+            me = false;
+            geo.active = startApp = true;
+        // }
     }
 }
 function onResume() {
@@ -1516,8 +1620,8 @@ function TwilioHandlers() {
         $('.call').remove();
     });
     Twilio.Device.incoming(function (conn) {
-        /*
         if (window.cordova) {
+            // Perhaps only send on iOS since Android seems to pop open the app when there's a call?
             window.plugin.notification.local.add({
                 message: 'Incoming call...',
                 date: new Date(),
@@ -1526,6 +1630,7 @@ function TwilioHandlers() {
             window.plugin.notification.local.hasPermission(function(granted) {
                 if (!granted) window.plugin.notification.local.promptForPermission();
             });
+            /*
             function answerCallback(buttonIndex) {
                 if (buttonIndex == 1) {
                     conn.reject();
@@ -1541,7 +1646,9 @@ function TwilioHandlers() {
                 }
             }
             navigator.notification.confirm(null, answerCallback, 'Incoming call...', ['Ignore','Answer']);
+            */
         }
+        /*
         else {
             if (confirm('Do you want to take this call?')) {
                 conn.accept();
@@ -2090,6 +2197,19 @@ var customDialog = {
     cost: function(cost) {
         $('#modal').removeClass('phone connected');
         this.setup('This trip will cost $' + cost, 'Cancel', 'OK');
+        
+        this.cost.confirm = function() {
+            rideOffers.acceptOffer();
+            customDialog.cost.cancel();
+        };
+        this.cost.cancel = function() {
+            $('#popup-cancel,#popup-confirm')
+                .off('click', this.confirm)
+                .off('click', this.cancel);
+            $('#modal').fadeOut(100);
+        };
+        $('#popup-confirm').one('click', this.cost.confirm);
+        $('#popup-cancel').one('click', this.cost.cancel);
     },
     setup: function(msg, cancel, ok) {
         $('#popup p').html(msg);

@@ -376,6 +376,9 @@ input, input:focus {
     display: none;
     pointer-events: all;
 }
+.rideOffer.expanded {
+    height: 100%;
+}
 @media (max-height: 414px) {
     .rideOffer {
         height: 50%;
@@ -396,6 +399,10 @@ input, input:focus {
     background-size: cover;
     background-repeat: no-repeat;
 }
+.rideOffer.expanded .driverPic {
+    top: 2.5%;
+    height: 28.33%;
+}
 .rideOffer .driverPic:after {
     content: "More info";
     background-color: rgba(102, 0, 153, 0.6);
@@ -410,6 +417,9 @@ input, input:focus {
     letter-spacing: 1px;
     pointer-events: none;
 }
+.rideOffer.expanded .driverPic:after {
+    content: "Less info";
+}
 .rideOffer p {
     color: whitesmoke;
     font-family: Optima, Corbel, sans-serif;
@@ -418,12 +428,15 @@ input, input:focus {
     position: absolute;
     top: 7.5%;
     left: 40%;
-    height: 7.5%;
     width: 25%;
     height: 42.5%;
     text-align: center;
     white-space: nowrap;
     font-size: 1.2em;
+}
+.rideOffer.expanded .driverTime {
+    top: 2.5%;
+    height: 14.166%;
 }
 .rideOffer .driverTime:after {
     content: " min";
@@ -432,6 +445,10 @@ input, input:focus {
     font-family: PT Sans, sans-serif;
     top: auto;
     bottom: 7.5%;
+}
+.rideOffer.expanded .ridePrice {
+    height: 14.166%;
+    bottom: 69.17%; /* 2.5% + 66.67% */
 }
 .rideOffer .acceptRide {
     position: absolute;
@@ -445,6 +462,10 @@ input, input:focus {
     font-size: 1.2em;
     border-radius: 5px;
     padding: 0 12px;
+}
+.rideOffer.expanded .acceptRide {
+    top: 2.5%;
+    height: 28.33%;
 }
 .rideOffer .driverCar {
     display: none;
@@ -1121,6 +1142,7 @@ input, input:focus {
     background-color: rgba(0, 0, 0, 0.4);
     width: 100%;
     box-sizing: border-box;
+    -webkit-box-sizing: border-box;
     padding: 24px;
 }
 #modal.phone {
