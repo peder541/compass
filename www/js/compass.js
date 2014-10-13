@@ -861,6 +861,7 @@ var rideOffers = {
     },
     expandOffer: function($offer) {
         if (!$offer) $offer = $('.rideOffer').eq(0);
+        var percent = (window.innerHeight > 414) ? 33.33 : 50;
         $offer.children().each(function() {
             var $this = $(this);
             $this.css({
@@ -870,7 +871,7 @@ var rideOffers = {
         });
         $offer.css({
             position: 'absolute',
-            top: $offer.index() * 33.33 + '%'
+            top: $offer.index() * percent + '%'
         }).animate({
             height: '100%',
             top: 0
@@ -890,6 +891,7 @@ var rideOffers = {
     },
     shrinkOffer: function($offer) {
         if (!$offer) $offer = $('.rideOffer').eq(0);
+        var percent = (window.innerHeight > 414) ? 33.33 : 50;
         $offer.children().each(function() {
             var $this = $(this);
             $this.css({
@@ -901,8 +903,8 @@ var rideOffers = {
             position: 'absolute',
             top: 0
         }).animate({
-            height: '33.33%',
-            top: $offer.index() * 33.33 + '%'
+            height: percent + '%',
+            top: $offer.index() * percent + '%'
         }, function() {
             $offer.removeClass('expanded').css({
                 position: '',
@@ -911,13 +913,15 @@ var rideOffers = {
             });
             $offer.children().css({
                 height: '',
-                top: ''
+                top: '',
+                display: ''
             });
             $('.rideOffer.wasVisible').fadeIn({
                 duration: 200,
                 start: rideOffers.resize
             }).removeClass('wasVisible');
         });
+        $offer.children('.driverCar').hide();
     },
     showTipConfirmation: function(tip, callback) {
         rideOffers.farePlusTip(tip);
@@ -1760,14 +1764,20 @@ function trueCenterIcon(obj) {
 }
 
 function easyGPS() {
-    $('#map-canvas').append('<button class="gps"><i class="fa fa-crosshairs"></i></button>');
+    //$('#map-canvas').append('<button class="gps"><i class="fa fa-crosshairs"></i></button>');
+    $('#main .header').append('<button class="gps"><i class="fa fa-location-arrow"></i><button>');
     $('.gps').on('click', function(event) {
+        var $this = $(this);
         if (geo.latitude && geo.longitude) {
             map.panTo(new google.maps.LatLng(geo.latitude, geo.longitude));
         }
         else {
             console.log('GPS is currently inactive.');
         }
+        $this.hide();
+        google.maps.event.addListenerOnce(map, 'center_changed', function() {
+            $this.show();
+        });
     });
 }
 
