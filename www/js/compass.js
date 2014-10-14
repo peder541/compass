@@ -120,27 +120,8 @@ function connect() {
             if (geo.active) {
                 geo.active = false;
             }
-            for (var i=0; i<2; ++i) {
-                var markerName = (i==0) ? 'me' : 'drop';
-                var spotType = (i==0) ? 'pickup' : 'dropoff';
-                var spot = new google.maps.LatLng(data[spotType][0], data[spotType][1]);
-                if (!window[markerName]) {
-                    var markerOptions = {
-                        clickable: false,
-                        map: map,
-                        icon: {
-                            url: 'img/markers/dropoffTree.png',
-                            scaledSize: new google.maps.Size(25,30)
-                        },
-                        optimized: false,
-                        position: spot
-                    };
-                    window[markerName] = new google.maps.Marker(markerOptions);
-                }
-                else {
-                    window[markerName].setPosition(spot);
-                }
-            }
+            draw(0, data.pickup[0], data.pickup[1]);
+            draw(-1, data.dropoff[0], data.dropoff[1]);
             getRoute();
             if (data.driverID) {
                 rideOffers.driverID = data.driverID;
@@ -477,33 +458,34 @@ function draw(index, latitude, longitude, accuracy) {
         }
         /**/
     }
+    var markerOptions = {
+        clickable: false,
+        map: map,
+        icon: {
+            scaledSize: new google.maps.Size(25,30)
+        },
+        optimized: false,
+        position: map.center
+    };
     if (!index) {
         if (!me) {
-            var markerOptions = {
-                clickable: false,
-                map: map,
-                icon: {
-                    url: 'img/markers/dropoffAcorn.png',
-                    scaledSize: new google.maps.Size(25,30)
-                },
-                optimized: false,
-                position: map.center
-            };
+            markerOptions.icon.url = 'img/markers/dropoffAcorn.png';
             me = new google.maps.Marker(markerOptions);
         }
         var obj = me;
     }
+    else if (index === -1) {
+        if (!drop) {
+            markerOptions.icon.url = 'img/markers/dropoffTree.png';
+            drop = new google.maps.Marker(markerOptions);
+        }
+        var obj = drop;
+    }
     else {
         if (!cars[index]) {
-            var markerOptions = {
-                clickable: false,
-                map: map,
-                icon: {
-                    url: 'img/markers/availableSqirl.png', // 'img/Google Maps Markers/black_Marker.png',
-                    scaledSize: new google.maps.Size(51,38)//(57,36)
-                },
-                optimized: false,
-                position: map.center
+            markerOptions.icon = {
+                url: 'img/markers/availableSqirl.png', // 'img/Google Maps Markers/black_Marker.png',
+                scaledSize: new google.maps.Size(51,38)//(57,36)
             };
             cars[index] = new google.maps.Marker(markerOptions);
         }
@@ -526,17 +508,7 @@ function editPosition(setDrop) {
     var obj = me;
     if (setDrop) {
         if (!drop) {
-            var markerOptions = {
-                clickable: false,
-                map: map,
-                icon: {
-                    url: 'img/markers/dropoffTree.png',
-                    scaledSize: new google.maps.Size(25,30)
-                },
-                optimized: false,
-                position: map.center
-            };
-            drop = new google.maps.Marker(markerOptions);
+            draw(-1, map.center.lat(), map.center.lng());
             $('.Change.Drop-off').html('Change Drop-off');
         }
         obj = drop;
@@ -1413,7 +1385,7 @@ $(document).ready(function() {
             event.stopImmediatePropagation();
             return false;
         }
-    }).on('keydown', function(event) {
+    }).on('input', function(event) {
         var $this = $(this);
         setTimeout(function() {
             var request = {
@@ -2227,3 +2199,63 @@ var customDialog = {
         $('#popup-confirm').html(ok);
     }
 };
+
+function handleOpenURL(url) {
+    console.log('received url:', url);
+    var parser = $('<a>', { href: url })[0];
+    var params = handleOpenURL.queryToJSON(parser);
+    console.log('params:', params);
+    if (params['pickup[longitude]'] && params['pickup[latitude]']) {
+        var lat = parseFloat(params['pickup[latitude]']);
+        var lng = parseFloat(params['pickup[longitude]']);
+        draw(0, lat, lng);
+    }
+    if (params['dropoff[longitude]'] && params['dropoff[latitude]']) {
+        var lat = parseFloat(params['dropoff[latitude]']);
+        var lng = parseFloat(params['dropoff[longitude]']);
+        draw(-1, lat, lng);
+    }
+    if (params['request'] == 'true') {
+        connect();
+        startApp = false;
+        $(document).ready(function() {
+            document.addEventListener('deviceready', function() {
+                if (Object.keys(cars).length == 0) {
+                    window.requestRide = function() {
+                        $('#requestRide').click();
+                    };
+                    facebookConnectPlugin.getAccessToken(null, requestRide);
+                }
+                else {
+                    $('#requestRide').click();
+                }
+            }, false);
+        });
+    }
+}
+handleOpenURL.queryToJSON = function(parser) {
+    if (parser && parser.search) {
+        var pairs = parser.search.slice(1).split('&');
+        var result = {};
+        pairs.forEach(function(pair) {
+            pair = pair.split('=');
+            result[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+        });
+        return JSON.parse(JSON.stringify(result));
+    }
+    return {};
+}
+handleOpenURL.makeURL = function(LatLng) {
+    var url = 'ridesqirl://';
+    if (LatLng) {
+        var p1 = me.getPosition();
+        url += '?pickup[latitude]=' + p1.lat();
+        url += '&pickup[longitude]=' + p1.lng();
+        if (drop) {
+            var p2 = drop.getPosition();
+            url += '&dropoff[latitude]=' + p2.lat();
+            url += '&dropoff[longitude]=' + p2.lng();
+        }
+    }
+    return url;
+}
