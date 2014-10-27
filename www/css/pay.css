@@ -135,7 +135,7 @@
 	content: "Pay";
 }
 .single-use:after {
-	content: "\A($" attr(data-price) ")";
+	content: "\A($" attr(data-fare) ")";
 	font-family: Optima, Calibri, sans-serif;
 	font-size: 0.85em;
 	/* Rounder */

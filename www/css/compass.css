@@ -76,7 +76,7 @@ input, input:focus {
 #main-footer > button {
     height: 37.5%;
     border-radius: 5px;
-    font-family: Optima, Corbel, sans-serif;
+    font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
     font-size: 1em;
     color: whitesmoke;
     background-color: #C111E2; /*#a0d;*/
@@ -87,7 +87,7 @@ input, input:focus {
     width: 42.5%;
     /**/
     width: 60%;
-    font-size: 1.2em;
+    font-size: 17px;    /* 1.2em; */
     /**/
 }
 #main-footer > button.Drop-off {
@@ -124,7 +124,7 @@ input, input:focus {
 }
 #main-footer > #contacting > span {
     /*padding-left: 5px;*/
-    font-family: Optima, Corbel, sans-serif;
+    font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
 }
 #main-footer > #contacting > span:after {
     position: absolute;
@@ -139,7 +139,7 @@ input, input:focus {
     height: 37.5%;
     text-align: center;
     color: whitesmoke;
-    font-family: Optima, Corbel, sans-serif;
+    font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
     line-height: 44px;
 }
 #main-footer > #cancelRequest {
@@ -247,7 +247,7 @@ input, input:focus {
 }
 #driver-footer button {
     border-radius: 5px;
-    font-family: Optima, Corbel, sans-serif;
+    font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
     font-size: 1em;
     color: whitesmoke;
     background-color: #C111E2;
@@ -273,7 +273,7 @@ input, input:focus {
 #pricing #cost {
     font-family: PT Sans, sans-serif;
     color: whitesmoke;
-    font-size: 1.2em;
+    font-size: 17px;    /* 1.2em; */
     position: absolute;
     top: 0;
     left: 0;
@@ -295,7 +295,7 @@ input, input:focus {
     bottom: 8.33%;  
     right: 5%;
     display: none;
-    font-family: Optima, Corbel, sans-serif;
+    font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
     color: whitesmoke;
 }
 #riderResponse #waitingForResponse {
@@ -335,7 +335,7 @@ input, input:focus {
     height: 44px;
     right: 5%;
     bottom: 8.33%;
-    font-size: 1.2em;
+    font-size: 17px;    /* 1.2em; */
 }
 #driver-footer .riderPic {
     border-radius: 5px;
@@ -410,27 +410,28 @@ input, input:focus {
     }
 }
 .rideOffer .driverPic:after {
-    content: "More info";
-    background-color: rgba(102, 0, 153, 0.6);
-    color: rgba(250, 250, 250, 0.8);
-    font-family: PT Sans, sans-serif;
-    width: 100%;
+    content: "\f1b9";
+    background-color: #C111E2;
+    color: whitesmoke;
+    font-family: FontAwesome;
+    width: 20px;
+    line-height: 20px;
     position: absolute;
-    bottom: 0px;
+    right: 0;
+    bottom: 0;
     text-align: center;
-    border-radius: 0px 0px 5px 5px;
-    font-size: 10px;
-    letter-spacing: 1px;
+    border-radius: 5px 0;
+    font-size: 12px;
     pointer-events: none;
 }
 .rideOffer.expanded .driverPic:after {
-    content: "Less info";
+    content: "\f112";
 }
 .rideOffer p {
     color: whitesmoke;
-    font-family: Optima, Corbel, sans-serif;
+    font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
 }
-.rideOffer .driverTime, .rideOffer .ridePrice {
+.rideOffer .driverETA, .rideOffer .ridePrice {
     position: absolute;
     top: 7.5%;
     left: 40%;
@@ -438,19 +439,19 @@ input, input:focus {
     height: 42.5%;
     text-align: center;
     white-space: nowrap;
-    font-size: 1.2em;
+    font-size: 17px;    /* 1.2em; */
 }
-.rideOffer.expanded .driverTime {
+.rideOffer.expanded .driverETA {
     top: 2.5%;
     height: 14.166%;
 }
 @media (max-height: 414px) {
-    .rideOffer.expanded .driverTime {
+    .rideOffer.expanded .driverETA {
         top: 3.75%;
         height: 21.25%;
     }
 }
-.rideOffer .driverTime:after {
+.rideOffer .driverETA:after {
     content: " min";
 }
 .rideOffer .ridePrice {
@@ -474,10 +475,10 @@ input, input:focus {
     right: 5%;
     width: 25%;
     height: 85%;
-    font-family: Optima, Corbel, sans-serif;
+    font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
     color: whitesmoke;
     background-color: #C111E2;
-    font-size: 1.2em;
+    font-size: 17px;    /* 1.2em; */
     border-radius: 5px;
     padding: 0 12px;
 }
@@ -494,32 +495,74 @@ input, input:focus {
 .rideOffer .driverCar {
     display: none;
     position: absolute;
-    bottom: 2.5%;
+    top: 43%;
     left: 5%;
     text-align: center;
     width: 90%;
-    height: 28.33%;
+    height: 33.33%;
     background-image: url('../img/montego.png');
     background-size: cover;
     background-position: center center;
-    border-radius: 5px;
+    border-radius: 200px;
 }
     .rideOffer .driverCar:after {
         content: attr(data-year) ' ' attr(data-make) ' ' attr(data-model);
-        background-color: rgba(0, 0, 0, 0.8);
-        color: rgba(250, 250, 250, 0.8);
-        font-family: PT Sans, sans-serif;
-        width: 100%;
+        color: whitesmoke;
+        font-family: 'Avenir Next';
+        font-size: 14px;
+        letter-spacing: 1px; /* Check if we want this */
+        width: 70%;
         position: absolute;
-        bottom: 0;
-        left: 0;
+        top: -25px;
+        left: 29.5%;
         text-align: center;
-        border-radius: 0px 0px 5px 5px;
-        font-size: 10px;
-        letter-spacing: 1px;
         pointer-events: none;
+        white-space: nowrap;
     }
-.rideOffer.expanded .driverCar {
+.rideOffer .driverName {
+    display: none;
+    position: absolute;
+    top: 31%;
+    left: 5%;
+    width: 30%;
+    text-align: center;
+    font-size: 18px;
+}
+.rideOffer .driverFunfact {
+    display: none;
+    width: 100%;
+    height: 23%;
+    position: absolute;
+    top: 77%;
+    left: 0;
+}
+    .rideOffer .driverFunfact p {
+        position: relative;
+        top: 50%;
+        left: 10%;
+        width: 80%;
+        font-size: 14px;
+        text-align: center;
+        transform: translateY(-50%);
+        -webkit-transform: translateY(-50%);
+    }
+        .rideOffer .driverFunfact p:before,
+        .rideOffer .driverFunfact p:after {
+            font-family: FontAwesome;
+            vertical-align: 6px;
+            font-size: 6px;
+        }
+        .rideOffer .driverFunfact p:before {
+            content: '\f10d';
+            padding-right: 6px;
+        }
+        .rideOffer .driverFunfact p:after {
+            content: '\f10e';
+            padding-left: 6px;
+        }
+.rideOffer.expanded .driverCar,
+.rideOffer.expanded .driverName,
+.rideOffer.expanded .driverFunfact {
     display: block;
 }
 
@@ -531,7 +574,7 @@ input, input:focus {
 }
 .header > h1 {
     font-size: 28px;
-    font-family: Optima, Candara, sans-serif;
+    font-family: 'Avenir Next', Avenir, Candara, sans-serif;
     text-align: center;
     width: 100%;
     position: absolute;
@@ -589,13 +632,12 @@ input, input:focus {
 #sidebar {
     background-color: #222; /*#099;/**/
     color: whitesmoke;
-    display: none;
     width: 200px;
     position: absolute;
     left: -200px;
     top: 0;
     height: 100%;	
-    font-family: Optima, Corbel, sans-serif;
+    font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
 }
 #sidebar > p {
     padding: 15px;
@@ -621,7 +663,7 @@ input, input:focus {
     background-color: rgba(0, 0, 0, 0.4);
 }
     #tip > h1 {
-        font-family: Optima, Candara, sans-serif;
+        font-family: 'Avenir Next', Avenir, Candara, sans-serif;
         font-size: 26px;
         color: whitesmoke;
         height: 44px;
@@ -689,7 +731,7 @@ input, input:focus {
         width: 250px;
         margin: 22px auto;
         line-height: 44px;
-        font-family: Optima, Calibri, sans-serif;
+        font-family: 'Avenir Next', Avenir, Calibri, sans-serif;
     }
         .confirm-tip div:first-of-type {
             padding: 8px 0;
@@ -733,7 +775,7 @@ input, input:focus {
             .confirm-tip button {
                 position: absolute;
                 background-color: whitesmoke;
-                font-family: Optima, Corbel, sans-serif;
+                font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
                 font-size: 17px;
                 border-radius: 0 0 0 8px;
                 color: #555;
@@ -861,6 +903,7 @@ input, input:focus {
         line-height: 24px;
         border-bottom: 1px solid #aaa;
         cursor: pointer;
+        display: none;
     }
         #earnings-info > .earnings-account > .earnings-account-bank_name {
             width: 50%;
@@ -975,6 +1018,9 @@ input, input:focus {
             box-sizing: border-box;
             -webkit-box-sizing: border-box;
         }
+        #signup-form input[type=date] {
+            -webkit-appearance: none;
+        }
         #signup-form.likeMap input {
             background-color: #609;
             color: rgb(255, 136, 255);
@@ -989,7 +1035,7 @@ input, input:focus {
             border-radius: 5px;
             border: 0;
             font-family: PT Sans;
-            font-size: 1.2em;
+            font-size: 17px;    /* 1.2em; */
             color: whitesmoke;
             background-color: #11C1E2;
             margin: 10px;
@@ -1000,12 +1046,7 @@ input, input:focus {
         #signup-form button.back {
             background-color: #888;
         }
-    #signup-vehicle {
-        display: none;
-        position: absolute;
-        top: 0;
-    }
-    #signup-contact {
+    #signup-vehicle, #signup-contact, #signup-extra {
         display: none;
         position: absolute;
         top: 0;
@@ -1043,7 +1084,7 @@ input, input:focus {
         float: left;
         margin-left: 44px;
         color: whitesmoke;
-        font-family: Optima, Corbel, sans-serif;
+        font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
         line-height: 44px;
         min-width: 50%;
     }
@@ -1117,7 +1158,7 @@ input, input:focus {
                 float: left;
                 line-height: 44px;
                 font-size: 16px;
-                font-family: Optima, Corbel, sans-serif;
+                font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
                 margin-right: 8px;
             }
             .phone-login > span {
@@ -1146,7 +1187,7 @@ input, input:focus {
         padding: 20px;
         box-sizing: border-box;
         text-align: center;
-        font-family: Optima, Corbel, sans-serif;
+        font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
         font-size: 16px;
     }
         #invite-link {
@@ -1168,7 +1209,7 @@ input, input:focus {
     #invite-benefits {
         padding: 20px;
         box-sizing: border-box;
-        font-family: Optima, Corbel, sans-serif;
+        font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
         font-size: 16px;
         line-height: 28px;
         text-align: center;
@@ -1243,7 +1284,7 @@ input, input:focus {
             #popup button {
                 position: absolute;
                 background-color: whitesmoke;
-                font-family: Optima, Corbel, sans-serif;
+                font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
                 font-size: 17px;
                 border-radius: 0 0 0 8px;
                 color: #555;

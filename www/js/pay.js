@@ -62,3 +62,137 @@ function stripeResponse(status, response) {
 		}
 	}
 }
+
+// JavaScript Document
+
+$(document).ready(function() {
+	
+	$('input[name="phone"]').payment('restrictNumeric').on('keypress', formatPhoneNumber).on('keydown', formatBackWithDashes);
+	
+    $('input[name="ssn"]').payment('restrictNumeric').on('keypress', formatSSN).on('keydown', formatBackWithDashes);
+    
+    $('input[name="dob"]').payment('restrictNumeric').on('keypress', formatDOB).on('keydown', formatBackWithDashes);
+    
+    $('input[name="carYear"]').payment('restrictNumeric').on('keypress', function(event) { return restrictNumericLength(event,4); });
+    
+    $('input[name="zipcode"]').payment('restrictNumeric').on('keypress', function(event) { return restrictNumericLength(event,5); });
+    
+});
+
+function restrictNumericLength(event, maxlength) {
+	var $target, digit, value;
+	$target = $(event.currentTarget);
+	digit = String.fromCharCode(event.which);
+	if (!/^\d+$/.test(digit)) {
+		return;
+	}
+	if (hasTextSelected($target)) {
+		return;
+	}
+	value = $target.val() + digit;
+	value = value.replace(/\D/g, '');
+	if (value.length > maxlength) {
+		return false;
+	}
+}
+function hasTextSelected($target) {
+	var _ref;
+	if (($target.prop('selectionStart') != null) && $target.prop('selectionStart') !== $target.prop('selectionEnd')) {
+		return true;
+	}
+	if (typeof document !== "undefined" && document !== null ? (_ref = document.selection) != null ? typeof _ref.createRange === "function" ? _ref.createRange().text : void 0 : void 0 : void 0) {
+		return true;
+	}
+	return false;
+}
+function formatPhoneNumber(event) {
+    if (restrictNumericLength(event, 10) === false) return false;
+    formatWithDashes(event, [3,6]);
+}
+function formatSSN(event) {
+    if (restrictNumericLength(event, 9) === false) return false;
+    formatWithDashes(event, [3,5]);
+}
+function formatDOB(event) {
+    var $target, digit, val;
+    digit = String.fromCharCode(event.which);
+    $target = $(event.currentTarget);
+    val = $target.val();
+    if ((val.length == 5 && digit > 1) || (val.length == 8 && digit > 3)) {
+        $target.val(val + '0');
+    }
+    if (restrictNumericLength(event, 8) === false) return false;
+    formatWithDashes(event, [4,6]);
+}
+function formatWithDashes(event, dashesArray, withSlashes) {
+	var $target, digit, val, index, num, length, dash, lastDash, dashChar;
+    dashChar = (withSlashes) ? '/' : '-';
+	digit = String.fromCharCode(event.which);
+	if (!/^\d+$/.test(digit)) {
+		return;
+	}
+	$target = $(event.currentTarget);
+	if (hasTextSelected($target)) {
+		return;
+	}
+	val = $target.val();
+	index = $target.prop('selectionStart');
+	if (index || index === 0) {
+		if (index != val.length) {
+			var dif = val.length - index;
+			var timer = setTimeout(function() {
+				var spot = val.length - dif;
+				if (val[spot] == dashChar) spot += 1;
+				$target.prop('selectionStart', spot);
+				$target.prop('selectionEnd', spot);		
+			}, 0);
+		}
+		val = val.slice(0,index) + digit + val.slice(index);
+	}
+	else {
+		val = val + digit;
+	}
+	num = val.replace(/\D/g, '');
+	length = num.length;
+	dash = val.indexOf(dashChar);
+	lastDash = val.lastIndexOf(dashChar);
+	if (dash != dashesArray[0] || (lastDash != dash && lastDash != dashesArray[1] + 1)) {
+		val = num.slice(0,dashesArray[0]);
+		if (length >= dashesArray[0]) {
+			val += dashChar + num.slice(dashesArray[0], dashesArray[1]);	
+		}
+		if (length >= dashesArray[1]) {
+			val += dashChar + num.slice(dashesArray[1]);	
+		}
+		event.preventDefault();
+		return $target.val(val);
+	}
+	else if (length == dashesArray[0] || length == dashesArray[1]) {
+		event.preventDefault();
+		return $target.val(val + dashChar);
+	}
+}
+function formatBackWithDashes(event) {
+	var $target, value;
+	if (event.meta) {
+		return;
+	}
+	$target = $(event.currentTarget);
+	value = $target.val();
+	if (event.which !== 8) {
+		return;
+	}
+	if (($target.prop('selectionStart') != null) && $target.prop('selectionStart') !== value.length) {
+		return;
+	}
+	if (/\d(\s|\-)+$/.test(value)) {
+		event.preventDefault();
+		return $target.val(value.replace(/\d(\s|\-|\/)*$/, ''));
+	}
+	else if (/\s\-\s?\d?$/.test(value)) {
+		event.preventDefault();
+        console.log('Rarely (if ever) triggered...');
+		return $target.val(value.replace(/\s\-\s?\d?$/, ''));
+	}
+}
+

@@ -7,6 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <link rel="apple-touch-icon" href="img/logo60.png">
     <link rel="apple-touch-icon" sizes="120x120" href="img/logo120.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="img/logo152.png">
     <title>RideSqirl</title>
     <link rel="stylesheet" href="css/compass.css" />
     <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
@@ -47,6 +48,15 @@
 </head>
 
 <body>
+    <div id="sidebar">
+        <p id="test">Back to Map</p>
+        <p id="becomeDriver">Become a Sqirl</p>
+        <p id="showProfile">Profile</p>
+        <p id="makePayment">Payment</p>
+        <p>FAQ</p>
+        <p id="inviteFriends">Invite friends</p>
+    </div>
+    
     <div id="main" class="screen">
         <div class="header">
             <h1>RideSqirl</h1>
@@ -76,7 +86,7 @@
             <div id="pricing">
                 <p id="cost">
                     <sup class="currency fa fa-usd"></sup>
-                    <span data-base="2.50">2.50</span>
+                    <span data-msrp="2.50">2.50</span>
                 </p>
                 <button type="button" class="decrease fare"><i class="fa fa-minus"></i></button>
                 <button type="button" class="increase fare"><i class="fa fa-plus"></i></button>
@@ -97,13 +107,15 @@
         <div id="ride-offers">
             <div class="rideOffer">
                 <div class="driverPic"></div>
-                <p class="driverTime">11</p>
+                <p class="driverETA">11</p>
                 <p class="ridePrice">
                     <sup class="currency fa fa-usd"></sup>
                     <span>2.50</span>
                 </p>
                 <button type="button" class="acceptRide">Accept Ride</button>
+                <p class="driverName">Ben</p>
                 <div class="driverCar" data-year="2005" data-make="Mercury" data-model="Montego"></div>
+                <div class="driverFunfact"><p>I teach language arts at a girl-focused middle school & LIVE for red Skittles. Oh yeah, I also co-founded RideSqirl.</p></div>
             </div>
             <div class="rideOffer">
                 <div class="driverPic"></div>
@@ -155,7 +167,7 @@
             <div id="signup-vehicle">
                 <label>
                     <span>Car Year</span>
-                    <input name="carYear" type="text" placeholder="2005" />
+                    <input name="carYear" type="text" pattern="\d*" placeholder="2005" />
                 </label>
                 <label>
                     <span>Car Make</span>
@@ -188,6 +200,22 @@
                 <label>
                     <span>Phone Number</span>
                     <input name="phone" type="text" pattern="\d*" placeholder="612-555-0123" />
+                </label>
+                <button type="button" class="back">Back</button>
+                <button type="button" class="next">Continue</button>
+            </div>
+            <div id="signup-extra">
+                <label>
+                    <span>Date of Birth</span>
+                    <input name="dob" type="date" pattern="\d*" placeholder="YYYY-MM-DD" />
+                </label>
+                <label>
+                    <span>Home Zipcode</span>
+                    <input name="zipcode" type="text" pattern="\d*" placeholder="55401" />
+                </label>
+                <label>
+                    <span>Social Security Number</span>
+                    <input name="ssn" type="text" pattern="\d*" placeholder="111-11-2001" />
                 </label>
                 <button type="button" class="back">Back</button>
                 <button type="button" class="submit">Submit</button>
@@ -298,14 +326,10 @@
                     </span>
                 </p>
             </div>
-            <h2>Bank Accounts</h2>
+            <h2>Bank Account</h2>
             <p class="earnings-account">
-                <span class="earnings-account-bank_name">ROLFE STATE BANK</span>
-                <span class="earnings-account-last4">0957</span>
-            </p>
-            <p class="earnings-account">
-                <span class="earnings-account-bank_name">TCF NATIONAL BANK</span>
-                <span class="earnings-account-last4">1530</span>
+                <span class="earnings-account-bank_name"></span>
+                <span class="earnings-account-last4"></span>
             </p>
             <div id="earnings-add-account">
                 <button>Add an Account</button>
@@ -335,7 +359,7 @@
                 <div id="slider"></div>
             </label>
             -->
-            <button type="submit" data-price="10.00" class="multi-use"></button>
+            <button type="submit" data-fare="10.00" class="multi-use"></button>
             <button type="button" class="cancel">Cancel</button>
         </form>
         <div class="declinedCard">Card Declined!</div>
@@ -422,15 +446,6 @@
                 <button type="button" class="tip-confirm">Confirm</button>
             </div>
         </div>
-    </div>
-
-    <div id="sidebar">
-        <p id="test">Back to Map</p>
-        <p id="becomeDriver">Become a Sqirl</p>
-        <p id="showProfile">Profile</p>
-        <p id="makePayment">Payment</p>
-        <p>FAQ</p>
-        <p id="inviteFriends">Invite friends</p>
     </div>
             
     <div id="modal" class="screen">
