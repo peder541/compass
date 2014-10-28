@@ -168,6 +168,9 @@ function connect() {
         .on('rideCanceled', function(data) {
             rideRequests.cancelRequest(data.rider);
         })
+        .on('ridePaidByTimer', function() {
+            deactivateRide(true);
+        })
         .on('cardDeclined', function(data) {
             console.log('Card declined:', data.code);
             var $pay = $('#credit-card-info');
@@ -229,6 +232,16 @@ function connect() {
             $('.earnings-account-last4').html(data.last4);
             $('.earnings-account').show();
             $('#earnings-add-account button').html('Edit Account');
+        })
+        .on('listEarnings', function(data) {
+            if (data) {
+                if (data.owed) {
+                    $('#earnings-owed span').html(Number(data.owed).toFixed(2));
+                }
+                if (data.total) {
+                    $('#earnings-total span').html(Number(data.total).toFixed(2));
+                }
+            }
         })
         .on('phoneRegistered', function(phoneNumber) {
             var verificationCode = prompt('A verification code has been sent to ' + phoneNumber + '\nEnter that code here:');
@@ -341,7 +354,7 @@ var rideRequests = {
         $('#driver-footer').find('*').css('display','');
         console.log(data.traffic);
 
-        getProfileImage(data, function(src) {
+        getImage(data, function(src) {
             $('#driver-footer').css('bottom','-120px').show().stop().animate({'bottom':'0'}, {
                 progress: function() {
                     $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);	
@@ -805,7 +818,7 @@ function ellipses($element) {
     }, 400);
 }
 
-function getProfileImage(data, callback) {
+function getImage(data, callback) {
     var img = new Image();
     // Execute callback once image loads
     img.onload = function() {
@@ -816,6 +829,10 @@ function getProfileImage(data, callback) {
     if (data.fbID) {
         // picture for people identified with facebook
         img.src = 'https://graph.facebook.com/v2.0/' + data.fbID + '/picture?width=160&height=160';
+    }
+    else if (data.url) {
+        // picture from general url
+        img.src = data.url;
     }
     else {
         // picture for unidentified people
@@ -834,7 +851,7 @@ var rideOffers = {
         $('#ride-offers').show();
         var $rideOffer = $('.rideOffer').not(':visible,.wasVisible').eq(0);
 
-        getProfileImage(data, function(src) {
+        getImage(data, function(src) {
             if ($('.rideOffer.expanded').length > 0) {
                 $rideOffer.addClass('wasVisible');
             }
@@ -844,9 +861,11 @@ var rideOffers = {
                 });
             }
             $rideOffer.children('.driverPic').css('background-image','url("' + src + '")');
+            // preload picture of car after the driver's picture has finished loading
+            getImage({url: data.car.pic});
         });
 
-        $rideOffer.find('.driverETA').html(data.eta);
+        $rideOffer.find('.driverETA span').html(data.eta);
         $rideOffer.find('.ridePrice span').html(data.fare);
         $rideOffer.off('click', '.acceptRide').on('click', '.acceptRide', function(event) {
             rideOffers.acceptOffer = function(token) {
@@ -870,6 +889,18 @@ var rideOffers = {
                 rideOffers.expandOffer($rideOffer);
             }
         });
+        
+        $rideOffer.find('.driverName').html(data.firstName);
+        
+        $rideOffer.find('.driverCar').attr({
+            'data-year': data.car.year,
+            'data-make': data.car.make,
+            'data-model': data.car.model
+        }).css({
+            'background-image': 'url("' + data.car.pic + '")'
+        });
+        
+        $rideOffer.find('.driverFunfact p').html(data.funfact);
     },
     expandOffer: function($offer) {
         if (!$offer) $offer = $('.rideOffer').eq(0);
@@ -900,6 +931,8 @@ var rideOffers = {
         });
         $('.rideOffer').filter(':visible').addClass('wasVisible');
         $('.rideOffer').not($offer).hide();
+        
+        $offer.find('.driverFunfact p').filter(function() { return this.innerHTML == ''; }).hide();
     },
     shrinkOffer: function($offer) {
         if (!$offer) $offer = $('.rideOffer').eq(0);
@@ -1059,7 +1092,7 @@ function deactivateRide(resetDrop) {
     }
     pickupTimer = false;
     $('#contacting span').html('contacting Sqirls').attr('data-ellipses','...');
-    $('.rideOffer').removeClass('expanded');
+    $('.rideOffer').removeClass('expanded wasVisible');
     editPosition();
 }
 

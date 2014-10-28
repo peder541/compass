@@ -305,6 +305,7 @@ input, input:focus {
     top: 0;
     left: 0;
     width: 100%;
+    white-space: nowrap;
 }
 #riderResponse #offerAccepted,
 #riderResponse #arrived-Pick-up, 
@@ -318,6 +319,7 @@ input, input:focus {
     line-height: 44px;
     text-align: center;
     display: none;
+    white-space: nowrap;
 }
 #riderResponse .getDirections,
 #riderResponse .startRide,
@@ -451,9 +453,23 @@ input, input:focus {
         height: 21.25%;
     }
 }
-.rideOffer .driverETA:after {
-    content: " min";
+.rideOffer .driverETA span {
+    padding-right: 2px;
 }
+    .rideOffer .driverETA span:after {
+        content: " min";
+        font-size: 12px;
+        position: absolute;
+        transform: translate(6px, -6px);
+        -webkit-transform: translate(6px, -6px);
+    }
+    .rideOffer .driverETA:after {
+        content: " eta";
+        font-size: 12px;
+        font-variant: small-caps;
+        position: relative;
+        top: 2px;
+    }
 .rideOffer .ridePrice {
     font-family: PT Sans, sans-serif;
     top: auto;
@@ -889,7 +905,7 @@ input, input:focus {
         line-height: 25px;
         position: relative;
     }
-        #earnings-receivable,
+        #earnings-owed,
         #earnings-total {
             position: absolute;
             right: 0;
