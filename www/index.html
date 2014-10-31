@@ -11,11 +11,11 @@
     <title>RideSqirl</title>
     <link rel="stylesheet" href="css/compass.css" />
     <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKbju-lHWKmxZc9zB1J8LSg8p2dG2HcMQ&v=3.17&sensor=true&libraries=places"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.2/fastclick.min.js"></script>
-    <script type="text/javascript" src="https://ridesqirl.com/socket.io/socket.io.js"></script>
-    <script type="text/javascript" src="https://ridesqirl.com/auth/jwt.js"></script>
+    <script type="text/javascript" src="https://ridesqirl.com:8443/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="https://ridesqirl.com:8443/auth/jwt.js"></script>
     <script type="text/javascript" src="js/compass.js"></script>
 
     <link rel="stylesheet" href="css/pay.css" />
@@ -53,7 +53,7 @@
         <p id="becomeDriver">Become a Sqirl</p>
         <p id="showProfile">Profile</p>
         <p id="makePayment">Payment</p>
-        <p>FAQ</p>
+        <p id="showFAQ">FAQ</p>
         <p id="inviteFriends">Invite friends</p>
     </div>
     
@@ -150,6 +150,8 @@
         </div>
 
         <div id="center_icon"></div>
+        
+        <p class="status-message">No Sqirls are available at this time.</p>
     </div>
     
     <div id="signup" class="screen">
@@ -173,7 +175,7 @@
             <p>My car smells good!</p>
             <div>Click on an item to check it.<br>Check the entire list to continue.</div>
         </div>
-        <form id="signup-form" action="https://ridesqirl.com/signup" method="post" novalidate>
+        <form id="signup-form" action="https://ridesqirl.com:8443/signup" method="post" novalidate>
             <div id="signup-vehicle">
                 <label>
                     <span>Car Year</span>
@@ -347,7 +349,7 @@
         </div>
     </div>
     <div id="credit-card" class="screen">
-        <form id="credit-card-info" method="post" action="https://ridesqirl.com/test" novalidate autocomplete="on">
+        <form id="credit-card-info" method="post" novalidate autocomplete="on">
             <label>
                 <i class="fa fa-credit-card"></i><b>Card</b>
                 <input type="text" class="cc-number" pattern="\d*" x-autocompletetype="cc-number" placeholder="•••• •••• •••• ••••" required>
@@ -375,7 +377,7 @@
         <div class="declinedCard">Card Declined!</div>
     </div>
     <div id="bank" class="screen">
-        <form id="bank-info" method="post" action="https://ridesqirl.com/test" novalidate autocomplete="off">
+        <form id="bank-info" method="post" novalidate autocomplete="off">
             <label>
                 <b>Routing Number</b>
                 <input type="text" class="routing-number" pattern="\d*" placeholder="110000000" maxlength="9">
@@ -388,6 +390,14 @@
             <button type="submit">Save</button>
             <button type="button" class="cancel">Cancel</button
         </form>
+    </div>
+            
+    <div id="faq" class="screen">
+        <div class="header">
+            <h1>RideSqirl</h1>
+            <button type="button" class="menu"><i class="fa fa-bars"></i></button>
+        </div>
+        <iframe src="https://ridesqirl.com:8443/faq.html"></iframe>
     </div>
     
     <div id="invite" class="screen">

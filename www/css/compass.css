@@ -197,7 +197,7 @@ input, input:focus {
     color: rgb(255, 136, 255);
     border: 0;
     border-bottom: 1px solid rgb(255, 136, 255);
-    background-image: url("../img/pinkAcorn.png");
+    background-image: url("../img/pinkAcorn7.png");
     background-repeat: no-repeat;
     background-position: left center;
     background-size: 20px 24px;
@@ -1251,6 +1251,12 @@ input, input:focus {
             left: -12%;
         }
 }
+#faq > iframe {
+    height: 100%;
+    height: calc(100% - 44px);
+    width: 100%;
+    border: 0;
+}
     
 #modal {
     background-color: rgba(0, 0, 0, 0.4);
@@ -1362,3 +1368,31 @@ input, input:focus {
                 opacity: 0;
                 pointer-events: none;
             }
+.status-message {
+    display: none;
+    position: absolute;
+    font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
+    color: whitesmoke;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 8px;
+    border-radius: 8px;
+    text-align: center;
+    left: 6%;
+    right: 6%;
+    top: 50%;
+    transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+}
+.status-message.showing-car {
+    /* Rules for showing car when Sqirl has arrived */
+    top: 40%;
+}
+    .status-message.showing-car span {
+        display: inline-block;
+        padding-bottom: 8px;
+        font-size: 14px;
+    }
+    .status-message.showing-car img {
+        border-radius: 8px;
+        width: 95%;
+    }

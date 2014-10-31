@@ -1,4 +1,7 @@
+// Dev Mode
 Stripe.setPublishableKey('pk_test_KMjrAlhOj5o00CE98bvhCuNG');
+// Production
+//Stripe.setPublishableKey('pk_live_oQDihB7XawJZRgmQMHbUf2de');
 
 $(document).ready(function() {
 	$('.cc-number').payment('formatCardNumber');
