@@ -186,6 +186,7 @@ function connect() {
             console.log('Ride accepted');
             $('#offerAccepted,.getDirections').show();
             $('#waitingForResponse').hide();
+            $('#toggleDriver').html('Cancel Ride').attr('id', 'dropRide');
         })
         .on('rideStarted', function(data) {
             if (data == rideOffers.driverID) {
@@ -201,6 +202,8 @@ function connect() {
         .on('rideDropped', function() {
             deactivateRide();
             if (statusMessage.hide) statusMessage.hide();
+            // Will want custom dialog in future.
+            alert('Your ride has been canceled.');
         })
         .on('ridePaidByTimer', function() {
             deactivateRide(true);
@@ -419,6 +422,7 @@ var rideRequests = {
                 scaledSize: new google.maps.Size(51,38)//(57,36)
             });
             if (window.socket) socket.emit('freeDriver');
+            $('#dropRide').html('Hibernate Sqirl').attr('id','toggleDriver');
         }
         else {
             this.removeRiderFromQueue(rider);
@@ -868,6 +872,7 @@ function getImage(data, callback) {
             callback(img.src);
         }
     }
+    img.onerror = img.onload;
     if (data.fbID) {
         // picture for people identified with facebook
         img.src = 'https://graph.facebook.com/v2.0/' + data.fbID + '/picture?width=160&height=160';
@@ -1040,6 +1045,7 @@ var rideOffers = {
         $('#contacting span').html('Ride in progress').attr('data-ellipses','.');
         
         if (statusMessage.hide) statusMessage.hide();
+        $('#cancelRequest').hide();
     },
     endRide: function() {
         // Need to think about this more
@@ -1393,6 +1399,12 @@ $(document).ready(function() {
     .on('click', '#toggleDriver', function(event) {
         if (driver) hibernateDriver();
         else activateDriver();
+    })
+    .on('click', '#dropRide', function() {
+        if (window.socket) {
+            socket.emit('dropRide', rideRequests.current.rider);
+            rideRequests.cancelRequest(rideRequests.current.rider);
+        }
     })
     .on('click', '#showFAQ', function(event) {
         var url = 'https://ridesqirl.com:8443/faq.html';
@@ -1823,6 +1835,7 @@ function TwilioHandlers() {
                     socket.emit('dropRide', rideRequests.current.rider);
                     rideRequests.cancelRequest(rideRequests.current.rider);
                 });
+                $('#modal').fadeIn();
             }, 300000);
         }
     });

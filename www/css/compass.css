@@ -359,6 +359,7 @@ input, input:focus {
     letter-spacing: 1px;
     color: rgba(250, 250, 250, 0.8);
     pointer-events: none;
+    display: none;
 }
 
 #ride-offers {
