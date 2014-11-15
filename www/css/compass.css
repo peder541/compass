@@ -1132,6 +1132,9 @@ input, input:focus {
     top: 44px;
     bottom: 0;
 }
+#main .screen-login {
+    background-color: rgba(0,0,0,0.6);
+}
     .screen-login > .login-option {
         position: absolute;
         top: 50%;
@@ -1152,6 +1155,22 @@ input, input:focus {
             position: relative;
             top: -88px;
         }
+            .fb-login:before {
+                content: "We will never post to Facebook";
+                font-size: 12px;
+                line-height: 24px;
+                text-align: center;
+                white-space: nowrap;
+                width: 100%;
+                position: absolute;
+                left: 0;
+                top: 0;
+                transform: translateY(-100%);
+                -webkit-transform: translateY(-100%);
+            }
+            #payment .fb-login:before {
+                color: #3B579D;
+            }
         .phone-login {
             background-color: whitesmoke;
             color: #3B579D;

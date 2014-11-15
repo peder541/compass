@@ -1266,7 +1266,6 @@ $(document).ready(function() {
         }
         facebookConnectPlugin.getAccessToken(requestRide, function() {
             var $login = $('.screen-login').eq(0).clone();
-            $login.css('background-color','rgba(0,0,0,0.4)');
             $('#main').append($login);
             window.requestRide = requestRide;
             profile.provePhone();
