@@ -212,7 +212,9 @@ function connect() {
             console.log('Card declined:', data.code);
             var $pay = $('#credit-card-info');
             $pay.find('button').prop('disabled', false);
-            var $declined = $pay.next('.declinedCard').fadeIn();
+            var $declined = $pay.next('.declined-card');
+            $declined.children('.declined-card-reason').html('Card declined!');
+            $declined.fadeIn();
             setTimeout(function() {
                 $declined.fadeOut();
             }, 1400);
@@ -823,15 +825,6 @@ function midPoints(directions, traffic) {
 
 function makePayment(fare) {
     if ($('.payment-cc').length > 0) {
-        /*
-        if (window.cordova) {
-            function resultCallback(buttonIndex) {
-                if (buttonIndex == 2) rideOffers.acceptOffer();
-            }
-            navigator.notification.confirm(null, resultCallback, 'This trip will cost $' + fare, ['Cancel','OK']);
-        }
-        else if (confirm('This trip will cost $' + fare)) rideOffers.acceptOffer();
-        */
         customDialog.cost(fare);
         $('#modal').fadeIn(100);
     }
@@ -915,11 +908,26 @@ var rideOffers = {
         $rideOffer.find('.driverETA span').html(data.eta);
         $rideOffer.find('.ridePrice span').html(data.fare);
         $rideOffer.off('click', '.acceptRide').on('click', '.acceptRide', function(event) {
+            // acceptOffer is called if a credit card is on file and user confirms the fare
+            // if there are no credit cards on file, acceptOffer is called on a successful stripeResponse
             rideOffers.acceptOffer = function(token) {
                 if (window.io && window.socket) {
                     data.token = token;
                     socket.emit('acceptRide', data);
-                    rideOffers.activateRide = constructRideActivator(data.driver);
+                    // activateRide is called in the 'cardAccepted' event handler
+                    rideOffers.activateRide = (function(driverID) {
+                        return function() {
+                            this.driverID = driverID;
+                            activeCar(driverID);
+                            getDriverTime();
+                            $('.rideOffer').fadeOut({
+                                complete: function() {
+                                    $('#ride-offers').hide();	
+                                }
+                            });
+                            delete this.activateRide;
+                        }
+                    })(data.driver);
                 }
             };
             makePayment(data.fare);
@@ -1084,20 +1092,6 @@ var rideOffers = {
     }
 }
 
-function constructRideActivator(driverID) {
-    var f = function() {
-        this.driverID = driverID;
-        activeCar(driverID);
-        getDriverTime();
-        $('.rideOffer').fadeOut({
-            complete: function() {
-                $('#ride-offers').hide();	
-            }
-        });
-        delete this.activateRide;
-    };
-    return f;
-}
 function getDriverTime(obj, onsuccess, onfail, car) {
     if (!obj) obj = me;
     if (!car) car = cars[rideOffers.driverID];
@@ -1132,6 +1126,7 @@ function deactivateRide(resetDrop) {
     if (resetDrop) {
         drop.setMap();
         drop = false;
+        $('.Change.Drop-off').html('Enter Drop-off');
     }
     $('#main-footer').children('.Change,#requestRide').show();
     $('#cancelRequest,#contacting,.rideOffer,#ride-offers,#main-footer .thanks').hide();
@@ -1763,8 +1758,8 @@ function onPause() {
         }
         // Clear marker of current position (in order to pinpoint location when resuming the app)
          if (!route && typeof(window.requestRide) !== 'function') {
-            me.setMap();
-            me = false;
+            //me.setMap();
+            //me = false;
             geo.active = startApp = true;
         }
         onPause.time = Date.now();
@@ -1776,6 +1771,7 @@ function onResume() {
     if (time - onPause.time > 1800000 && drop && !route) {
         drop.setMap();
         drop = false;
+        $('.Change.Drop-off').html('Enter Drop-off');
     }
     // Turn on geolocation
     if (!watchID) initialize();
@@ -2032,6 +2028,7 @@ function activateDriver() {
     if (drop) {
         drop.setMap();
         drop = false;
+        $('.Change.Drop-off').html('Enter Drop-off');
     }
     geo.active = true;
     $('#main-footer').stop().animate({'bottom': '-120px'}, { 

@@ -44,6 +44,12 @@ $(document).ready(function() {
 function stripeResponse(status, response) {
 	if (response.error) {
 		console.log('Error', response.error.message);
+        var $declined = $('.declined-card');
+        $declined.children('.declined-card-reason').html(response.error.message);
+        $declined.fadeIn();
+        setTimeout(function() {
+            $declined.fadeOut();
+        }, 1400);
 		$('#credit-card-info button').prop('disabled', false);
 	}
 	else {
