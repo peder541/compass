@@ -307,9 +307,9 @@ input, input:focus {
     width: 100%;
     white-space: nowrap;
 }
-#riderResponse #offerAccepted,
+#riderResponse #offerAccepted, #riderResponse .indicatePickup,
 #riderResponse #arrived-Pick-up, 
-#riderResponse #drive-in-progress, 
+#riderResponse #drive-in-progress, #riderResponse .indicateDropoff,
 #riderResponse #arrived-Drop-off {
     position: absolute;
     top: 0;
@@ -647,7 +647,7 @@ input, input:focus {
 }
 
 #sidebar {
-    background-color: #222; /*#099;/**/
+    background-color: #1e2122; /*#222;*/ /*#099;/**/
     color: whitesmoke;
     width: 200px;
     position: absolute;
@@ -972,8 +972,6 @@ input, input:focus {
         position: absolute;
         top: 55px;
         width: 100%;
-    }
-    .signup-checklist.vehicle {
         display: none;
     }
         .signup-checklist p {
@@ -1079,7 +1077,7 @@ input, input:focus {
     }
 
 #profile {
-    background-color: #333;
+    background-color: #293133;/*#333;*/
 }
 #profile > #profile-container {
     width: 100%;
@@ -1215,8 +1213,62 @@ input, input:focus {
         #earnings .phone-login {
             border: 1px solid rgba(59, 87, 157, 0.25);
         }
+    .login-phone-details {
+        position: absolute;
+        top: calc(50% - 22px);
+        text-align: center;
+        line-height: 44px;
+        transform: translateY(-50%);
+        -webkit-transform: translateY(-50%);
+        width: 100%;
+        display: none;
+    }
+        .login-phone-details > p {
+            color: whitesmoke;
+            font-family: Avenir Next;
+        }
+        .login-verification-code > .retry {
+            display: none;
+            position: absolute;
+            top: 100%;
+            padding: 44px;
+            font-size: 14px;
+            line-height: 200%;
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            width: 100%;
+        }
+        .login-phone-details > input {
+            line-height: 44px;
+            border-radius: 5px;
+            border: 0;
+            padding: 0 10px;
+            font-family: Arial;
+            font-size: 16px;
+            background-color: whitesmoke;
+            color: #293133;
+        }
+        .login-phone-details > button {
+            font-size: 16px;
+            font-family: Avenir Next;
+            border-radius: 5px;
+            margin: 14px 7px;
+            color: whitesmoke;
+            background-color: #11c1e2;
+            padding: 14px;
+        }
+        .login-phone-details > .cancel {
+            background-color: #757d80;
+        }
+        #payment .login-phone-details > p {
+            color: #3B579D;
+        }
+        #payment .login-phone-details > input {
+            color: #3B579D;
+            border: 1px solid rgba(59, 87, 157, 0.25);
+        }
 #invite {
-    background-color: rgba(17, 193, 226, 0.5);
+    background-color: #7ad2e2;/*rgba(17, 193, 226, 0.5);*/
 }
     #invite-intro {
         height: 30%;
@@ -1270,12 +1322,6 @@ input, input:focus {
             position: relative;
             left: -12%;
         }
-}
-#faq > iframe {
-    height: 100%;
-    height: calc(100% - 44px);
-    width: 100%;
-    border: 0;
 }
     
 #modal {
@@ -1339,6 +1385,7 @@ input, input:focus {
                 border-left: 1px solid #ddd;
                 border-radius: 0 0 8px 0;
                 right: 0;
+                font-weight: 500;
             }
             .phone #popup button {
                 width: auto;

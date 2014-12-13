@@ -54,8 +54,19 @@ var geo = {
     },
     active: true
 };
-function connect() {
+function connect(jwt) {
     if (window.io && !window.socket) {
+        if (!jwt) {
+            $.get('https://ridesqirl.com:8443/auth/jwt', function(response) {
+                if (typeof response !== 'object') {
+                    response = JSON.parse(response);
+                }
+                if (response.jwt) {
+                    connect(response.jwt);
+                }
+            });
+            return false;
+        }
         socket = io.connect('https://ridesqirl.com:8443', {
             query: 'token=' + jwt
         });
@@ -78,7 +89,7 @@ function connect() {
                 });
             }
         })
-        .on('canDrive', function() {
+        .on('canDrive', function(data) {
             $('#becomeDriver').attr('id','toggleDriver').html('Active Sqirl');
             if (driver) activateDriver();
         })
@@ -130,12 +141,13 @@ function connect() {
                     if (getDistance(currentGPS, carGPS) * 2 < getDistance(me.getPosition(), carGPS)) {
                         // ride has most likely started by now
                         rideOffers.startRide();
-                        socket.emit('rideStarted', rideOffers.driverID);
+                        socket.emit('rideStarted', {driver: rideOffers.driverID});
                     }
                 }
             }
         })
-        .on('migrateRider', function(newRiderID) {
+        .on('migrateRider', function(data) {
+            var newRiderID = data.rider;
             var oldRiderID = rideRequests.current.rider;
             rideRequests.current.rider = newRiderID;
             console.log('Migrated rider from ' + oldRiderID + ' to ' + newRiderID);
@@ -182,30 +194,34 @@ function connect() {
         .on('rideOffered', function(data) {
             rideOffers.showOffer(data);
         })
-        .on('rideAccepted', function() {
+        .on('rideAccepted', function(data) {
             console.log('Ride accepted');
-            $('#offerAccepted,.getDirections').show();
+            $('.indicatePickup,.getDirections').show();
             $('#waitingForResponse').hide();
             $('#toggleDriver').html('Cancel Ride').attr('id', 'dropRide');
         })
         .on('rideStarted', function(data) {
-            if (data == rideOffers.driverID) {
+            console.log('Ride started');
+            if (data.driverID == rideOffers.driverID) {
                 rideOffers.startRide();
             }
-            else if (data == rideRequests.current.rider) {
+            else if (data.rider == rideRequests.current.rider) {
                 rideRequests.startRide();
             }
         })
         .on('rideCanceled', function(data) {
             rideRequests.cancelRequest(data.rider);
         })
-        .on('rideDropped', function() {
-            deactivateRide();
-            if (statusMessage.hide) statusMessage.hide();
-            // Will want custom dialog in future.
-            alert('Your ride has been canceled.');
+        .on('rideDropped', function(data) {
+            if (data.driverID == rideOffers.driverID) {
+                deactivateRide();
+                if (statusMessage.hide) statusMessage.hide();
+                customDialog.rideCanceled();
+                $('#modal').fadeIn(100);
+                // may want to add a local notification
+            }
         })
-        .on('ridePaidByTimer', function() {
+        .on('ridePaidByTimer', function(data) {
             deactivateRide(true);
         })
         .on('cardDeclined', function(data) {
@@ -255,6 +271,12 @@ function connect() {
                 }
             }
         })
+        .on('pickupIndicated', function(data) {
+            rideOffers.callbacks.arrived_at_pickup();
+        })
+        .on('dropoffIndicated', function(data) {
+            rideOffers.callbacks.arrived_at_dropoff();
+        })
         .on('bankError', function(data) {
             console.log('Bank error', data);
         })
@@ -282,17 +304,24 @@ function connect() {
                 }
             }
         })
-        .on('phoneRegistered', function(phoneNumber) {
-            var verificationCode = prompt('A verification code has been sent to ' + phoneNumber + '\nEnter that code here:');
-            socket.emit('verifyPhone', verificationCode);
+        .on('phoneRegistered', function(data) {
+            $('.login-phone-number').hide();
+            $('.login-verification-code').show();
+            /*
+            var code = prompt('A verification code has been sent to ' + data.phone + '\nEnter that code here:');
+            socket.emit('verifyPhone', {code: code});
+            */
         })
-        .on('phoneWrongCode', function(attempts) {
-            if (attempts) {
-                var verificationCode = prompt('Incorrect verification code.\nTry again:');
-                socket.emit('verifyPhone', verificationCode);
+        .on('phoneWrongCode', function(data) {
+            if (data.attempts) {
+                /*
+                var code = prompt('Incorrect verification code.\nTry again:');
+                socket.emit('verifyPhone', {code: code});
+                */
+                $('.login-verification-code .retry').show();
             }
             else {
-                alert('Incorrect verification code.\nReached attempt limit.');
+                console.log('Incorrect verification code.\nReached attempt limit.');
             }
         })
         .on('phoneVerified', function(data) {
@@ -303,8 +332,11 @@ function connect() {
         .on('phoneProved', function(data) {
             var phoneDisplay = data.phone.slice(0,3) + '-' + data.phone.slice(3,6) + '-' + data.phone.slice(6);
             $('#profile-phone .fa-phone').next().html(phoneDisplay);
-            $('#profile-container,#profile-phone,#payment-info,#earnings-info').show();
+            $('#profile-container,#profile-phone,#payment-info,#earnings-info,.signup-checklist.personal').show();
             $('.screen-login,#profile-info,#profile-signup').hide();
+            // Set phone login to step 0
+            var $phone = $('.login-phone-details');
+            $phone.children().add($phone).add('.login-option').css('display','').filter('input').val('');
         })
         .on('loginSuccess', function() {
             console.log('Login successful');
@@ -397,10 +429,11 @@ var rideRequests = {
         console.log(data.traffic);
 
         getImage(data, function(src) {
-            $('#driver-footer').css('bottom','-120px').show().stop().animate({'bottom':'0'}, {
-                progress: function() {
-                    $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);	
-                }
+            function progress() {
+                $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);
+            }
+            $('#driver-footer').css('bottom','-120px').show().stop().animate({'bottom':'0', onUpdate: progress}, {
+                progress: progress
             });
             $('.riderPic').attr('src', src);
         });
@@ -431,10 +464,11 @@ var rideRequests = {
         }
     },
     hideRequest: function(callback) {
-        $('#driver-footer').stop().animate({'bottom':'-120px'}, {
-            progress: function() {
-                $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);	
-            },
+        function progress() {
+            $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);	
+        }
+        $('#driver-footer').stop().animate({'bottom':'-120px', onUpdate: progress}, {
+            progress: progress,
             complete: function() {
                 $('#driver-footer').hide();
                 if (typeof callback === 'function') callback();
@@ -452,10 +486,7 @@ var rideRequests = {
             pickup.setMap();
             pickup = false;
         }
-        if (window.info) for (var i=0, l=info.length; i<l; ++i) {
-            if (info[i]) info[i].setMap();
-        }
-        info = [];
+        destroyLabels();
         if (Twilio.Device.destroy) {
             Twilio.Device.destroy();
         }
@@ -480,7 +511,7 @@ var rideRequests = {
         });
         pickup.setVisible(false);
         $('#arrived-Pick-up,.startRide').hide();
-        $('#drive-in-progress,.getDirections').show();
+        $('.indicateDropoff,.getDirections').show();
         rideRequests.rideInProgress = true;
         rideRequests.measured_distance = 0;
         rideRequests.last_point = me.getPosition();
@@ -496,12 +527,11 @@ var rideRequests = {
     finishRide: function() {
         socket.emit('measurementsForRide', {
             duration: (Date.now() - rideRequests.start_time) / 1000,
-            distance: rideRequests.measured_distance,
-            rider: rideRequests.current.rider
+            distance: rideRequests.measured_distance
         });
         rideRequests.rideInProgress = false;
         delete rideRequests.start_time;
-        socket.emit('finishRide', rideRequests.current.rider);
+        socket.emit('finishRide');
         rideRequests.cancelRequest(rideRequests.current.rider);
         
         // Just for aesthetics when demo'ing
@@ -771,14 +801,55 @@ function getCost(directions, traffic) {
     return Math.max(cost,5);	
 }
 
-function midPoints(directions, traffic) {
-    var legs = directions.routes[0].legs;
-    if (legs.length == 1) return false;
-    traffic = traffic || 1;
+function markerLabels() {
+    destroyLabels();
+    
+    function MarkerOptions(obj, text) {
+        var options = {
+            clickable: false,
+            map: map,
+            position: obj.getPosition(),
+            icon: {
+                url: 'https://ridesqirl.com:8443/svg?address=1&text=' + text,
+                anchor: new google.maps.Point(text.replace(/\s/g,'').length * 4, 0)
+            },
+            optimized: false,
+            zIndex: google.maps.Marker.MAX_ZINDEX + 1
+        };
+        return options;
+    }
+    function drawLabel(obj, text, index) {
+        if (text == 'calculating...') {
+            getAddress(obj, false, function(address) {
+                info[index] = new google.maps.Marker(MarkerOptions(obj, address));
+            });
+        }
+        else {
+            info[index] = new google.maps.Marker(MarkerOptions(obj, text));
+        }
+    }
+    
+    var saddr = $('input.Pick-up').val();
+    drawLabel(me, saddr, 0);
+    
+    var daddr = $('input.Drop-off').val();
+    drawLabel(drop, daddr, 1);
+}
+function destroyLabels() {
     if (window.info) for (var i=0, l=info.length; i<l; ++i) {
         if (info[i]) info[i].setMap();
     }
     info = [];
+}
+
+function midPoints(directions, traffic) {
+    var legs = directions.routes[0].legs;
+    if (legs.length == 1) {
+        markerLabels();
+        return false;
+    }
+    traffic = traffic || 1;
+    destroyLabels();
     for (var i=0, l=legs.length; i<l; ++i) {
         var midpoint = legs[i].distance.value*0.5;
         var time = legs[i].duration.value;
@@ -792,11 +863,14 @@ function midPoints(directions, traffic) {
                 var index = Math.floor(steps[j].lat_lngs.length * ratio);
                 function markPoint(position, time, legTraffic) {
                     var markerOptions = {
+                        clickable: false,
                         map: map,
                         position: position,
                         icon: {
                             url: 'https://ridesqirl.com:8443/svg?text=' + Math.ceil(time/60 * legTraffic)
-                        }
+                        },
+                        optimized: false,
+                        zIndex: google.maps.Marker.MAX_ZINDEX + 1
                     };
                     return new google.maps.Marker(markerOptions);
                 }
@@ -1145,6 +1219,7 @@ function deactivateRide(resetDrop) {
         route.setMap();
         route = false;
     }
+    destroyLabels();
     pickupTimer = false;
     $('#contacting span').html('contacting Sqirls').attr('data-ellipses','...');
     $('.rideOffer').removeClass('expanded wasVisible');
@@ -1174,7 +1249,9 @@ function initialize() {
     watchID = navigator.geolocation.watchPosition(geo.success, geo.failure, geo.options);
 }
 
-google.maps.event.addDomListener(window, 'load', initialize);
+if (window.google) {
+    google.maps.event.addDomListener(window, 'load', initialize);
+}
 
 $(document).ready(function() {
 
@@ -1188,7 +1265,9 @@ $(document).ready(function() {
         else {
             $('#map-canvas').css('height', window.innerHeight - 164);
         }
-        google.maps.event.trigger(map, 'resize');
+        if (window.google) {
+            google.maps.event.trigger(map, 'resize');
+        }
         if ($('#center_icon').is(':visible')) trueCenterIcon();
 
         rideOffers.resize();
@@ -1260,7 +1339,7 @@ $(document).ready(function() {
             }
         }
         facebookConnectPlugin.getAccessToken(requestRide, function() {
-            var $login = $('.screen-login').eq(0).clone();
+            var $login = $('.screen-login').eq(0).clone(true);
             $('#main').append($login);
             window.requestRide = requestRide;
             profile.provePhone();
@@ -1314,8 +1393,14 @@ $(document).ready(function() {
         $('#riderResponse').show();
         $('#pricing,.offerRide').hide();
     })
+    .on('click', '.indicatePickup', function(event) {
+        socket.emit('indicatePickup');
+        console.log('Arrived at Pick-up!');
+        $('.indicatePickup,.getDirections').hide();
+        $('#arrived-Pick-up,.startRide').show();
+    })
     .on('click', '.getDirections', function(event) {
-        var destination = ($('#drive-in-progress').is(':visible') ? dropoff : pickup).getPosition();
+        var destination = ($('.indicateDropoff').is(':visible') ? dropoff : pickup).getPosition();
         var url = {
             apple: 'http://maps.apple.com/',
             google_ios: 'comgooglemaps-x-callback://',
@@ -1327,20 +1412,26 @@ $(document).ready(function() {
             url[i] += '&daddr=' + destination.lat() + ',' + destination.lng();
         }
         if (window.navigator && window.navigator.standalone) {
-            window.open(url.apple, '', null);
+            window.open(url.apple, '_system', null);
         }
-        else if (window.cordova /* && device.platform == 'iOS' */) {
+        else if (window.cordova && device.platform == 'iOS') {
             window.open(url.apple, '_system', null);
         }
         else {
-            window.open(url.google_droid, '', null);
+            window.open(url.google_droid, '_system', null);
         }
     })
     .on('click', '.startRide', function(event) { 
         rideRequests.startRide();
         if (window.io && window.socket) {
-            socket.emit('startRide', rideRequests.current.rider);
+            socket.emit('startRide', {rider: rideRequests.current.rider});
         }
+    })
+    .on('click', '.indicateDropoff', function(event) {
+        socket.emit('indicateDropoff');
+        console.log('Arrived at Drop-off!');
+        $('.indicateDropoff,.getDirections').hide();
+        $('#arrived-Drop-off,.finishRide').show();
     })
     .on('click', '.finishRide', function(event) {
         rideRequests.finishRide();
@@ -1378,10 +1469,10 @@ $(document).ready(function() {
     .on('click', '.tip-confirm', function(event) {
         deactivateRide(true);
         var tip = $('.tip-tip span span').html();
-        socket.emit('tipForRide', tip);
+        socket.emit('tipForRide', {tip: tip});
     })
-    .on('click', '#test', function(event) {
-        if (!me) {
+    .on('click', '#toMap', function(event) {
+        if (!me && window.google) {
             draw(0, 45.03293, -93.18358, 100);
             connect();
         }
@@ -1396,14 +1487,13 @@ $(document).ready(function() {
     })
     .on('click', '#dropRide', function() {
         if (window.socket) {
-            socket.emit('dropRide', rideRequests.current.rider);
+            socket.emit('dropRide', {rider: rideRequests.current.rider});
             rideRequests.cancelRequest(rideRequests.current.rider);
         }
     })
     .on('click', '#showFAQ', function(event) {
         var url = 'https://ridesqirl.com:8443/faq.html';
         window.open(url, '_system', null);
-        //changeScreen('faq');
     })
     .on('click', '#inviteFriends', function(event) {
         changeScreen('invite');
@@ -1415,13 +1505,50 @@ $(document).ready(function() {
         profile.login();
     })
     .on('click', '.phone-login', function(event) {
-        var phoneNumber = prompt('Phone number:');
-        if (phoneNumber) {
-            phoneNumber = phoneNumber.replace(/\D/g,'');
-            if (phoneNumber.length == 10) {
-                socket.emit('registerPhone', phoneNumber);
+        $('.login-option').hide();
+        $('.login-phone-number').show();
+        /*
+        var phone = prompt('Phone number:');
+        if (phone) {
+            phone = phone.replace(/\D/g,'');
+            if (phone.length == 10) {
+                socket.emit('registerPhone', {phone: phone});
             }
         }
+        */
+    })
+    .on('click', '.login-phone-number .cancel', function(event) {
+        $('.login-option').show();
+        $('.login-phone-number').hide().children('input').val('');
+    })
+    .on('submit', '.login-phone-number', function(event) {
+        $(this).children('.submit').click();
+        return false;
+    })
+    .on('click', '.login-phone-number .submit', function(event) {
+        var phone = $(this).siblings('input').val();
+        if (phone) {
+            $('.login-verification-code span').html(phone);
+            phone = phone.replace(/\D/g,'');
+            if (phone.length == 10) {
+                socket.emit('registerPhone', {phone: phone});
+            }
+        }
+    })
+    .on('click', '.login-verification-code .cancel', function(event) {
+        $('.login-phone-number').show();
+        var $verify = $('.login-verification-code').hide();
+        $verify.children('.retry').hide();
+        $verify.children('input').val('');
+        $verify.find('span').html('612-555-0123');
+    })
+    .on('submit', '.login-verification-code', function(event) {
+        $(this).children('.submit').click();
+        return false;
+    })
+    .on('click', '.login-verification-code .submit', function(event) {
+        var code = $(this).siblings('input').val();
+        socket.emit('verifyPhone', {code: code});
     })
     .on('click', '.fb-invite', function(event) {
         if (window.navigator && window.navigator.standalone) {
@@ -1725,7 +1852,14 @@ $(document).ready(function() {
             if (device.platform == 'Android') {
                 $('#signup').css('height', window.innerHeight);
             }
+            document.addEventListener('online', onOnline, false);
         }, false);
+        
+        $('#map-canvas').on('click', 'a', function(event) {
+            window.open(this.href, '_blank');
+            event.preventDefault();
+            return false;
+        });
     }
     // Web
     else {
@@ -1790,6 +1924,35 @@ function onBackKeyDown() {
     }
     else {
         changeScreen('main', true);
+    }
+}
+function onOnline() {
+    var src = {
+        socketIO: 'https://ridesqirl.com:8443/socket.io/socket.io.js',
+        googleMaps: 'https://maps.googleapis.com/maps/api/js?key=AIzaSyCKbju-lHWKmxZc9zB1J8LSg8p2dG2HcMQ&v=3.17&sensor=true&libraries=places'
+    };
+    src.googleMaps += '&callback=initialize';
+    
+    loadscript(src.socketIO, window.io, function() {
+        loadscript(src.googleMaps, window.google);
+    });
+    profile.populate();
+}
+function loadscript(src, test, callback) {
+    if (!test) {
+        var done = false;
+        var script = document.createElement('script');
+        script.src = src;
+        script.onload = script.onreadystatechange = function () {
+            if (!done && (!this.readyState || this.readyState == 'loaded' || this.readyState == 'complete')) {
+                done = true;
+                if (typeof callback === 'function') callback();
+            }
+        };
+        document.getElementsByTagName('head')[0].appendChild(script);
+    }
+    else {
+        if (typeof callback === 'function') callback();
     }
 }
 
@@ -1871,7 +2034,7 @@ var profile = {
                     $('.fa-envelope').next().html(response.email);
                     $('#profile-pic img').attr('src', 'https://graph.facebook.com/' + response.id + '/picture?type=large');
                     $('.screen-login').hide();
-                    $('#profile-container,#payment-info,#earnings-info').show();
+                    $('#profile-container,#payment-info,#earnings-info,.signup-checklist.personal').show();
                     /* populate signup *
                     var $signup = $('#signup-form');
                     $signup.find('[name="firstName"]').val(response.first_name);
@@ -1891,6 +2054,7 @@ var profile = {
         function onsuccess() {
             $('.screen-login').show();
             $('#profile-container,#payment-info,#earnings-info').hide();
+            $('#signup').children().css('display','').children().css('display','').removeClass('checked').find('input').val('');
             $('.payment-cc').remove();
             socket.emit('logout');
             $('#toggleDriver').attr('id','becomeDriver').html('Become a Sqirl');
@@ -2000,10 +2164,11 @@ var freebase = {
 function hibernateDriver() {
     rideRequests.hideRequest();
     rideRequests.queue = [];
-    $('#main-footer').css('bottom','-120px').show().stop().animate({'bottom': '0px'}, { 
-        progress: function() { 
-            $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#main-footer').css('bottom'),10) - 120);
-        },
+    function progress() {
+        $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#main-footer').css('bottom'),10) - 120);
+    }
+    $('#main-footer').css('bottom','-120px').show().stop().animate({'bottom': '0px', onUpdate: progress}, { 
+        progress: progress,
         complete: function() {
             $('#main-footer').css('bottom','');
             driver = false;
@@ -2031,10 +2196,11 @@ function activateDriver() {
         $('.Change.Drop-off').html('Enter Drop-off');
     }
     geo.active = true;
-    $('#main-footer').stop().animate({'bottom': '-120px'}, { 
-        progress: function() { 
-            $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#main-footer').css('bottom'),10) - 120);
-        },
+    function progress() {
+        $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#main-footer').css('bottom'),10) - 120);
+    }
+    $('#main-footer').stop().animate({'bottom': '-120px', onUpdate: progress}, { 
+        progress: progress,
         complete: function() {
             $('#main-footer').hide();
             driver = true;
@@ -2058,17 +2224,17 @@ function emitPositionUpdates(obj) {
             var spot = obj.getPosition();
             // Calculate distance endpoints are "off road" in getRoute() and add that to a proximity threshold
             
-            if (pickup && $('#offerAccepted').is(':visible') && getDistance(pickup.getPosition(),spot) < 25 + pickup.offroad) {
+            if (pickup && $('.indicatePickup').is(':visible') && getDistance(pickup.getPosition(),spot) < 25 + pickup.offroad) {
                 console.log('Arrived at Pick-up!');
-                $('#offerAccepted,.getDirections').hide();
+                $('.indicatePickup,.getDirections').hide();
                 $('#arrived-Pick-up,.startRide').show();
             }
-            if (pickup && $('#drive-in-progress').is(':visible')) {
+            if (pickup && $('.indicateDropoff').is(':visible')) {
                 pickup.setPosition(me.getPosition());
             }
-            if (dropoff && $('#drive-in-progress').is(':visible') && getDistance(dropoff.getPosition(),spot) < 25 + dropoff.offroad) {
+            if (dropoff && $('.indicateDropoff').is(':visible') && getDistance(dropoff.getPosition(),spot) < 25 + dropoff.offroad) {
                 console.log('Arrived at Drop-off!');
-                $('#drive-in-progress,.getDirections').hide();
+                $('.indicateDropoff,.getDirections').hide();
                 $('#arrived-Drop-off,.finishRide').show();
             }
             if (window.io && window.socket) socket.emit('update', [spot.lat(), spot.lng()]);
@@ -2141,10 +2307,10 @@ function toggleMenu() {
     switch (left) {
             case 0:
                 $screen.animate({'left':$sidebar.width()});
-                $sidebar.animate({'left':''});
+                $sidebar.animate({'left':0});
                 break;
             case 200:
-                $screen.animate({'left':''});
+                $screen.animate({'left':0});
                 $sidebar.animate({'left':-$sidebar.width()});
                 break;
             default:
@@ -2152,11 +2318,11 @@ function toggleMenu() {
                 break;
     }
 }
-function getAddress(obj, retry) {
+function getAddress(obj, retry, fn) {
     if (!window.geocoder) geocoder = new google.maps.Geocoder();
 
     var callback = function() {
-        getAddress(obj, retry);
+        getAddress(obj, retry, fn);
     };
     if (rateLimit.check('geocoding', callback)) return false;
 
@@ -2168,11 +2334,16 @@ function getAddress(obj, retry) {
         if (status == google.maps.GeocoderStatus.OK) {
             var address = results[0].formatted_address;
             address = address.split(',')[0];
-            if ($('#requestRide').is(':visible')) $('#main-footer input').filter(':visible').val(address);
+            if (typeof fn === 'function') {
+                fn(address);
+            }
+            else if ($('#requestRide').is(':visible')) {
+                $('#main-footer input').filter(':visible').val(address);
+            }
         }
         else if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
             rateLimit.set('geocoding');
-            if (!retry) timer.geocoding = setTimeout(function() { getAddress(obj, true); }, 2000);
+            if (!retry) timer.geocoding = setTimeout(function() { getAddress(obj, true, fn); }, 2000);
         }
     });	
 }
@@ -2216,7 +2387,7 @@ function fullscreen_input() {
         }
         $input.css({'height': $input.height()}).stop().animate({'top': '1%', 'left': '2%', 'width': '88%'}, {
             progress: function() {
-                $(window).scrollTop(0);
+                //$(window).scrollTop(0);
             },
             complete: function() { 
                 $input.removeAttr('readonly');
@@ -2354,6 +2525,7 @@ var customDialog = {
         $('#modal').addClass('phone').removeClass('connected');
         var person = driver ? 'rider' : 'Sqirl';
         this.setup('Incoming call from ' + person, '<i class="fa fa-phone"></i><br><span>Decline</span>', '<i class="fa fa-phone"></i><br><span>Answer</span>');
+        $('#popup-confirm, #popup-cancel').off('click');
         
         this.phone.call = function() {
             $('#modal').addClass('connected');
@@ -2400,6 +2572,10 @@ var customDialog = {
             rideOffers.endRide();
         });
     },
+    rideCanceled: function() {
+        $('#modal').removeClass('phone connected');
+        this.setup('Your ride has been canceled.', null, 'OK', this.onebutton());
+    },
     setup: function(msg, cancel, ok, onwin) {
         $('#popup p').html(msg);
         $('#popup-cancel').html(cancel);
@@ -2419,6 +2595,25 @@ var customDialog = {
         };
         $('#popup-confirm').one('click', this.fnConfirm);
         $('#popup-cancel').one('click', this.fnCancel);
+    },
+    onebutton: function() {
+        $('#popup-confirm').css({
+            'width': '100%',
+            'border-radius': '0 0 8px 8px',
+            'border-left': 0
+        });
+        $('#popup-cancel').hide();
+        
+        return function() {
+            setTimeout(function() {
+                $('#popup-confirm').css({
+                    'width': '',
+                    'border-radius': '',
+                    'border-left': ''
+                });
+                $('#popup-cancel').show();
+            }, 100);
+        };
     }
 };
 

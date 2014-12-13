@@ -5,17 +5,17 @@
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <link rel="apple-touch-icon" href="img/logo60.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="img/logo120.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="img/logo152.png">
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="apple-touch-icon" href="img/logo60.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="img/logo120.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="img/logo152.png" />
     <title>RideSqirl</title>
     <link rel="stylesheet" href="css/compass.css" />
-    <link href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" />
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKbju-lHWKmxZc9zB1J8LSg8p2dG2HcMQ&v=3.17&sensor=true&libraries=places"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.2/fastclick.min.js"></script>
     <script type="text/javascript" src="https://ridesqirl.com:8443/socket.io/socket.io.js"></script>
-    <script type="text/javascript" src="https://ridesqirl.com:8443/auth/jwt.js"></script>
     <script type="text/javascript" src="js/compass.js"></script>
 
     <link rel="stylesheet" href="css/pay.css" />
@@ -44,12 +44,18 @@
     <script src="js/tcPlugin.js"></script>
     <!-- -->
     <script src="js/facebookConnectPlugin.js"></script>
+    
+    <!-- Smoother Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.14.2/TweenLite.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.14.2/jquery.gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.14.2/plugins/CSSPlugin.min.js"></script>
+    <!-- -->
 
 </head>
 
 <body>
     <div id="sidebar">
-        <p id="test">Back to Map</p>
+        <p id="toMap">Back to Map</p>
         <p id="becomeDriver">Become a Sqirl</p>
         <p id="showProfile">Profile</p>
         <p id="makePayment">Payment</p>
@@ -94,9 +100,9 @@
             <button type="button" class="offerRide">Offer Ride</button>
             <div id="riderResponse">
                 <p id="waitingForResponse">Waiting for a response...</p>
-                <p id="offerAccepted">Your offer was accepted.</p>
+                <!--<p id="offerAccepted">Your offer was accepted.</p>--><button type="button" class="indicatePickup">Indicate Arrival</button>
                 <p id="arrived-Pick-up">Arrived at pick-up.</p>
-                <p id="drive-in-progress">Trip in progress.</p>
+                <!--<p id="drive-in-progress">Trip in progress.</p>--><button type="button" class="indicateDropoff">Drop Off Here</button>
                 <p id="arrived-Drop-off">Arrived at drop-off.</p>
                 <button type="button" class="getDirections">Get Directions</button>
                 <button type="button" class="startRide">Start Trip</button>
@@ -158,6 +164,35 @@
         <div class="header">
             <h1>RideSqirl</h1>
             <button type="button" class="menu"><i class="fa fa-bars"></i></button>
+        </div>
+        <div class="screen-login">
+            <div class="login-option">
+                <button type="button" class="fb-login needsclick">
+                    <i class="fa fa-facebook-square needsclick"></i>
+                    <span class="needsclick">Log in with Facebook</span>
+                </button>
+            </div>
+            <div class="login-option">
+                <button type="button" class="phone-login needsclick">
+                    <i class="fa fa-phone needsclick"></i>
+                    <span class="needsclick">Log in with phone #</span>
+                </button>
+            </div>
+            <form class="login-phone-details login-phone-number" novalidate>
+                <p>Enter your phone number.</p>
+                <input type="text" pattern="\d*" name="phone" placeholder="612-555-0123">
+                <br>
+                <button type="button" class="cancel">Cancel</button>
+                <button type="button" class="submit">Submit</button>
+            </form>
+            <form class="login-phone-details login-verification-code" novalidate>
+                <p>Enter the code sent to <span>612-555-0123</span>.</p>
+                <input type="text" pattern="\d*" name="code" placeholder="123456">
+                <br>
+                <button type="button" class="cancel">Back</button>
+                <button type="button" class="submit">Verify</button>
+                <p class="retry">The verification code you entered was incorrect. Please try again.</p>
+            </form>
         </div>
         <div class="signup-checklist personal">
             <p>I identify as female.</p>
@@ -272,6 +307,21 @@
                     <span class="needsclick">Log in with phone #</span>
                 </button>
             </div>
+            <form class="login-phone-details login-phone-number" novalidate>
+                <p>Enter your phone number.</p>
+                <input type="text" pattern="\d*" name="phone" placeholder="612-555-0123">
+                <br>
+                <button type="button" class="cancel">Cancel</button>
+                <button type="button" class="submit">Submit</button>
+            </form>
+            <form class="login-phone-details login-verification-code" novalidate>
+                <p>Enter the code sent to <span>612-555-0123</span>.</p>
+                <input type="text" pattern="\d*" name="code" placeholder="123456">
+                <br>
+                <button type="button" class="cancel">Back</button>
+                <button type="button" class="submit">Verify</button>
+                <p class="retry">The verification code you entered was incorrect. Please try again.</p>
+            </form>
         </div>
     </div>
 
@@ -293,6 +343,21 @@
                     <span class="needsclick">Log in with phone #</span>
                 </button>
             </div>
+            <form class="login-phone-details login-phone-number" novalidate>
+                <p>Enter your phone number.</p>
+                <input type="text" pattern="\d*" name="phone" placeholder="612-555-0123">
+                <br>
+                <button type="button" class="cancel">Cancel</button>
+                <button type="button" class="submit">Submit</button>
+            </form>
+            <form class="login-phone-details login-verification-code" novalidate>
+                <p>Enter the code sent to <span>612-555-0123</span>.</p>
+                <input type="text" pattern="\d*" name="code" placeholder="123456">
+                <br>
+                <button type="button" class="cancel">Back</button>
+                <button type="button" class="submit">Verify</button>
+                <p class="retry">The verification code you entered was incorrect. Please try again.</p>
+            </form>
         </div>
         <div id="payment-info">
             <h2>Payment Information</h2>
@@ -392,14 +457,6 @@
             <button type="submit">Save</button>
             <button type="button" class="cancel">Cancel</button
         </form>
-    </div>
-            
-    <div id="faq" class="screen">
-        <div class="header">
-            <h1>RideSqirl</h1>
-            <button type="button" class="menu"><i class="fa fa-bars"></i></button>
-        </div>
-        <iframe src="https://ridesqirl.com:8443/faq.html"></iframe>
     </div>
     
     <div id="invite" class="screen">

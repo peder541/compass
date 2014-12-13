@@ -86,6 +86,8 @@ $(document).ready(function() {
     
     $('input[name="zipcode"]').payment('restrictNumeric').on('keypress', function(event) { return restrictNumericLength(event,5); });
     
+    $('input[name="code"]').payment('restrictNumeric').on('keypress', function(event) { return restrictNumericLength(event,6); });
+    
 });
 
 function restrictNumericLength(event, maxlength) {
