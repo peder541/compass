@@ -940,7 +940,11 @@ function getImage(data, callback) {
         }
     }
     img.onerror = img.onload;
-    if (data.fbID) {
+    if (data.profilePic) {
+        // picture for person that was uploaded by RideSqirl staff
+        img.src = data.profilePic;
+    }
+    else if (data.fbID) {
         // picture for people identified with facebook
         img.src = 'https://graph.facebook.com/v2.0/' + data.fbID + '/picture?width=160&height=160';
     }
