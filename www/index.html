@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="css/compass.css" />
     <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" />
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKbju-lHWKmxZc9zB1J8LSg8p2dG2HcMQ&v=3.17&sensor=true&libraries=places"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKbju-lHWKmxZc9zB1J8LSg8p2dG2HcMQ&v=3.18&sensor=true&libraries=places"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.2/fastclick.min.js"></script>
     <script type="text/javascript" src="https://ridesqirl.com:8443/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="js/compass.js"></script>
@@ -83,30 +83,35 @@
                 -->
                 <span data-ellipses="...">contacting Sqirls</span>
             </p>
+            <p class="destination"></p>
             <button type="button" id="cancelRequest">Cancel Request</button>
             <p class="thanks">Thank you for using RideSqirl!</p>
         </div>
         <div id="driver-footer">
             <img class="riderPic" src="img/blank.png" />
             <p class="riderPicOverlay">More info</p>
-            <div id="pricing">
-                <p id="cost">
-                    <sup class="currency fa fa-usd"></sup>
-                    <span data-msrp="2.50">2.50</span>
-                </p>
-                <button type="button" class="decrease fare"><i class="fa fa-minus"></i></button>
-                <button type="button" class="increase fare"><i class="fa fa-plus"></i></button>
-            </div>
-            <button type="button" class="offerRide">Offer Ride</button>
-            <div id="riderResponse">
-                <p id="waitingForResponse">Waiting for a response...</p>
-                <!--<p id="offerAccepted">Your offer was accepted.</p>--><button type="button" class="indicatePickup">Indicate Arrival</button>
-                <p id="arrived-Pick-up">Arrived at pick-up.</p>
-                <!--<p id="drive-in-progress">Trip in progress.</p>--><button type="button" class="indicateDropoff">Drop Off Here</button>
-                <p id="arrived-Drop-off">Arrived at drop-off.</p>
-                <button type="button" class="getDirections">Get Directions</button>
-                <button type="button" class="startRide">Start Trip</button>
-                <button type="button" class="finishRide">Finish Trip</button>
+            <div id="driver-footer-right">
+                <div id="driver-footer-right-adjust">
+                    <div id="pricing">
+                        <p id="cost">
+                            <sup class="currency fa fa-usd"></sup>
+                            <span data-msrp="2.50">2.50</span>
+                        </p>
+                        <button type="button" class="decrease fare"><i class="fa fa-minus"></i></button>
+                        <button type="button" class="increase fare"><i class="fa fa-plus"></i></button>
+                    </div>
+                    <button type="button" class="offerRide">Offer Ride</button>
+                    <div id="riderResponse">
+                        <p id="waitingForResponse">Waiting for a response...</p>
+                        <!--<p id="offerAccepted">Your offer was accepted.</p>--><button type="button" class="indicatePickup">Indicate Arrival</button>
+                        <p id="arrived-Pick-up">Arrived at pick-up.</p>
+                        <!--<p id="drive-in-progress">Trip in progress.</p>--><button type="button" class="indicateDropoff">Drop Off Here</button>
+                        <p id="arrived-Drop-off">Arrived at drop-off.</p>
+                        <button type="button" class="getDirections">Get Directions</button>
+                        <button type="button" class="startRide">Start Trip</button>
+                        <button type="button" class="finishRide">Finish Trip</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -157,7 +162,6 @@
 
         <div id="center_icon"></div>
         
-        <p class="status-message">No Sqirls are available at this time.</p>
     </div>
     
     <div id="signup" class="screen">
@@ -195,23 +199,23 @@
             </form>
         </div>
         <div class="signup-checklist personal">
+            <p class="checked">I want to drive for RideSqirl.</p>
             <p>I identify as female.</p>
             <p>I am at least 21 years old.</p>
-            <p>I would consent to a background check.</p>
             <p>I am kind and accepting of everyone.</p>
-            <p>I have never ran over a squirrel.</p>
-            <div>Click on an item to check it.<br>Check the entire list to continue.</div>
+            <p>I have never run over a squirrel.</p>
+            <div>Check the entire list to continue.</div>
         </div>
         <div class="signup-checklist vehicle">
-            <p>My car doesn't make any funny noises</p>
+            <p>My car looks and smells good!</p>
             <p>My car has all working functions, lights, seatbelts, etc.</p>
+            <p>My car doesn't make any funny noises</p>
             <p>I would drive my grandmother in this car.</p>
-            <p>My vehicle is visually pleasing.</p>
-            <p>My car smells good!</p>
-            <div>Click on an item to check it.<br>Check the entire list to continue.</div>
+            <p>I would consent to a background check.</p>
+            <div>Check the entire list to continue.</div>
         </div>
         <form id="signup-form" action="https://ridesqirl.com:8443/signup" method="post" novalidate>
-            <div id="signup-vehicle">
+            <div id="signup-car">
                 <label>
                     <span>Car Year</span>
                     <input name="carYear" type="text" pattern="\d*" placeholder="2005" />
@@ -225,21 +229,33 @@
                     <input name="carModel" type="text" placeholder="Montego" />
                 </label>
                 <label>
+                    <span>Insurance Provider</span>
+                    <input name="insurance" type="text" placeholder="Progressive" />
+                </label>
+                <button type="button" class="back">Back</button>
+                <button type="button" class="next">Continue</button>
+            </div>
+            <div id="signup-name">
+                <label>
+                    <span>First Name</span>
+                    <input name="firstName" type="text" placeholder="Jane" />
+                </label>
+                <label>
+                    <span>Middle Name</span>
+                    <input name="middleName" type="text" placeholder="Marie" />
+                </label>
+                <label>
+                    <span>Last Name</span>
+                    <input name="lastName" type="text" placeholder="Doe" />
+                </label>
+                <label>
                     <span>Driver's License Number</span>
                     <input name="license" type="text" placeholder="856AA5350" />
                 </label>
                 <button type="button" class="back">Back</button>
                 <button type="button" class="next">Continue</button>
             </div>
-            <div id="signup-contact">
-                <label>
-                    <span>First Name</span>
-                    <input name="firstName" type="text" placeholder="Jane" />
-                </label>
-                <label>
-                    <span>Last Name</span>
-                    <input name="lastName" type="text" placeholder="Doe" />
-                </label>
+            <div id="signup-extra">
                 <label>
                     <span>Email</span>
                     <input name="email" type="text" placeholder="jane@email.com" />
@@ -248,24 +264,22 @@
                     <span>Phone Number</span>
                     <input name="phone" type="text" pattern="\d*" placeholder="612-555-0123" />
                 </label>
-                <button type="button" class="back">Back</button>
-                <button type="button" class="next">Continue</button>
-            </div>
-            <div id="signup-extra">
                 <label>
                     <span>Date of Birth</span>
-                    <input name="dob" type="date" pattern="\d*" placeholder="YYYY-MM-DD" />
+                    <input name="dob" type="date" pattern="\d*" placeholder="MM/DD/YYYY" />
                 </label>
                 <label>
                     <span>Home Zipcode</span>
                     <input name="zipcode" type="text" pattern="\d*" placeholder="55401" />
                 </label>
+                <button type="button" class="back">Back</button>
+                <button type="button" class="submit">Submit</button>
+            </div>
+            <div id="signup-terms">
                 <label>
                     <span>Social Security Number</span>
                     <input name="ssn" type="text" pattern="\d*" placeholder="111-11-2001" />
                 </label>
-                <button type="button" class="back">Back</button>
-                <button type="button" class="submit">Submit</button>
             </div>
             <p id="signup-success">
                 Thanks<span></span>! We'll contact you soon with next steps.
@@ -280,7 +294,7 @@
         </div>
         <div id="profile-container">
             <div id="profile-pic">
-                <img />
+                <img src="https://ridesqirl.com/app/img/unidentified.png" />
             </div>
             <div class="profile-section" id="profile-info">
                 <p><i class="fa fa-fw fa-user"></i><span>Jane Doe</span></p>
@@ -414,7 +428,10 @@
         </div>
     </div>
     <div id="credit-card" class="screen">
-        <form id="credit-card-info" method="post" novalidate autocomplete="on">
+        <div class="header">
+            <h1>RideSqirl</h1>
+        </div>
+        <form id="credit-card-info" class="multi-use" method="post" novalidate autocomplete="on">
             <label>
                 <i class="fa fa-credit-card"></i><b>Card</b>
                 <input type="text" class="cc-number" pattern="\d*" x-autocompletetype="cc-number" placeholder="•••• •••• •••• ••••" required>
@@ -429,14 +446,20 @@
                 <i class="fa fa-lock"></i><b>CVC</b>
                 <input type="text" class="cc-cvc" pattern="\d*" x-autocompletetype="cc-csc" placeholder="123" required autocomplete="off">
             </label>
-            <!--
-            <label>
-                <b style="width: 39%; position: relative; left: 5%;">Remember me</b>
+            <!-- --
+            <label id="credit-card-remember">
+                <b style="width: 39%; position: relative; left: 5%;">Remember Card</b>
                 <input type="text" disabled style="pointer-events: none;">
-                <div id="slider"></div>
+                <div class="slider"></div>
             </label>
-            -->
-            <button type="submit" data-fare="10.00" class="multi-use"></button>
+            <!-- -->
+            <label id="credit-card-remember">
+                <div id="credit-card-remember-checkbox" class="checked"></div>
+                <b id="credit-card-remember-text">Remember Information</b>
+                <input type="text" disabled style="pointer-events: none;">
+            </label>
+            <!-- -->
+            <button type="submit" data-fare="10.00"></button>
             <button type="button" class="cancel">Cancel</button>
         </form>
         <div class="declined-card">
@@ -444,6 +467,9 @@
         </div>
     </div>
     <div id="bank" class="screen">
+        <div class="header">
+            <h1>RideSqirl</h1>
+        </div>
         <form id="bank-info" method="post" novalidate autocomplete="off">
             <label>
                 <b>Routing Number</b>
@@ -470,13 +496,13 @@
         <div class="invite-container">
             <button type="button" class="fb-invite needsclick">
                 <i class="fa fa-facebook-square needsclick"></i>
-                <span class="needsclick">Post It</span>
+                <span class="needsclick">Post</span>
             </button>
         </div>
         <div class="invite-container">
             <button type="button" class="twitter-invite needsclick">
                 <i class="fa fa-twitter needsclick"></i>
-                <span class="needsclick">Tweet It</span>
+                <span class="needsclick">Tweet</span>
             </button>
         </div>
         <!--
@@ -525,6 +551,20 @@
                 <button type="button" class="tip-confirm">Confirm</button>
             </div>
         </div>
+        <h1 class="rating"></h1>
+        <div class="rating thumbs">
+            <button type="button" class="thumbs-up">
+                <i class="fa fa-thumbs-up"></i>
+            </button>
+            <button type="button" class="thumbs-down">
+                <i class="fa fa-thumbs-down"></i>
+            </button>
+        </div>
+        <div class="report-issue">
+            <textarea class="report-issue-desc" placeholder="Sorry your ride wasn't great. Please tell us more so we can make it right."></textarea>
+            <button class="report-issue-cancel" type="button">No Thanks</button>
+            <button class="report-issue-submit" type="button">Submit</button>
+        </div>
     </div>
             
     <div id="modal" class="screen">
@@ -538,6 +578,17 @@
             </div>
         </div>
     </div>
+            
+    <div id="action-sheet" class="screen">
+        <div id="action-sheet-guide">
+            <span class="action-sheet-desc">What do you want with this card?</span>
+            <button type="button" class="action-sheet-delete">Delete it</button>
+            <button type="button" class="action-sheet-default">Make default</button>
+            <button type="button" class="action-sheet-cancel">Cancel</button>   
+        </div>
+    </div>
+            
+    <p class="status-message">No Sqirls are available at this time.</p>
 
 </body>
 

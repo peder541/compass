@@ -73,6 +73,11 @@ function connect(jwt) {
         socket.on('news', function(data) {
             console.log(data);
         })
+        .on('status', function(data) {
+            if (data.msg) {
+                statusMessage(data.msg);
+            }
+        })
         .on('initialize', function(data) {
             for (var i in cars) cars[i].setMap();
             cars = {};
@@ -179,6 +184,7 @@ function connect(jwt) {
                     $('.med.preset-tip').children('span').html((data.fare*0.20).toFixed(2));
                     $('.high.preset-tip').children('span').html((data.fare*0.25).toFixed(2));
                     $('.tip-fare span span').html(data.fare);
+                    statusMessage.car(data.car.pic);
                     break;
                 case 'enroute':
                     console.log('Status:','enroute');
@@ -199,13 +205,14 @@ function connect(jwt) {
             $('.indicatePickup,.getDirections').show();
             $('#waitingForResponse').hide();
             $('#toggleDriver').html('Cancel Ride').attr('id', 'dropRide');
+            destroyLabels();
         })
         .on('rideStarted', function(data) {
             console.log('Ride started');
-            if (data.driverID == rideOffers.driverID) {
+            if (rideOffers.driverID && data.driverID == rideOffers.driverID) {
                 rideOffers.startRide();
             }
-            else if (data.rider == rideRequests.current.rider) {
+            else if (rideRequests.current && data.rider == rideRequests.current.rider) {
                 rideRequests.startRide();
             }
         })
@@ -249,7 +256,8 @@ function connect(jwt) {
             $('#credit-card').fadeOut({
                 complete: function() {
                     $('#credit-card-info input').val('').filter('.cc-number').attr('class','cc-number');
-                    $('#credit-card-info button').prop('disabled', false).filter('[type="submit"]').attr('class','multi-use');
+                    $('#credit-card-info button').prop('disabled', false);
+                    $('#credit-card-info').attr('class','multi-use');
                 }
             });
         })
@@ -270,11 +278,16 @@ function connect(jwt) {
                     }));
                 }
             }
+            if ($('.payment-cc').length == 1) {
+                $('.payment-cc').addClass('checked');
+            }
         })
         .on('pickupIndicated', function(data) {
+            console.log('pickup indicated');
             rideOffers.callbacks.arrived_at_pickup();
         })
         .on('dropoffIndicated', function(data) {
+            console.log('dropoff indicated');
             rideOffers.callbacks.arrived_at_dropoff();
         })
         .on('bankError', function(data) {
@@ -333,7 +346,7 @@ function connect(jwt) {
             var phoneDisplay = data.phone.slice(0,3) + '-' + data.phone.slice(3,6) + '-' + data.phone.slice(6);
             $('#profile-phone .fa-phone').next().html(phoneDisplay);
             $('#profile-container,#profile-phone,#payment-info,#earnings-info,.signup-checklist.personal').show();
-            $('.screen-login,#profile-info,#profile-signup').hide();
+            $('.screen-login,#profile-info').hide();
             // Set phone login to step 0
             var $phone = $('.login-phone-details');
             $phone.children().add($phone).add('.login-option').css('display','').filter('input').val('');
@@ -354,6 +367,7 @@ function connect(jwt) {
             $defaultCard.addClass('checked');
         })
         .on('TwilioToken', function(token) {
+            console.log(token);
             try {
                 Twilio.Device.setup(token);
             }
@@ -431,6 +445,7 @@ var rideRequests = {
         getImage(data, function(src) {
             function progress() {
                 $('#map-canvas').css('height',window.innerHeight - 44 - parseInt($('#driver-footer').css('bottom'),10) - 120);
+                $('#driver-footer').show();
             }
             $('#driver-footer').css('bottom','-120px').show().stop().animate({'bottom':'0', onUpdate: progress}, {
                 progress: progress
@@ -454,10 +469,14 @@ var rideRequests = {
             });
             me.setIcon({
                 url: 'img/markers/enrouteSqirl.png',
-                scaledSize: new google.maps.Size(51,38)//(57,36)
+                scaledSize: new google.maps.Size(51,38)
             });
             if (window.socket) socket.emit('freeDriver');
             $('#dropRide').html('Hibernate Sqirl').attr('id','toggleDriver');
+            
+            if (timer.waitOrDropRide) {
+                clearInterval(timer.waitOrDropRide);
+            }
         }
         else {
             this.removeRiderFromQueue(rider);
@@ -521,6 +540,10 @@ var rideRequests = {
         if (window.confirmPosition) {
             $('#center_icon').css('background-image', 'url("' + me.getIcon().url + '")');
         }
+        
+        if (timer.waitOrDropRide) {
+            clearInterval(timer.waitOrDropRide);
+        }
     },
     measured_distance: 0,
     last_point: false,
@@ -533,6 +556,11 @@ var rideRequests = {
         delete rideRequests.start_time;
         socket.emit('finishRide');
         rideRequests.cancelRequest(rideRequests.current.rider);
+        
+        var $tip = $('#tip');
+        var $rating = $tip.children('.rating').show();
+        $tip.children().not($rating).hide();
+        $tip.fadeIn();
         
         // Just for aesthetics when demo'ing
         if (window.confirmPosition) {
@@ -592,8 +620,8 @@ function draw(index, latitude, longitude, accuracy) {
     else {
         if (!cars[index]) {
             markerOptions.icon = {
-                url: 'img/markers/availableSqirl.png', // 'img/Google Maps Markers/black_Marker.png',
-                scaledSize: new google.maps.Size(51,38)//(57,36)
+                url: 'img/markers/availableSqirl.png',
+                scaledSize: new google.maps.Size(51,38)
             };
             cars[index] = new google.maps.Marker(markerOptions);
         }
@@ -821,6 +849,9 @@ function markerLabels() {
     function drawLabel(obj, text, index) {
         if (text == 'calculating...') {
             getAddress(obj, false, function(address) {
+                if (index == 1) {
+                    $('.destination').html(address);
+                };
                 info[index] = new google.maps.Marker(MarkerOptions(obj, address));
             });
         }
@@ -833,6 +864,7 @@ function markerLabels() {
     drawLabel(me, saddr, 0);
     
     var daddr = $('input.Drop-off').val();
+    $('.destination').html(daddr);
     drawLabel(drop, daddr, 1);
 }
 function destroyLabels() {
@@ -904,7 +936,8 @@ function makePayment(fare) {
     }
     else {
         if (fare) {
-            $('#credit-card-info').find('button[type="submit"]').attr('data-fare',fare).attr('class','single-use');
+            $('#credit-card-info').find('button[type="submit"]').attr('data-fare',fare);
+            $('#credit-card-info').attr('class','single-use');
         }
         $('#credit-card').fadeIn();
     }
@@ -964,6 +997,10 @@ var rideOffers = {
     resize: function() {
         $('#ride-offers').height($('#map-canvas').height());
         $('.ridePrice,.driverETA').css('line-height', function() { return $(this).css('height'); });
+        
+        if ($('.rideOffer.expanded').length > 0 && rideOffers.expandOffer.carFit) {
+            rideOffers.expandOffer.carFit();
+        }
     },
     showOffer: function(data) {
         $('#ride-offers').show();
@@ -980,7 +1017,9 @@ var rideOffers = {
             }
             $rideOffer.children('.driverPic').css('background-image','url("' + src + '")');
             // preload picture of car after the driver's picture has finished loading
-            getImage({url: data.car.pic});
+            if (data.car) {
+                getImage({url: data.car.pic});
+            }
         });
 
         $rideOffer.find('.driverETA span').html(data.eta);
@@ -988,9 +1027,12 @@ var rideOffers = {
         $rideOffer.off('click', '.acceptRide').on('click', '.acceptRide', function(event) {
             // acceptOffer is called if a credit card is on file and user confirms the fare
             // if there are no credit cards on file, acceptOffer is called on a successful stripeResponse
-            rideOffers.acceptOffer = function(token) {
+            rideOffers.acceptOffer = function(token, forget) {
                 if (window.io && window.socket) {
                     data.token = token;
+                    if (forget) {
+                        data.forget = true;
+                    }
                     socket.emit('acceptRide', data);
                     // activateRide is called in the 'cardAccepted' event handler
                     rideOffers.activateRide = (function(driverID) {
@@ -1026,17 +1068,17 @@ var rideOffers = {
             }
         });
         
-        $rideOffer.find('.driverName').html(data.firstName);
+        $rideOffer.find('.driverName').html(data.firstName || '');
         
         $rideOffer.find('.driverCar').attr({
-            'data-year': data.car.year,
-            'data-make': data.car.make,
-            'data-model': data.car.model
+            'data-year': (data.car && data.car.year) || '',
+            'data-make': (data.car && data.car.make) || '',
+            'data-model': (data.car && data.car.model) || ''
         }).css({
-            'background-image': 'url("' + data.car.pic + '")'
+            'background-image': 'url("' + (data.car && data.car.pic) + '")'
         });
         
-        $rideOffer.find('.driverFunfact p').html(data.funfact);
+        $rideOffer.find('.driverFunfact p').html(data.funfact || '');
     },
     expandOffer: function($offer) {
         if (!$offer) $offer = $('.rideOffer').eq(0);
@@ -1064,11 +1106,27 @@ var rideOffers = {
                 height: '',
                 top: ''
             });
+            
+            $car = $offer.find('.driverCar');
+            rideOffers.expandOffer.carFit = function() {
+                $car.css({
+                    width: '',
+                    left: ''
+                });
+                var maxCarWidth = $car.height() * 4;
+                if ($car.width() > maxCarWidth) {
+                    $car.css({
+                        width: maxCarWidth,
+                        left: (window.innerWidth - maxCarWidth) * 0.5
+                    });
+                }
+            };
+            rideOffers.expandOffer.carFit();
         });
         $('.rideOffer').filter(':visible').addClass('wasVisible');
         $('.rideOffer').not($offer).hide();
         
-        $offer.find('.driverFunfact p').filter(function() { return this.innerHTML == ''; }).hide();
+        $offer.find('.driverFunfact p').css('display', function() { return this.innerHTML ? 'block' : 'none'; });
     },
     shrinkOffer: function($offer) {
         if (!$offer) $offer = $('.rideOffer').eq(0);
@@ -1123,15 +1181,20 @@ var rideOffers = {
     },
     startRide: function() {
         rideOffers.rideInProgress = true;
-        cars[rideOffers.driverID].setIcon({
-            url: 'img/markers/enrouteSqirl.withAcorn.png',
-            scaledSize: new google.maps.Size(63,38)
-        });
+        if (cars[rideOffers.driverID]) {
+            cars[rideOffers.driverID].setIcon({
+                url: 'img/markers/enrouteSqirl.withAcorn.png',
+                scaledSize: new google.maps.Size(63,38)
+            });
+        }
         me.setVisible(false);
         $('#contacting span').html('Ride in progress').attr('data-ellipses','.');
+        $('#main-footer .destination').show();
         
         if (statusMessage.hide) statusMessage.hide();
         $('#cancelRequest').hide();
+        
+        pickupTimer = false;
     },
     endRide: function() {
         // Need to think about this more
@@ -1163,7 +1226,7 @@ var rideOffers = {
         arrived_at_dropoff: function() {
             $('#contacting span').html('You have arrived at your destination').attr('data-ellipses','.');
             rideOffers.rideInProgress = false;
-            $('#cancelRequest').hide();
+            $('#cancelRequest, #main-footer .destination').hide();
             $('#main-footer .thanks').show();
             $('#tip').fadeIn().children().css('display','');
         }
@@ -1201,13 +1264,13 @@ function getDriverTime(obj, onsuccess, onfail, car) {
 }
 function deactivateRide(resetDrop) {
     $('#tip').fadeOut();
-    if (resetDrop) {
+    if (resetDrop && drop) {
         drop.setMap();
         drop = false;
         $('.Change.Drop-off').html('Enter Drop-off');
     }
     $('#main-footer').children('.Change,#requestRide').show();
-    $('#cancelRequest,#contacting,.rideOffer,#ride-offers,#main-footer .thanks').hide();
+    $('#cancelRequest,#contacting,.rideOffer,#ride-offers,#main-footer .destination,#main-footer .thanks').hide();
     if (rideOffers.driverID) {
         deactiveCar(rideOffers.driverID);
         delete rideOffers.driverID;
@@ -1233,17 +1296,16 @@ function deactivateRide(resetDrop) {
 function activeCar(driverID) {
     if (cars[driverID]) {
         cars[driverID].setIcon({
-            url: 'img/markers/enrouteSqirl.png', // 'img/Google Maps Markers/black_Marker.png',
-            scaledSize: new google.maps.Size(51,38)//(57,36)
+            url: 'img/markers/enrouteSqirl.png',
+            scaledSize: new google.maps.Size(51,38)
         });
-    //    cars[driverID].setIcon('img/Google Maps Markers/active_Marker.png');
     }
 }
 function deactiveCar(driverID) {
     if (cars[driverID]) {
         cars[driverID].setIcon({
             url: 'img/markers/availableSqirl.png',
-            scaledSize: new google.maps.Size(51,38)//(57,36)
+            scaledSize: new google.maps.Size(51,38)
         });
     }
     me.setVisible(true);
@@ -1471,9 +1533,32 @@ $(document).ready(function() {
         $('.select-tip').fadeIn();
     })
     .on('click', '.tip-confirm', function(event) {
-        deactivateRide(true);
         var tip = $('.tip-tip span span').html();
         socket.emit('tipForRide', {tip: tip});
+        var $rating = $('.rating');
+        $('#tip').children().not($rating).fadeOut();
+        $rating.fadeIn();
+    })
+    .on('click', '.thumbs-up,.report-issue-submit,.report-issue-cancel', function(event) {
+        var $this = $(this);
+        var msg = {
+            thumbs: $this.is('.thumbs-up') ? 'up' : 'down'
+        };
+        if ($this.is('.report-issue-submit')) {
+            msg.issue = $('.report-issue-desc').val();
+        }
+        socket.emit('ratingForRide', msg);
+        if (driver) {
+            $('#tip').fadeOut();
+        }
+        else {
+            deactivateRide(true);
+        }
+    })
+    .on('click', '.thumbs-down', function(event) {
+        $('.report-issue-desc').attr('placeholder', "Sorry your " + (driver ? 'trip' : 'ride') + " wasn't great. Please tell us more so can make it right.");
+        $('.thumbs').fadeOut();
+        $('.report-issue').fadeIn();
     })
     .on('click', '#toMap', function(event) {
         if (!me && window.google) {
@@ -1606,8 +1691,32 @@ $(document).ready(function() {
         $('#credit-card').fadeIn();
     })
     .on('click', '.payment-cc', function(event) {
-        if (window.io && window.socket) {
-            socket.emit('defaultCard', $(this).attr('data-id'));
+        if (rideOffers.driverID && $('.payment-cc').length == 1) {
+            statusMessage('Please wait until your ride is done if you want to delete this card.');
+        }
+        else {
+            var $this = $(this);
+            var card =  $this.attr('data-id');
+            var $actionSheet = $('#action-sheet').fadeIn(400).addClass('visible');
+            function hide() {
+                $actionSheet.fadeOut(400).removeClass('visible').off('click');
+            }
+            function makeDefault() {
+                if (window.io && window.socket) {
+                    socket.emit('defaultCard', card);
+                }
+                hide();
+            }
+            function deleteCard() {
+                if (window.io && window.socket) {
+                    socket.emit('deleteCard', card);
+                }
+                $this.remove();
+                hide();
+            }
+            $actionSheet.on('click', '.action-sheet-cancel', hide)
+                .on('click', '.action-sheet-delete', deleteCard)
+                .on('click', '.action-sheet-default', makeDefault);
         }
     })
     .on('click', '#checkEarnings', function(event) {
@@ -1699,8 +1808,8 @@ $(document).ready(function() {
             }
             else {
                 $('.signup-checklist.vehicle').fadeOut();
-                $('#signup-vehicle').fadeIn(function() {
-                    var $input = $('#signup-vehicle input').eq(0);
+                $('#signup-car').fadeIn(function() {
+                    var $input = $('#signup-car input').eq(0);
                     if ($input.val() == '') {
                         $input.focus();
                     }
@@ -1709,25 +1818,25 @@ $(document).ready(function() {
         }
     });
     
-    $('#signup-vehicle').on('click', '.back', function(event) {
+    $('#signup-car').on('click', '.back', function(event) {
         $('.signup-checklist.personal').fadeIn();
-        $('#signup-vehicle').fadeOut();
+        $('#signup-car').fadeOut();
         $('.signup-checklist p').removeClass('checked');
     }).on('click', '.next', function(event) {
-        $('#signup-vehicle').fadeOut();
-        $('#signup-contact').fadeIn(function() {
-            var $input = $('#signup-contact input').eq(0);
+        $('#signup-car').fadeOut();
+        $('#signup-name').fadeIn(function() {
+            var $input = $('#signup-name input').eq(0);
             if ($input.val() == '') {
                 $input.focus();
             }
         });
     });
     
-    $('#signup-contact').on('click', '.back', function(event) {
-        $('#signup-vehicle').fadeIn();
-        $('#signup-contact').fadeOut();
+    $('#signup-name').on('click', '.back', function(event) {
+        $('#signup-car').fadeIn();
+        $('#signup-name').fadeOut();
     }).on('click', '.next', function(event) {
-        $('#signup-contact').fadeOut();
+        $('#signup-name').fadeOut();
         $('#signup-extra').fadeIn(function() {
             var $dob = $('#signup [name="dob"]');
             if ($dob.val() == '') {
@@ -1735,21 +1844,35 @@ $(document).ready(function() {
                 d.setYear(d.getYear() - 21);
                 try {
                     $dob[0].valueAsDate = d;
+                    if ($dob.val() != '') {
+                        $dob.addClass('placeholder');
+                        $dob.one('focus', function() {
+                            $dob.removeClass('placeholder');
+                        });
+                    }
+                    else {
+                        $dob.addClass('dob-fallback');
+                    }
                 }
                 catch(e) {
                     console.log(e);
                 }
-                $dob.one('focus', function(event) {
-                    this.value = '';
-                }).focus();
+            }
+            var $input = $('#signup-extra input').eq(0);
+            if ($input.val() == '') {
+                $input.focus();
             }
         });
     });
     
     $('#signup-extra').on('click', '.back', function(event) {
-        $('#signup-contact').fadeIn();
+        $('#signup-name').fadeIn();
         $('#signup-extra').fadeOut();
     }).on('click', '.submit', function(event) {
+        $('.dob-fallback').val(function() {
+            var date = new Date(this.value);
+            return date.toJSON().slice(0,10);
+        });
         var data = $('#signup-form').serialize();
         function done() {
             console.log(data);
@@ -1993,12 +2116,17 @@ function TwilioHandlers() {
                 clearInterval(timer.waitOrDropRide);
             }
             timer.waitOrDropRide = setInterval(function(){
-                customDialog.setup('You\'ve been waiting for a while.', 'Keep Waiting', 'Cancel Ride', function() {
-                    socket.emit('dropRide', rideRequests.current.rider);
-                    rideRequests.cancelRequest(rideRequests.current.rider);
-                });
-                $('#modal').fadeIn();
-            }, 300000);
+                if ($('#arrived-Pick-up').is(':visible')) {
+                    customDialog.setup('You\'ve been waiting for a while.', 'Keep Waiting', 'Cancel Ride', function() {
+                        socket.emit('dropRide', {rider: rideRequests.current.rider});
+                        rideRequests.cancelRequest(rideRequests.current.rider);
+                    });
+                    $('#modal').attr('class', 'screen').fadeIn();
+                }
+                else {
+                    clearInterval(timer.waitOrDropRide);
+                }
+            }, 30000);
         }
     });
 }
@@ -2058,6 +2186,7 @@ var profile = {
         function onsuccess() {
             $('.screen-login').show();
             $('#profile-container,#payment-info,#earnings-info').hide();
+            $('#profile-pic img').attr('src', 'https://ridesqirl.com/app/img/unidentified.png');
             $('#signup').children().css('display','').children().css('display','').removeClass('checked').find('input').val('');
             $('.payment-cc').remove();
             socket.emit('logout');
@@ -2175,6 +2304,7 @@ function hibernateDriver() {
         progress: progress,
         complete: function() {
             $('#main-footer').css('bottom','');
+            google.maps.event.trigger(map, 'resize');
             driver = false;
         }
     });
@@ -2190,9 +2320,11 @@ function hibernateDriver() {
     drivingListener = false;
     socket.emit('hibernateDriver');
     $('#toggleDriver').html('Active Sqirl');
+    $('h1.rating').removeClass('isDriver');
 }
 function activateDriver() {
     $('#cancelRequest').click();
+    startApp = false;
     if (window.confirmPosition) confirmPosition();
     if (drop) {
         drop.setMap();
@@ -2212,7 +2344,7 @@ function activateDriver() {
     });
     me.setIcon({
         url: 'img/markers/enrouteSqirl.png',
-        scaledSize: new google.maps.Size(51,38)//(57,36)
+        scaledSize: new google.maps.Size(51,38)
     });
     $('#makePayment').html('Earnings').attr('id','checkEarnings');
     //$('#driver-footer').show();
@@ -2220,6 +2352,7 @@ function activateDriver() {
     emitPositionUpdates();
     google.maps.event.trigger(me, 'position_changed');
     $('#toggleDriver').html('Hibernate Sqirl');
+    $('h1.rating').addClass('isDriver');
 }
 function emitPositionUpdates(obj) {
     if (!obj) obj = me;
@@ -2296,6 +2429,12 @@ function changeScreen(newScreenID, quick) {
         $newScreen.css('left', left + 'px');
         $newScreen.show();
         $oldScreen.hide();
+        if (newScreenID == 'main') {
+            if (window.map) {
+                if (window.route) route.setMap(map);
+            }
+            
+        }
     }
     $(window).resize();
     if (!quick) toggleMenu();
@@ -2496,7 +2635,7 @@ function driverMap() {
 }
 
 function statusMessage(message) {
-    var $status = $('.screen').filter(':visible').find('.status-message');
+    var $status = $('.status-message');
     $status.html(message).fadeIn();
     if (timer.statusMessage) {
         clearTimeout(timer.statusMessage);
@@ -2511,13 +2650,14 @@ statusMessage.car = function(picture, height, width) {
         'data-pic': picture
     });
     statusMessage.show = function() {
-        var $status = $('.screen').filter(':visible').find('.status-message');
+        var $status = $('.status-message');
         $status.html('<span>Look for this vehicle.</span>').append($('<img>', {
             src: $status.attr('data-pic')
         })).addClass('showing-car').fadeIn();
+        destroyLabels();
     };
     statusMessage.hide = function() {
-        var $status = $('.screen').filter(':visible').find('.status-message');
+        var $status = $('.status-message');
         $status.fadeOut(function() {
             $status.removeClass('showing-car');
         });
@@ -2526,6 +2666,9 @@ statusMessage.car = function(picture, height, width) {
 
 var customDialog = {
     phone: function(conn) {
+        if (timer.waitOrDropRide) {
+            clearInterval(timer.waitOrDropRide);
+        }
         $('#modal').addClass('phone').removeClass('connected');
         var person = driver ? 'rider' : 'Sqirl';
         this.setup('Incoming call from ' + person, '<i class="fa fa-phone"></i><br><span>Decline</span>', '<i class="fa fa-phone"></i><br><span>Answer</span>');

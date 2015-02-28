@@ -83,26 +83,43 @@ if (!window.cordova) {
             if (permissions && permissions.length > 0) {
                 permissionObj.scope = permissions.toString();
             }
-            
-            FB.login(function (response) {
-                if (response.authResponse) {
-                    s(response);
+            // Try will catch errors when SDK has not been init
+            try {
+                FB.login(function (response) {
+                    if (response.authResponse) {
+                        s(response);
+                    } else {
+                        f(response.status);
+                    }
+                }, permissionObj);
+            } catch (error) {
+                if (!f) {
+                    console.log(error.message);
                 } else {
-                    f(response.status);
+                    f(error.message);
                 }
-            }, permissionObj);
+            }
         },
 
         getAccessToken: function (s, f) {
-            var response = FB.getAccessToken();
-            if (!response) {
-                if (!f) {
-                    console.error("NO_TOKEN");
+            // Try will catch errors when SDK has not been init
+            try {
+                var response = FB.getAccessToken();
+                if (!response) {
+                    if (!f) {
+                        console.error("NO_TOKEN");
+                    } else {
+                        f("NO_TOKEN");
+                    }
                 } else {
-                    f("NO_TOKEN");
+                    s(response);
                 }
-            } else {
-                s(response);
+            } catch (error) {
+                if (!f) {
+                    console.log(error.message);
+                } else {
+                    f(error.message);
+                }
             }
         },
 

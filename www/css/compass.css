@@ -110,6 +110,7 @@ input, input:focus {
     left: auto;
     right: 5%;
     /**/
+    padding: 0 12px;
 }
 #main-footer > #contacting {
     display: none;
@@ -130,7 +131,8 @@ input, input:focus {
     position: absolute;
     content: attr(data-ellipses);	
 }
-#main-footer > .thanks {
+#main-footer > .thanks,
+#main-footer > .destination {
     display: none;
     position: absolute;
     bottom: 8.33%;
@@ -142,6 +144,13 @@ input, input:focus {
     font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
     line-height: 44px;
 }
+    #main-footer > .destination:before {
+        content: "Going to";
+        position: absolute;
+        top: -20px;
+        font-size: 12px;
+        text-decoration: underline;
+    }
 #main-footer > #cancelRequest {
     display: none;
     height: 37.5%;
@@ -211,6 +220,7 @@ input, input:focus {
     width: 100%;
     position: absolute;
     top: 10%;
+    top: calc(45px + 1%);
     color: #F8F;
     line-height: 1.2;
     font-family: PT Sans, Calibri, sans-serif;
@@ -253,12 +263,24 @@ input, input:focus {
     background-color: #C111E2;
     position: absolute;
 }
+#driver-footer-right {
+    position: absolute;
+    left: 10%;
+    right: 5%;
+    height: 100%;
+}
+#driver-footer-right-adjust {
+    position: absolute;
+    left: 100px;
+    right: 0;
+    height: 100%;
+}
 #driver-footer #pricing {
     position: absolute;
     top: 8.33%;
-    right: 5%;
-    width: 175px;
-    width: calc(85% - 100px);
+    left: 0;
+    right: 0;
+    width: 100%;
     height: 44px;	
 }
 #pricing .fare {
@@ -291,9 +313,9 @@ input, input:focus {
 #driver-footer #riderResponse {
     position: absolute;
     top: 8.33%;
-    left: calc(10% + 100px);
+    left: 0;
     bottom: 8.33%;  
-    right: 5%;
+    right: 0;
     display: none;
     font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
     color: whitesmoke;
@@ -332,10 +354,10 @@ input, input:focus {
     display: none;
 }
 #driver-footer .offerRide {
-    width: 175px;
-    width: calc(85% - 100px);
     height: 44px;
-    right: 5%;
+    width: 100%;
+    left: 0;
+    right: 0;
     bottom: 8.33%;
     font-size: 17px;    /* 1.2em; */
 }
@@ -536,6 +558,17 @@ input, input:focus {
         pointer-events: none;
         white-space: nowrap;
     }
+@media (max-height: 414px) {
+    .rideOffer .driverCar {
+        width: 40%;
+        height: 50%;
+        top: 48%;
+        left: 32.5%;
+    }
+        .rideOffer .driverCar:after {
+            display: none;
+        }
+}
 .rideOffer .driverName {
     display: none;
     position: absolute;
@@ -544,6 +577,11 @@ input, input:focus {
     width: 30%;
     text-align: center;
     font-size: 18px;
+}
+@media (max-height: 414px) {
+    .rideOffer .driverName {
+        top: 46.5%;   
+    }
 }
 .rideOffer .driverFunfact {
     display: none;
@@ -581,6 +619,11 @@ input, input:focus {
 .rideOffer.expanded .driverName,
 .rideOffer.expanded .driverFunfact {
     display: block;
+}
+@media (max-height: 414px) {
+    .rideOffer.expanded .driverFunfact {
+        display: none;
+    }
 }
 
 .header {
@@ -806,6 +849,86 @@ input, input:focus {
                 border-radius: 0 0 8px 0;
                 right: 0;
             }
+    .rating {
+        display: none;
+    }
+    h1.rating {
+        position: absolute;
+        top: 0;
+    }
+        h1.rating:before {
+            background-color: #0A7387;
+            display: inline-block;
+            font-weight: 400;
+            content: 'How was the ride?';
+        }
+        h1.isDriver.rating:before {
+            content: 'How was the trip?';
+        }
+    .thumbs {
+        position: absolute;
+        top: 44px;
+        bottom: 120px;
+        left: 0;
+        right: 0;
+    }
+        .thumbs > button {
+            font-size: 28px;
+            border-radius: 4px;
+            background-color: whitesmoke;
+            color: #11c1e2;
+            display: block;
+            height: 75px;
+            width: 120px;
+            position: relative;
+            top: 20%;
+        }
+        .thumbs-up {
+            margin: 0 auto;
+        }
+        .thumbs-down {
+            margin: 41px auto;
+        }
+    .report-issue {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: none;
+    }
+        .report-issue-desc {
+            display: block;
+            resize: none;
+            background-color: whitesmoke;
+            border-radius: 4px;
+            font-family: Avenir Next;
+            padding: 8px 12px;
+            font-size: 15px;
+            border: 1px solid white;
+            color: rgb(51, 51, 51);
+            margin: 80px auto 22px;
+            height: 28%;
+            box-sizing: border-box;
+            width: 80%;
+        }
+        .report-issue > button {
+            height: 44px;
+            border-radius: 4px;
+            font-family: Avenir Next;
+            font-size: 14px;
+            width: 37.5%;
+        }
+        .report-issue-cancel {
+            color: whitesmoke;
+            margin-left: 10%;
+            background-color: #666;
+        }
+        .report-issue-submit {
+            background-color: #11C1E2;
+            color: whitesmoke;
+            margin-left: 5%;
+        }
 
 #payment-info {
     font-size: 14px;
@@ -1036,6 +1159,9 @@ input, input:focus {
         #signup-form input[type=date] {
             -webkit-appearance: none;
         }
+        #signup-form input.placeholder {
+            color: rgba(102, 0, 153, 0.4);
+        }
         #signup-form.likeMap input {
             background-color: #609;
             color: rgb(255, 136, 255);
@@ -1061,7 +1187,7 @@ input, input:focus {
         #signup-form button.back {
             background-color: #888;
         }
-    #signup-vehicle, #signup-contact, #signup-extra {
+    #signup-car, #signup-name, #signup-extra, #signup-terms {
         display: none;
         position: absolute;
         top: 0;
@@ -1215,6 +1341,7 @@ input, input:focus {
         }
     .login-phone-details {
         position: absolute;
+        top: 45%;
         top: calc(50% - 22px);
         text-align: center;
         line-height: 44px;
@@ -1323,6 +1450,60 @@ input, input:focus {
             left: -12%;
         }
 }
+
+#action-sheet {
+    background-color: rgba(0, 0, 0, 0.4);
+    width: 100%;
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    padding: 10px;
+}
+    #action-sheet-guide {
+        position: relative;
+        top: 100%;
+        height: 50%;
+        transition: height 0.4s ease;
+        -webkit-transition: height 0.4s ease;
+    }
+    .visible #action-sheet-guide {
+        height: 0;
+    }
+        #action-sheet span, #action-sheet button {
+            background-color: whitesmoke;
+            font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
+            font-size: 17px;
+            border-radius: 8px;
+            color: #17f;
+            width: 100%;
+            line-height: 44px;
+            position: absolute;
+        }
+        #action-sheet .action-sheet-desc {
+            color: #888;
+            bottom: 142px;
+            border-radius: 8px 8px 0 0;
+            font-size: 12px;
+            text-align: center;
+        }
+        #action-sheet .action-sheet-delete {
+            color: red;
+            bottom: 98px;
+            border-radius: 0;
+            border-top: 1px solid #ddd;
+        }
+        #action-sheet .action-sheet-default {
+            bottom: 54px;
+            border-radius: 0 0 8px 8px;
+            border-top: 1px solid #ddd;
+        }
+        #action-sheet .action-sheet-cancel {
+            bottom: 0;
+            font-weight: 500;
+        }
+        #action-sheet .active {
+            background-color: #eee;
+        }
+        
     
 #modal {
     background-color: rgba(0, 0, 0, 0.4);
@@ -1333,6 +1514,7 @@ input, input:focus {
 }
 #modal.phone {
     background-color: rgba(0, 0, 0, 0.7);
+    z-index: 100;
 }
     #popup {
         background-color: #F5F5F5;
