@@ -169,6 +169,13 @@ function connect(jwt) {
             rideRequests.current.rider = newRiderID;
             console.log('Migrated rider from ' + oldRiderID + ' to ' + newRiderID);
         })
+        .on('migrateDriver', function(data) {
+            var newDriverID = data.driver;
+            var oldDriverID = rideOffers.driverID;
+            rideOffers.driverID = newDriverID;
+            activeCar(newDriverID);
+            console.log('Migrated driver from ' + oldDriverID + ' to ' + newDriverID);
+        })
         .on('resumeRide', function(data) {
             console.log(data.fare, data);
             if (window.confirmPosition) confirmPosition();
@@ -188,22 +195,45 @@ function connect(jwt) {
             }
             $('#main-footer').children().hide();
             $('#cancelRequest,#contacting').show();
-            switch(data.status) {
-                case 'accepted':
-                    console.log('Status:','accepted');
-                    getDriverTime();
-                    $('.low.preset-tip').children('span').html((data.fare*0.15).toFixed(2));
-                    $('.med.preset-tip').children('span').html((data.fare*0.20).toFixed(2));
-                    $('.high.preset-tip').children('span').html((data.fare*0.25).toFixed(2));
-                    $('.tip-fare span span').html(data.fare);
-                    statusMessage.car(data.car.pic);
-                    break;
-                case 'enroute':
-                    console.log('Status:','enroute');
-                    rideOffers.startRide();
-                    break;
-                default:
-                    break;
+            
+            if (data.status == 'accepted') {
+                console.log('Status:','accepted');
+                getDriverTime();
+                statusMessage.car(data.car.pic);
+            }
+            if (data.status == 'accepted' || data.status == 'enroute') {
+                $('.low.preset-tip').children('span').html((data.fare*0.15).toFixed(2));
+                $('.med.preset-tip').children('span').html((data.fare*0.20).toFixed(2));
+                $('.high.preset-tip').children('span').html((data.fare*0.25).toFixed(2));
+                $('.tip-fare span span').html(data.fare);
+            }
+            if (data.status == 'enroute') {
+                console.log('Status:','enroute');
+                rideOffers.startRide();
+            }
+        })
+        .on('resumeRideAsDriver', function(data) {
+            console.log('Resume driving', data);
+            if (!driver) {
+                activateDriver();
+                $('#becomeDriver').attr('id','toggleDriver').html('Hibernate Sqirl');
+            }
+            var _midpoints = midPoints;
+            // essentially ignore the next call of this function
+            midPoints = function() { midPoints = _midpoints; };
+            rideRequests.showRequest(data);
+            $('#riderResponse').show();
+            $('#pricing,.offerRide').hide();
+            
+            if (data.status == 'accepted' || data.status == 'enroute') {
+                $('.indicatePickup,.getDirections').show();
+                $('#waitingForResponse').hide();
+                $('#toggleDriver').html('Cancel Ride').attr('id', 'dropRide');
+                destroyLabels();
+            }
+            if (data.status == 'enroute') {
+                $('#waitingForResponse').hide();
+                rideRequests.startRide();
             }
         })
         .on('rideRequested', function(data) {
@@ -592,7 +622,7 @@ function draw(index, latitude, longitude, accuracy) {
             disableDefaultUI: true
         };
         map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-        easyGPS();
+        //easyGPS();
     }
     var markerOptions = {
         clickable: false,
@@ -637,6 +667,9 @@ function draw(index, latitude, longitude, accuracy) {
                 geo.active = false;
             }
             startApp = false;
+        }
+        if (index == rideOffers.driverID) {
+            activeCar(index);
         }
     }
     /**/
