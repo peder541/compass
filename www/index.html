@@ -88,7 +88,7 @@
             <p class="thanks">Thank you for using RideSqirl!</p>
         </div>
         <div id="driver-footer">
-            <img class="riderPic" src="img/blank.png" />
+            <img class="riderPic" src="img/unidentified.png" />
             <p class="riderPicOverlay">More info</p>
             <div id="driver-footer-right">
                 <div id="driver-footer-right-adjust">
@@ -117,7 +117,9 @@
 
         <div id="ride-offers">
             <div class="rideOffer">
+                <div class="driverCar"></div>
                 <div class="driverPic"></div>
+                <button type="button" class="acceptRide">Accept Ride</button>
                 <p class="driverETA">
                     <span>11</span>
                 </p>
@@ -125,13 +127,14 @@
                     <sup class="currency fa fa-usd"></sup>
                     <span>2.50</span>
                 </p>
-                <button type="button" class="acceptRide">Accept Ride</button>
                 <p class="driverName"></p>
-                <div class="driverCar" data-year data-make data-model></div>
+                <p class="driverCarInfo"></p>
                 <div class="driverFunfact"><p></p></div>
             </div>
             <div class="rideOffer">
+                <div class="driverCar"></div>
                 <div class="driverPic"></div>
+                <button type="button" class="acceptRide">Accept Ride</button>
                 <p class="driverETA">
                     <span>11</span>
                 </p>
@@ -139,13 +142,14 @@
                     <sup class="currency fa fa-usd"></sup>
                     <span>2.50</span>
                 </p>
-                <button type="button" class="acceptRide">Accept Ride</button>
                 <p class="driverName"></p>
-                <div class="driverCar" data-year data-make data-model></div>
+                <p class="driverCarInfo"></p>
                 <div class="driverFunfact"><p></p></div>
             </div>
             <div class="rideOffer">
+                <div class="driverCar"></div>
                 <div class="driverPic"></div>
+                <button type="button" class="acceptRide">Accept Ride</button>
                 <p class="driverETA">
                     <span>11</span>
                 </p>
@@ -153,9 +157,8 @@
                     <sup class="currency fa fa-usd"></sup>
                     <span>2.50</span>
                 </p>
-                <button type="button" class="acceptRide">Accept Ride</button>
                 <p class="driverName"></p>
-                <div class="driverCar" data-year data-make data-model></div>
+                <p class="driverCarInfo"></p>
                 <div class="driverFunfact"><p></p></div>
             </div>
         </div>
@@ -214,7 +217,7 @@
             <p>I would consent to a background check.</p>
             <div>Check the entire list to continue.</div>
         </div>
-        <form id="signup-form" action="https://ridesqirl.com:8443/signup" method="post" novalidate>
+        <form id="signup-form" action="https://ridesqirl.com:8443/signup" method="post" autocomplete="off" autocorrect="off" spellcheck="false" novalidate>
             <div id="signup-car">
                 <label>
                     <span>Car Year</span>
@@ -273,18 +276,23 @@
                     <input name="zipcode" type="text" pattern="\d*" placeholder="55401" />
                 </label>
                 <button type="button" class="back">Back</button>
-                <button type="button" class="submit">Submit</button>
+                <button type="button" class="next">Continue</button>
             </div>
             <div id="signup-terms">
                 <label>
-                    <span>Social Security Number</span>
-                    <input name="ssn" type="text" pattern="\d*" placeholder="111-11-2001" />
+                    <span style="font-size: 14px">By entering your SSN, you agree to the terms</span>
+                    <input name="ssn" type="text" pattern="\d*" placeholder="Social security #" />
                 </label>
+                <button type="button" class="back">Back</button>
+                <button type="button" class="submit" disabled>Submit</button>
             </div>
             <p id="signup-success">
                 Thanks<span></span>! We'll contact you soon with next steps.
             </p>
         </form>
+        <div id="signup-terms-iframe">
+            <iframe src="https://ridesqirl.com:8443/terms/driver"></iframe>
+        </div>
     </div>
 
     <div id="profile" class="screen">
@@ -297,14 +305,19 @@
                 <img src="https://ridesqirl.com/app/img/unidentified.png" />
             </div>
             <div class="profile-section" id="profile-info">
-                <p><i class="fa fa-fw fa-user"></i><span>Jane Doe</span></p>
-                <p><i class="fa fa-fw fa-envelope"></i><span>jane@email.com</span></p>
+                <p id="profile-user-name"><i class="fa fa-fw fa-user"></i><span>Jane Doe</span></p>
+                <p id="profile-user-email"><i class="fa fa-fw fa-envelope"></i><span>jane@email.com</span></p>
+                <p id="profile-user-phone"><i class="fa fa-fw fa-phone"></i><span>612-555-0123</span></p>
             </div>
-            <div class="profile-section" id="profile-phone">
-                <p><i class="fa fa-fw fa-phone"></i><span>612-555-0123</span></p>
+            <div class="profile-section" id="profile-car">
+                <img id="profile-car-pic" />
+                <p id="profile-car-info"><i class="fa fa-fw fa-car"></i><span>2005 Mercury Montego</span></p>
+                <p id="profile-funfact"><i class="fa fa-quote-left"></i><span></span></p>
             </div>
             <div class="profile-section" id="profile-actions">
                 <p id="profile-signup"><i class="fa fa-fw fa-car"></i><span>Become a Sqirl</span></p>
+                <p id="profile-view-car"><i class="fa fa-fw fa-car"></i><span>View vehicle info</span></p>
+                <p id="profile-view-person"><i class="fa fa-fw fa-user"></i><span>View personal info</span></p>
                 <p id="profile-logout"><i class="fa fa-fw fa-sign-out"></i><span>Sign out</span></p>
             </div>
         </div>
@@ -403,14 +416,14 @@
             <h2>Earnings Information</h2>
             <div id="earnings-facts">
                 <p>
-                    RideSqirl Owes You: 
+                    Unpaid 
                     <span id="earnings-owed">
                         <sup class="currency fa fa-usd"></sup>
                         <span>0</span>
                     </span>
                 </p>
                 <p>
-                    Total Earnings: 
+                    Total 
                     <span id="earnings-total">
                         <sup class="currency fa fa-usd"></sup>
                         <span>0</span>
@@ -491,7 +504,7 @@
             <button type="button" class="menu"><i class="fa fa-bars"></i></button>
         </div>
         <p id="invite-intro">
-            Share the word and help us provide a network of safe transportation.
+            <span>Share the word and help us provide a network of safe transportation.</span>
         </p>
         <div class="invite-container">
             <button type="button" class="fb-invite needsclick">
@@ -553,12 +566,14 @@
         </div>
         <h1 class="rating"></h1>
         <div class="rating thumbs">
-            <button type="button" class="thumbs-up">
-                <i class="fa fa-thumbs-up"></i>
-            </button>
-            <button type="button" class="thumbs-down">
-                <i class="fa fa-thumbs-down"></i>
-            </button>
+            <div class="thumbs-contain">
+                <button type="button" class="thumbs-up">
+                    <i class="fa fa-thumbs-up"></i>
+                </button>
+                <button type="button" class="thumbs-down">
+                    <i class="fa fa-thumbs-down"></i>
+                </button>
+            </div>
         </div>
         <div class="report-issue">
             <textarea class="report-issue-desc" placeholder="Sorry your ride wasn't great. Please tell us more so we can make it right."></textarea>

@@ -9,7 +9,7 @@
     -webkit-tap-highlight-color: rgba(0,0,0,0);
     outline: 0;
 }
-*:not(input) {
+*:not(input,textarea) {
     user-select: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -29,8 +29,9 @@ button {
 button::-moz-focus-inner {
   border: 0;
 }
-input, input:focus {
+input, input:focus, textarea {
     -webkit-user-modify: read-write-plaintext-only;
+    -webkit-appearance: none;
 }
 ::-webkit-input-placeholder {
     color: inherit;
@@ -110,7 +111,7 @@ input, input:focus {
     left: auto;
     right: 5%;
     /**/
-    padding: 0 12px;
+    padding: 0 8px;
 }
 #main-footer > #contacting {
     display: none;
@@ -206,7 +207,7 @@ input, input:focus {
     color: rgb(255, 136, 255);
     border: 0;
     border-bottom: 1px solid rgb(255, 136, 255);
-    background-image: url("../img/pinkAcorn7.png");
+    background-image: url("../img/markers/tinyAcorn.png");
     background-repeat: no-repeat;
     background-position: left center;
     background-size: 20px 24px;
@@ -214,7 +215,7 @@ input, input:focus {
 #main-footer input.Drop-off {
     top: auto;
     bottom: 8.33%;
-    background-image: url("../img/pinkTree.png");	
+    background-image: url("../img/markers/tinyTree.png");	
 }
 #main-footer > ul {
     width: 100%;
@@ -246,7 +247,7 @@ input, input:focus {
     height: 30px;
     display: none;
     pointer-events: none;
-    background-image: url("../img/markers/dropoffAcorn.png");
+    background-image: url("../img/markers/pickupAcorn.png");
     background-repeat: no-repeat;
     background-size: auto 100%;
     background-position: center center;
@@ -404,227 +405,272 @@ input, input:focus {
 .rideOffer.expanded {
     height: 100%;
 }
-@media (max-height: 414px) {
-    .rideOffer {
-        height: 50%;
-    }
-    .rideOffer:last-of-type {
-        display: none !important;
-    }
-}
-.rideOffer .driverPic {
-    position: absolute;
-    left: 5%;
-    width: 30%;
-    top: 7.5%;
-    height: 85%;
-    border-radius: 5px;
-    background-image: url("../img/blank.png");
-    background-position: center;
-    background-size: cover;
-    background-repeat: no-repeat;
-}
-.rideOffer.expanded .driverPic {
-    top: 2.5%;
-    height: 28.33%;
-}
-@media (max-height: 414px) {
-    .rideOffer.expanded .driverPic {
-        top: 3.75%;
-        height: 42.5%;
-    }
-}
-.rideOffer .driverPic:after {
-    content: "\f1b9";
-    background-color: #C111E2;
-    color: whitesmoke;
-    font-family: FontAwesome;
-    width: 20px;
-    line-height: 20px;
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    text-align: center;
-    border-radius: 5px 0;
-    font-size: 12px;
-    pointer-events: none;
-}
-.rideOffer.expanded .driverPic:after {
-    content: "\f112";
-}
-.rideOffer p {
-    color: whitesmoke;
-    font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
-}
-.rideOffer .driverETA, .rideOffer .ridePrice {
-    position: absolute;
-    top: 7.5%;
-    left: 40%;
-    width: 25%;
-    height: 42.5%;
-    text-align: center;
-    white-space: nowrap;
-    font-size: 17px;    /* 1.2em; */
-}
-.rideOffer.expanded .driverETA {
-    top: 2.5%;
-    height: 14.166%;
-}
-@media (max-height: 414px) {
-    .rideOffer.expanded .driverETA {
-        top: 3.75%;
-        height: 21.25%;
-    }
-}
-.rideOffer .driverETA span {
-    padding-right: 2px;
-}
-    .rideOffer .driverETA span:after {
-        content: " min";
-        font-size: 12px;
+    .rideOffer .driverCar,
+    .rideOffer .driverPic {
         position: absolute;
-        transform: translate(6px, -6px);
-        -webkit-transform: translate(6px, -6px);
+        left: 5%;
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
     }
-    .rideOffer .driverETA:after {
-        content: " eta";
-        font-size: 12px;
-        font-variant: small-caps;
-        position: relative;
-        top: 2px;
+    .rideOffer .driverCar {
+        background-image: url('https://ridesqirl.com/img/uploads/audi.png');
+        top: 7.5%;
+        height: 60%;
+        width: 60%;
+        border-radius: 5px;
     }
-.rideOffer .ridePrice {
-    font-family: PT Sans, sans-serif;
-    top: auto;
-    bottom: 7.5%;
-}
-.rideOffer.expanded .ridePrice {
-    height: 14.166%;
-    bottom: 69.17%; /* 2.5% + 66.67% */
-}
-@media (max-height: 414px) {
-    .rideOffer.expanded .ridePrice {
-        height: 21.25%;
-        bottom: 53.75%; /* 3.75% + 50% */
+    .rideOffer.expanded .driverCar {
+        top: 2.5%;
+        height: 20%;
     }
-}
-.rideOffer .acceptRide {
-    position: absolute;
-    top: 7.5%;
-    right: 5%;
-    width: 25%;
-    height: 85%;
-    font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
-    color: whitesmoke;
-    background-color: #C111E2;
-    font-size: 17px;    /* 1.2em; */
-    border-radius: 5px;
-    padding: 0 12px;
-}
-.rideOffer.expanded .acceptRide {
-    top: 2.5%;
-    height: 28.33%;
-}
-@media (max-height: 414px) {
-    .rideOffer.expanded .acceptRide {
-        top: 3.75%;
-        height: 42.5%;
+    .rideOffer .driverPic {
+        background-image: url("../img/unidentified.png");
+        bottom: 7.5%;
+        height: 50px;
+        width: 50px;
+        border-radius: 25px;
     }
-}
-.rideOffer .driverCar {
-    display: none;
-    position: absolute;
-    top: 43%;
-    left: 5%;
-    text-align: center;
-    width: 90%;
-    height: 33.33%;
-    background-image: url('../img/montego.png');
-    background-size: cover;
-    background-position: center center;
-    border-radius: 200px;
-}
-    .rideOffer .driverCar:after {
-        content: attr(data-year) ' ' attr(data-make) ' ' attr(data-model);
+    .rideOffer p {
         color: whitesmoke;
-        font-family: 'Avenir Next';
-        font-size: 14px;
-        letter-spacing: 1px; /* Check if we want this */
-        width: 70%;
+        font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
+    }
+    .rideOffer .driverETA, .rideOffer .ridePrice {
         position: absolute;
-        top: -25px;
-        left: 29.5%;
+        bottom: 7.5%;
+        height: 25%;
+        max-height: 50px;
         text-align: center;
-        pointer-events: none;
+        white-space: nowrap;
+        font-size: 17px;    /* 1.2em; */
+    }
+    .rideOffer.expanded .driverETA, .rideOffer.expanded .ridePrice {
+        height: 8.3333%;
+        bottom: 69.1667%;
+    }
+    .rideOffer .driverETA {
+        right: 55%;
+        width: 25%;
+    }
+        .rideOffer .driverETA span {
+            padding-right: 2px;
+        }
+            .rideOffer .driverETA span:after {
+                content: " min";
+                font-size: 12px;
+                position: absolute;
+                transform: translate(6px, -6px);
+                -webkit-transform: translate(6px, -6px);
+            }
+        .rideOffer .driverETA:after {
+            content: " eta";
+            font-size: 12px;
+            font-variant: small-caps;
+            position: relative;
+            top: 2px;
+        }
+    .rideOffer .ridePrice {
+        font-family: PT Sans, sans-serif;
+        right: 35%;
+        width: 20%;
+    }
+    .rideOffer .acceptRide {
+        position: absolute;
+        top: 7.5%;
+        right: 5%;
+        width: 25%;
+        height: 85%;
+        font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
+        color: whitesmoke;
+        background-color: #C111E2;
+        font-size: 17px;    /* 1.2em; */
+        border-radius: 5px;
+        padding: 0 12px;
+    }
+    .rideOffer.expanded .acceptRide {
+        top: 2.5%;
+        height: 28.3333%;
+    }
+    .rideOffer .driverName {
+        display: none;
+        position: absolute;
+        top: 35.8333%;
+        left: calc(10% + 50px);
+        height: 14.1667%;
+        line-height: 25px;
+        text-align: center;
+        font-size: 18px;
+    }
+    .rideOffer .driverCarInfo {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: calc(10% + 50px);
+        height: 14.1667%;
+        line-height: 25px;
+        font-size: 14px;
         white-space: nowrap;
     }
-@media (max-height: 414px) {
-    .rideOffer .driverCar {
-        width: 40%;
-        height: 50%;
-        top: 48%;
-        left: 32.5%;
+        .rideOffer .driverCarInfo:before {
+            content: attr(data-year) ' ' attr(data-make) ' ' attr(data-model);
+        }
+    .rideOffer .driverFunfact {
+        display: none;
+        width: 100%;
+        height: 33.3333%;
+        position: absolute;
+        top: 66.6667%;
+        left: 0;
     }
-        .rideOffer .driverCar:after {
+        .rideOffer .driverFunfact p {
+            position: relative;
+            top: 50%;
+            left: 10%;
+            width: 80%;
+            font-size: 14px;
+            text-align: center;
+            transform: translateY(-50%);
+            -webkit-transform: translateY(-50%);
+        }
+            .rideOffer .driverFunfact p:before,
+            .rideOffer .driverFunfact p:after {
+                font-family: FontAwesome;
+                vertical-align: 6px;
+                font-size: 6px;
+            }
+            .rideOffer .driverFunfact p:before {
+                content: '\f10d';
+                padding-right: 6px;
+            }
+            .rideOffer .driverFunfact p:after {
+                content: '\f10e';
+                padding-left: 6px;
+            }
+    .rideOffer.expanded .driverName,
+    .rideOffer.expanded .driverCarInfo,
+    .rideOffer.expanded .driverFunfact {
+        display: block;
+    }
+    @media (max-height: 414px) {
+        .rideOffer {
+            height: 50%;
+        }
+        .rideOffer.expanded .driverCar {
+            top: 3.75%;
+            height: 30%;
+        }
+        .rideOffer.expanded .driverETA, .rideOffer.expanded .ridePrice {
+            height: 12.5%;
+            bottom: 53.75%
+        }
+        .rideOffer.expanded .acceptRide {
+            top: 3.75%;
+            height: 42.75%;
+        }
+        .rideOffer .driverCarInfo {
+            top: 75.125%;
+            height: 21.375%;
+        }
+        .rideOffer .driverName {
+            top: 53.75%;
+            height: 21.375%;
+        }
+        .rideOffer.expanded .driverFunfact {
             display: none;
         }
-}
-.rideOffer .driverName {
-    display: none;
-    position: absolute;
-    top: 31%;
-    left: 5%;
-    width: 30%;
-    text-align: center;
-    font-size: 18px;
-}
-@media (max-height: 414px) {
-    .rideOffer .driverName {
-        top: 46.5%;   
     }
-}
-.rideOffer .driverFunfact {
-    display: none;
-    width: 100%;
-    height: 23%;
-    position: absolute;
-    top: 77%;
-    left: 0;
-}
-    .rideOffer .driverFunfact p {
-        position: relative;
-        top: 50%;
-        left: 10%;
-        width: 80%;
-        font-size: 14px;
-        text-align: center;
-        transform: translateY(-50%);
-        -webkit-transform: translateY(-50%);
+    @media (orientation: landscape) and (max-height: 599px) {
+        .rideOffer .driverCar {
+            height: 85%;
+            width: 50%;
+        }
+        .rideOffer .driverETA,
+        .rideOffer .ridePrice {
+            height: 42.5%;
+            width: 15%;
+            right: 30%;
+        }
+        .rideOffer .driverETA {
+            top: 7.5%;
+            bottom: auto;
+        }
+        .rideOffer.expanded .driverCar {
+            height: 28.3333%;
+        }
+        .rideOffer.expanded .driverETA,
+        .rideOffer.expanded .ridePrice {
+            height: 14.1667%;
+        }
+        .rideOffer.expanded .driverETA {
+            top: 2.5%;
+        }
     }
-        .rideOffer .driverFunfact p:before,
-        .rideOffer .driverFunfact p:after {
-            font-family: FontAwesome;
-            vertical-align: 6px;
-            font-size: 6px;
+    @media (orientation: landscape) and (max-height: 414px) {
+        .rideOffer.expanded .driverCar {
+            height: 42.5%;
         }
-        .rideOffer .driverFunfact p:before {
-            content: '\f10d';
-            padding-right: 6px;
+        .rideOffer.expanded .driverETA,
+        .rideOffer.expanded .ridePrice {
+            height: 21.25%;
         }
-        .rideOffer .driverFunfact p:after {
-            content: '\f10e';
-            padding-left: 6px;
+        .rideOffer.expanded .driverETA {
+            top: 3.75%;
         }
-.rideOffer.expanded .driverCar,
-.rideOffer.expanded .driverName,
-.rideOffer.expanded .driverFunfact {
-    display: block;
-}
-@media (max-height: 414px) {
-    .rideOffer.expanded .driverFunfact {
-        display: none;
     }
-}
+    @media (orientation: landscape) and (min-height: 600px) {
+        .rideOffer .driverCar {
+            height: 65%;
+            width: 35%;
+        }
+        .rideOffer .driverPic {
+            height: 11vh;
+            width: 11vh;
+            border-radius: 5.5vh;
+            pointer-events: none;
+        }
+        .rideOffer .driverName {
+            display: block;
+            height: auto;
+            line-height: 1;
+            bottom: 7.5%;
+            top: auto;
+            border-radius: 5px;
+            padding: 2px;
+            left: calc(5% + 5.5vh);
+            transform: translate(-50%, 50%);
+            -webkit-transform: translate(-50%, 50%);
+            background-color: #4E4D4C;
+            text-align: center;
+        }
+        .rideOffer .driverCarInfo {
+            display: block;
+            left: calc(5% + 13vh);
+            top: 72.5%;
+            height: 25px;
+            line-height: 25px;
+        }
+        .rideOffer .driverFunfact {
+            display: block;
+            height: 100%;
+            width: 30%;
+            left: 40%;
+            top: 0;
+        }
+        .rideOffer .driverETA,
+        .rideOffer .ridePrice {
+            pointer-events: none;
+            width: 12.5%;
+        }
+        .rideOffer .driverETA {
+            right: 17.5%;
+        }
+        .rideOffer .ridePrice {
+            right: 5%;
+        }
+        .rideOffer .acceptRide {
+            font-size: 21px;
+        }
+    }
 
 .header {
     height: 44px;
@@ -643,7 +689,7 @@ input, input:focus {
     line-height: 44px;
     /* Using Wordmark */
     background-size: auto 34px;
-    background-image: url('../img/wordmark.whitesmoke.png');
+    background-image: url('../img/wordmark.png');
     background-repeat: no-repeat;
     background-position: center 6px;
     color: transparent;
@@ -682,6 +728,7 @@ input, input:focus {
     right: 5px;
     z-index: 30;
     border-radius: 5px;
+    font-size: 21px;
 }
 .header .gps {
     left: auto;
@@ -872,7 +919,11 @@ input, input:focus {
         left: 0;
         right: 0;
     }
-        .thumbs > button {
+        .thumbs-contain {
+            height: 100%;
+            width: 100%;
+        }
+        .thumbs button {
             font-size: 28px;
             border-radius: 4px;
             background-color: whitesmoke;
@@ -1187,11 +1238,27 @@ input, input:focus {
         #signup-form button.back {
             background-color: #888;
         }
+        #signup-form button[disabled] {
+            opacity: 0.3;
+        }
     #signup-car, #signup-name, #signup-extra, #signup-terms {
         display: none;
         position: absolute;
         top: 0;
     }
+    #signup-terms-iframe {
+        display: none;
+        position: absolute;
+        top: 44px;
+        left: 0;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+        #signup-terms-iframe > iframe {
+            border: 0;
+            width: 100%;
+            height: 100%;
+        }
     #signup-success {
         color: whitesmoke;
         position: relative;
@@ -1205,50 +1272,76 @@ input, input:focus {
 #profile {
     background-color: #293133;/*#333;*/
 }
-#profile > #profile-container {
+#profile-container {
     width: 100%;
-    position: absolute;
-    top: 44px;	
+    max-width: 375px;
     display: none;
     padding-top: 10px;
+    margin: 0 auto;
 }
-    #profile > #profile-container > #profile-pic {
+    #profile-pic {
         text-align: center;
     }
-        #profile > #profile-container > #profile-pic > img {
+        #profile-pic > img {
             border-radius: 10px;
             height: 160px;
             margin-top: 5px;
             margin-bottom: 10px;
         }
-    #profile > #profile-container > .profile-section {
+    .profile-section {
         float: left;
         margin-left: 44px;
         color: whitesmoke;
         font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
         line-height: 44px;
-        min-width: 50%;
+        width: 50%;
     }
-        #profile > #profile-container > .profile-section span {
+        .profile-section > p {
+            white-space: nowrap;
+        }
+        .profile-section span {
              padding-left: 10px;
         }
-    #profile-phone {
+        #profile-user-phone {
+            display: none;
+        }
+    #profile-car {
+        display: none;
+        margin: 0;
+        width: auto;
+    }
+        #profile-car-pic {
+            width: 90%;
+            max-width: 350px;
+            margin: 10px auto;
+            display: block;
+            border-radius: 10px;
+        }
+        #profile-car-info,
+        #profile-funfact {
+            margin-left: 44px;
+        }
+    #profile-view-car,
+    #profile-view-person {
         display: none;
     }
-    #profile > #profile-container > #profile-actions {
+    #profile-actions {
         cursor: pointer;
         color: #11C1E2;	
     }
-@media (orientation: landscape) {
-    #profile > #profile-container > #profile-pic {
-        float: left;
-    }	
-        #profile > #profile-container > #profile-pic > img {
-            margin-left: 15px;
-        }
-    #profile > #profile-container > .profile-section {
-        margin-left: 22px;
+@media (orientation: landscape) and (max-height: 460px) {
+    #profile-container {
+        max-width: 100%;
     }
+        #profile-pic {
+            float: left;
+        }	
+            #profile-pic > img {
+                margin-left: 15px;
+            }
+        .profile-section, #profile-car-info {
+            margin-left: 22px;
+        }
 }
 .screen-login {
     position: absolute;
@@ -1405,6 +1498,13 @@ input, input:focus {
         font-family: 'Avenir Next', Avenir, Corbel, sans-serif;
         font-size: 16px;
     }
+        #invite-intro > span {
+            position: relative;
+            top: 50%;
+            display: block;
+            transform: translateY(-50%);
+            -webkit-transform: translateY(-50%);
+        }
         #invite-link {
             margin: 15px;
             padding: 8px;

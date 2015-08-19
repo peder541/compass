@@ -80,7 +80,15 @@ $(document).ready(function() {
 	
 	$('input[name="phone"]').payment('restrictNumeric').on('keypress', formatPhoneNumber).on('keydown', formatBackWithDashes);
 	
-    $('input[name="ssn"]').payment('restrictNumeric').on('keypress', formatSSN).on('keydown', formatBackWithDashes);
+    $('input[name="ssn"]').payment('restrictNumeric').on('keypress', formatSSN).on('keydown', formatBackWithDashes).on('keyup', function() {
+        var $submit = $('#signup-terms > .submit');
+        if ($(this).val().replace(/\D/g, '').length == 9) {
+            $submit.prop('disabled', false);
+        }
+        else {
+            $submit.prop('disabled', true);
+        }
+    });
     
     $('input[name="dob"]').payment('restrictNumeric').on('keypress', formatDOB).on('keydown', formatBackWithDashes);
     

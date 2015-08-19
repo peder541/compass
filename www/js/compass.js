@@ -97,6 +97,18 @@ function connect(jwt) {
         .on('canDrive', function(data) {
             $('#becomeDriver').attr('id','toggleDriver').html('Active Sqirl');
             if (driver) activateDriver();
+            if (data) {
+                $('#profile-signup').hide();
+                $('#profile-view-car').show();
+                $('#profile-car-pic').attr('src', data.pic);
+                $('#profile-car-info > span').html(data.year + ' ' + data.make + ' ' + data.model);
+                if (data.profilePic) {
+                    $('#profile-pic img').attr('src', data.profilePic);
+                }
+                if (data.funfact) {
+                    $('#profile-funfact > span').html(data.funfact);
+                }
+            }
         })
         .on('busyCar', function(data) {
             if (cars[data.id]) {
@@ -124,7 +136,7 @@ function connect(jwt) {
                 var carGPS = cars[data.id].getPosition();
                 
                 if (pickupTimer) {
-                    // Calculate distance endpoints are "off road" in getRoute() and add that to a proximity threshold
+                    // Calculate distance endpoints are "off road" in getRoute and add that to a proximity threshold
                     if (getDistance(me.getPosition(), carGPS) < 25 + me.offroad) {
                         console.log('Proximity detection: socket');
                         rideOffers.callbacks.arrived_at_pickup();
@@ -135,7 +147,7 @@ function connect(jwt) {
                 }
                 if (rideOffers.rideInProgress) {
                     me.setPosition(carGPS);
-                    // Calculate distance endpoints are "off road" in getRoute() and add that to a proximity threshold
+                    // Calculate distance endpoints are "off road" in getRoute and add that to a proximity threshold
                     if (getDistance(drop.getPosition(), carGPS) < 25 + drop.offroad) {
                         console.log('Proximity detection: socket');
                         rideOffers.callbacks.arrived_at_dropoff();
@@ -227,6 +239,15 @@ function connect(jwt) {
                 $('#modal').fadeIn(100);
                 // may want to add a local notification
             }
+        })
+        .on('rideRejected', function(data) {
+            setTimeout(function() {
+                deactivateRide(false, true);
+                if (statusMessage.hide) statusMessage.hide();
+                setTimeout(function() {
+                    statusMessage(data.reason);
+                }, 200);
+            }, 400);
         })
         .on('ridePaidByTimer', function(data) {
             deactivateRide(true);
@@ -320,17 +341,9 @@ function connect(jwt) {
         .on('phoneRegistered', function(data) {
             $('.login-phone-number').hide();
             $('.login-verification-code').show();
-            /*
-            var code = prompt('A verification code has been sent to ' + data.phone + '\nEnter that code here:');
-            socket.emit('verifyPhone', {code: code});
-            */
         })
         .on('phoneWrongCode', function(data) {
             if (data.attempts) {
-                /*
-                var code = prompt('Incorrect verification code.\nTry again:');
-                socket.emit('verifyPhone', {code: code});
-                */
                 $('.login-verification-code .retry').show();
             }
             else {
@@ -344,9 +357,9 @@ function connect(jwt) {
         })
         .on('phoneProved', function(data) {
             var phoneDisplay = data.phone.slice(0,3) + '-' + data.phone.slice(3,6) + '-' + data.phone.slice(6);
-            $('#profile-phone .fa-phone').next().html(phoneDisplay);
-            $('#profile-container,#profile-phone,#payment-info,#earnings-info,.signup-checklist.personal').show();
-            $('.screen-login,#profile-info').hide();
+            $('#profile-user-phone > span').html(phoneDisplay);
+            $('#profile-container,#profile-user-phone,#payment-info,#earnings-info,.signup-checklist.personal').show();
+            $('.screen-login,#profile-user-name,#profile-user-email').hide();
             // Set phone login to step 0
             var $phone = $('.login-phone-details');
             $phone.children().add($phone).add('.login-option').css('display','').filter('input').val('');
@@ -367,7 +380,6 @@ function connect(jwt) {
             $defaultCard.addClass('checked');
         })
         .on('TwilioToken', function(token) {
-            console.log(token);
             try {
                 Twilio.Device.setup(token);
             }
@@ -425,7 +437,7 @@ var rideRequests = {
                 clickable: false,
                 map: map,
                 icon: {
-                    url: 'img/markers/' + (endpoint == 'pickup' ? 'dropoffAcorn' : 'dropoffTree') + '.png',
+                    url: 'img/markers/' + (endpoint == 'pickup' ? 'pickupAcorn' : 'dropoffTree') + '.png',
                     scaledSize: new google.maps.Size(25,30)
                 },
                 optimized: false,
@@ -457,7 +469,7 @@ var rideRequests = {
         var waypoints = [{location: pickup.getPosition()}];
         $('#map-canvas').css('height',window.innerHeight - 164);
         google.maps.event.trigger(map, 'resize');
-        getRoute(destination, waypoints, 0, data.traffic);
+        getRoute(destination, waypoints, data.traffic);
         $('#map-canvas').css('height',window.innerHeight - 44);
     },
     cancelRequest: function(rider) {
@@ -580,19 +592,7 @@ function draw(index, latitude, longitude, accuracy) {
             disableDefaultUI: true
         };
         map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-        // might not be useful if we default to editing pick-up position
-        /*
-        if (accuracy > 500) {
-            var circle = new google.maps.Circle({
-                center: spot,
-                radius: accuracy,
-                map: map,
-                visible: false
-            });
-            map.fitBounds(circle.getBounds());
-            circle.setMap();
-        }
-        /**/
+        easyGPS();
     }
     var markerOptions = {
         clickable: false,
@@ -605,7 +605,7 @@ function draw(index, latitude, longitude, accuracy) {
     };
     if (!index) {
         if (!me) {
-            markerOptions.icon.url = 'img/markers/dropoffAcorn.png';
+            markerOptions.icon.url = 'img/markers/pickupAcorn.png';
             me = new google.maps.Marker(markerOptions);
         }
         var obj = me;
@@ -652,6 +652,7 @@ function draw(index, latitude, longitude, accuracy) {
 }
 
 function editPosition(setDrop) {
+    destroyLabels();
     if (window.confirmPosition) confirmPosition();
     if (route && !driver) {
         route.setMap();
@@ -700,9 +701,9 @@ function editPosition(setDrop) {
     }
 } 
 
-function getRoute(destination, waypoints, noZoom, traffic) {
+function getRoute(destination, waypoints, traffic) {
     var callback = function() {
-        getRoute(destination, waypoints, noZoom, traffic);
+        getRoute(destination, waypoints, traffic);
     };
     if (rateLimit.check('directions', callback)) return false;
 
@@ -717,12 +718,11 @@ function getRoute(destination, waypoints, noZoom, traffic) {
     query.route(directionsRequest, function(directions, status) {
         if (status == google.maps.DirectionsStatus.OK) {
             //if (waypoints) transit = directions;
-            drawRoute(directions, noZoom, traffic);
+            drawRoute(directions, traffic);
             var cost = getCost(directions, traffic).toFixed(2);
             $('#cost > span').attr('data-msrp',cost).html(cost);
 
-            if (noZoom) giveInstructions(directions);
-            else if (waypoints) {
+            if (waypoints) {
                 var riderLeg = directions.routes[0].legs[1];
                 if (pickup) {
                     pickup.address = riderLeg.start_address.split(',')[0];
@@ -756,55 +756,21 @@ function getRoute(destination, waypoints, noZoom, traffic) {
     });
 }
 
-function giveInstructions(directions) {
-    var $directions = $('#main-footer > #directions').show();
-    var legs = directions.routes[0].legs;
-    var steps = legs[0].steps;
-    var distance = steps[0].distance.value;
-    var instructions = steps[distance > 60 || steps.length==1 ? 0 : 1].instructions;
-    if (distance < 12 && steps.length==1) {
-        instructions = 'You have arrived at <b>';
-        if (legs.length > 1) {
-            instructions += pickup.address + '</b>';
-            instructions += '<div>Your rider should be nearby</div>';
-        }
-        else instructions += dropoff.address;
-    }
-    instructions = instructions.replace('Take the 1st','Turn');
-    if ($directions.html() != instructions) {
-        $directions.html(instructions);
-        /*
-        var url = 'http://translate.google.com/translate_tts?ie=UTF-8&tl=en&total=1&idx=0&textlen=23&prev=input&q=' + $directions[0].textContent;
-        var $speak = $('#speak');
-        if ($speak.index() != -1) $speak.attr('src',url);
-        else $('body').append('<iframe style="display:none;" id="speak" src="' + url + '"></iframe>');
-        /**/
-    }
-}
-
-function drawRoute(directions, noZoom, traffic) {
-    if (!noZoom) midPoints(directions, traffic);
+function drawRoute(directions, traffic) {
+    midPoints(directions, traffic);
     var renderingOptions = {
         directions: directions,
         map: map,
         suppressMarkers: true,
-        preserveViewport: !!noZoom/**/,
         polylineOptions: {
-            strokeColor: '#543',				// 'rgb(0, 94, 255)' is the default color Google uses
-            strokeOpacity: 0.45,						//	with an opacity of 0.55
-            strokeWeight: 6								//	and strokeWidth of 6	
-        }/**/
+            strokeColor: '#543',
+            strokeOpacity: 0.45,
+            strokeWeight: 6	
+        }
     };
     if (!route) route = new google.maps.DirectionsRenderer(renderingOptions);
     else route.setOptions(renderingOptions);
 }
-
-function realtimeRoutes(destination, waypoints) {
-    return google.maps.event.addListener(me, 'position_changed', function() {
-        getRoute(destination, waypoints, 1);
-    });
-}
-
 
 function getCost(directions, traffic) {
     var initial_cost = 1.5;
@@ -998,9 +964,23 @@ var rideOffers = {
         $('#ride-offers').height($('#map-canvas').height());
         $('.ridePrice,.driverETA').css('line-height', function() { return $(this).css('height'); });
         
-        if ($('.rideOffer.expanded').length > 0 && rideOffers.expandOffer.carFit) {
-            rideOffers.expandOffer.carFit();
+        if ($('.rideOffer.expanded').length > 0 && rideOffers.expandOffer.picFit) {
+            rideOffers.expandOffer.picFit();
+            if (window.innerHeight < window.innerWidth && window.innerHeight >= 600) {
+                $('.rideOffer.wasVisible').show();
+                rideOffers.resetCSS();
+            }
         }
+    },
+    resetCSS: function() {
+        $('.rideOffer').removeClass('expanded wasVisible').children().css({
+            height: '',
+            width: '',
+            left: '',
+            bottom: '',
+            'line-height': '',
+            'border-radius': ''
+        });
     },
     showOffer: function(data) {
         $('#ride-offers').show();
@@ -1059,6 +1039,7 @@ var rideOffers = {
             var $car = $rideOffer.find('.driverCar');
             statusMessage.car($car.css('background-image').slice(4,-1).replace(/'|"/g,''), $car.height(), $car.width());
         });
+        /**/
         $rideOffer.off('click', '.driverPic').on('click', '.driverPic', function(event) {
             if ($rideOffer.hasClass('expanded')) {
                 rideOffers.shrinkOffer($rideOffer);
@@ -1067,23 +1048,26 @@ var rideOffers = {
                 rideOffers.expandOffer($rideOffer);
             }
         });
+        /**/
+        
+        $rideOffer.find('.driverCar').css({
+            'background-image': 'url("' + (data.car && data.car.pic) + '")'
+        });
         
         $rideOffer.find('.driverName').html(data.firstName || '');
         
-        $rideOffer.find('.driverCar').attr({
+        $rideOffer.find('.driverCarInfo').attr({
             'data-year': (data.car && data.car.year) || '',
             'data-make': (data.car && data.car.make) || '',
             'data-model': (data.car && data.car.model) || ''
-        }).css({
-            'background-image': 'url("' + (data.car && data.car.pic) + '")'
         });
         
         $rideOffer.find('.driverFunfact p').html(data.funfact || '');
     },
     expandOffer: function($offer) {
         if (!$offer) $offer = $('.rideOffer').eq(0);
-        var percent = (window.innerHeight > 414) ? 33.33 : 50;
-        $offer.children().each(function() {
+        var percent = (window.innerHeight > 414) ? 33.3333 : 50;
+        $offer.children().not('.driverPic').each(function() {
             var $this = $(this);
             $this.css({
                 height: this.getBoundingClientRect().height,
@@ -1108,21 +1092,24 @@ var rideOffers = {
             });
             
             $car = $offer.find('.driverCar');
-            rideOffers.expandOffer.carFit = function() {
-                $car.css({
-                    width: '',
-                    left: ''
-                });
-                var maxCarWidth = $car.height() * 4;
-                if ($car.width() > maxCarWidth) {
-                    $car.css({
-                        width: maxCarWidth,
-                        left: (window.innerWidth - maxCarWidth) * 0.5
-                    });
-                }
-            };
-            rideOffers.expandOffer.carFit();
         });
+        
+        rideOffers.expandOffer.picFit = function(speed) {
+            speed = speed || 0;
+            var h = $offer.children('.acceptRide').height();
+            $offer.children('.driverPic').animate({
+                height: h,
+                width: h,
+                'border-radius': h/2,
+                bottom: (window.innerHeight > 414) ? '35.8333%' : '3.75%'
+            }, speed);
+            $offer.children('.driverName,.driverCarInfo').css({
+                left: h + window.innerWidth * 0.1,
+                'line-height': h/2 + 'px'
+            })
+        };
+        rideOffers.expandOffer.picFit(400);
+        
         $('.rideOffer').filter(':visible').addClass('wasVisible');
         $('.rideOffer').not($offer).hide();
         
@@ -1131,7 +1118,7 @@ var rideOffers = {
     shrinkOffer: function($offer) {
         if (!$offer) $offer = $('.rideOffer').eq(0);
         var percent = (window.innerHeight > 414) ? 33.33 : 50;
-        $offer.children().each(function() {
+        $offer.children().not('.driverPic').each(function() {
             var $this = $(this);
             $this.css({
                 height: this.getBoundingClientRect().height,
@@ -1153,14 +1140,29 @@ var rideOffers = {
             $offer.children().css({
                 height: '',
                 top: '',
-                display: ''
+                left: '',
+                display: '',
+                'line-height': ''
             });
             $('.rideOffer.wasVisible').fadeIn({
                 duration: 200,
                 start: rideOffers.resize
             }).removeClass('wasVisible');
         });
-        $offer.children('.driverName,.driverCar,.driverFunfact').hide();
+        $offer.children('.driverPic').animate({
+            height: 50,
+            width: 50,
+            'border-radius': 25,
+            bottom: '7.5%'
+        }, function() {
+            $(this).css({
+                height: '',
+                width: '',
+                'border-radius': '',
+                bottom: ''
+            });
+        });
+        $offer.children('.driverName,.driverCarInfo,.driverFunfact').hide();
     },
     showTipConfirmation: function(tip, callback) {
         rideOffers.farePlusTip(tip);
@@ -1180,6 +1182,7 @@ var rideOffers = {
         $('.tip-total span span').html((fare + tip).toFixed(2));
     },
     startRide: function() {
+        destroyLabels();
         rideOffers.rideInProgress = true;
         if (cars[rideOffers.driverID]) {
             cars[rideOffers.driverID].setIcon({
@@ -1213,8 +1216,12 @@ var rideOffers = {
         arrived_at_pickup: function() {
             $('#contacting span').html('Sqirl has arrived').attr('data-ellipses','.');
             
-            if (window.plugin && window.plugin.notification && window.plugin.notification.local) {
-                window.plugin.notification.local.add({date: new Date(), message: 'Sqirl has arrived', autoCancel: true});
+            if (window.plugin && window.plugin.notification && window.plugin.notification.local && onPause.isPaused) {
+                window.plugin.notification.local.add({
+                    date: new Date(), 
+                    message: 'Sqirl has arrived',
+                    autoCancel: true
+                });
                 window.plugin.notification.local.hasPermission(function(granted) {
                     if (!granted) window.plugin.notification.local.promptForPermission();
                 });
@@ -1236,6 +1243,7 @@ var rideOffers = {
 function getDriverTime(obj, onsuccess, onfail, car) {
     if (!obj) obj = me;
     if (!car) car = cars[rideOffers.driverID];
+    if (!car) return false;
     if (typeof onsuccess !== 'function') {
         onsuccess = rideOffers.callbacks.arrived_at_pickup;
     }
@@ -1262,7 +1270,7 @@ function getDriverTime(obj, onsuccess, onfail, car) {
         }
     });
 }
-function deactivateRide(resetDrop) {
+function deactivateRide(resetDrop, pause) {
     $('#tip').fadeOut();
     if (resetDrop && drop) {
         drop.setMap();
@@ -1289,8 +1297,8 @@ function deactivateRide(resetDrop) {
     destroyLabels();
     pickupTimer = false;
     $('#contacting span').html('contacting Sqirls').attr('data-ellipses','...');
-    $('.rideOffer').removeClass('expanded wasVisible');
-    editPosition();
+    rideOffers.resetCSS();
+    if (!pause) editPosition();
 }
 
 function activeCar(driverID) {
@@ -1335,6 +1343,16 @@ $(document).ready(function() {
             google.maps.event.trigger(map, 'resize');
         }
         if ($('#center_icon').is(':visible')) trueCenterIcon();
+        
+        if ($('#signup-terms,#signup-terms-iframe').is(':visible')) {
+            $('#signup-terms-iframe').css({
+                width: window.innerWidth,
+                height: window.innerHeight - 214
+            });
+            $('#signup-terms').children('label').css({
+                'margin-top': window.innerHeight - 220
+            });
+        }
 
         rideOffers.resize();
     })/**/
@@ -1379,7 +1397,6 @@ $(document).ready(function() {
 
             // Show "Aww, nuts" if there aren't any drivers
             if (Object.keys(cars).length == 0) {
-                console.log('Aww nuts');
                 statusMessage('No Sqirls are available at this time.');
                 return false;
             }
@@ -1503,13 +1520,6 @@ $(document).ready(function() {
         rideRequests.finishRide();
     })
     .on('click', '.custom-tip', function(event) {
-        /*
-        var tip = prompt('Custom tip:');
-        if (tip) {
-            tip = Number(tip).toFixed(2);
-            rideOffers.showTipConfirmation(tip);
-        }
-        */
         rideOffers.showTipConfirmation('0.00', function() {
             $('.tip-tip input').focus();
         });
@@ -1596,15 +1606,6 @@ $(document).ready(function() {
     .on('click', '.phone-login', function(event) {
         $('.login-option').hide();
         $('.login-phone-number').show();
-        /*
-        var phone = prompt('Phone number:');
-        if (phone) {
-            phone = phone.replace(/\D/g,'');
-            if (phone.length == 10) {
-                socket.emit('registerPhone', {phone: phone});
-            }
-        }
-        */
     })
     .on('click', '.login-phone-number .cancel', function(event) {
         $('.login-option').show();
@@ -1681,6 +1682,14 @@ $(document).ready(function() {
     .on('click', '#profile-signup', function(event) {
         changeScreen('signup', true);
     })
+    .on('click', '#profile-view-car', function(event) {
+        $('.profile-section,#profile-pic,#profile-view-car,#profile-logout').hide();
+        $('#profile-car,#profile-actions,#profile-view-person').show();
+    })
+    .on('click', '#profile-view-person', function(event) {
+        $('.profile-section,#profile-pic,#profile-view-car,#profile-logout').show();
+        $('#profile-car,#profile-view-person').hide();
+    })
     .on('click', '#profile-logout', function(event) {
         profile.logout();
     })
@@ -1732,7 +1741,7 @@ $(document).ready(function() {
     })
     .on('keydown', function(event) {
         // Esc
-        if (event.which == 27) small_input();
+        if (event.which == 27) onBackKeyDown();
         // Arrow Keys
         else if ([37,38,39,40].indexOf(event.which) != -1) {
             delta = Math.pow(1.98,-map.getZoom());
@@ -1818,68 +1827,76 @@ $(document).ready(function() {
         }
     });
     
-    $('#signup-car').on('click', '.back', function(event) {
-        $('.signup-checklist.personal').fadeIn();
-        $('#signup-car').fadeOut();
-        $('.signup-checklist p').removeClass('checked');
+    $('#signup-car,#signup-name,#signup-extra,#signup-terms').on('click', '.back', function(event) {
+        var $div = $(event.delegateTarget);
+        $div.fadeOut();
+        if ($div.attr('id') == 'signup-car') {
+            $('.signup-checklist.personal').fadeIn();
+            $('.signup-checklist p').removeClass('checked');
+        }
+        else {
+            $div.prev().fadeIn();
+        }
+        if ($div.attr('id') == 'signup-terms') {
+            $('#signup-terms-iframe').fadeOut();
+        }
     }).on('click', '.next', function(event) {
-        $('#signup-car').fadeOut();
-        $('#signup-name').fadeIn(function() {
-            var $input = $('#signup-name input').eq(0);
-            if ($input.val() == '') {
-                $input.focus();
+        var $div = $(event.delegateTarget);
+        var $empty = $div.find('input').not('[name="middleName"]').filter(function() {
+            return this.value == '';
+        });
+        if ($empty.length > 0) {
+            statusMessage($empty.eq(0).prev().html() + ' is required');
+            return false;
+        }
+        $div.fadeOut();
+        if ($div.attr('id') == 'signup-extra') {
+            $('#signup-terms-iframe').fadeIn();
+            $(window).resize();
+        }
+        $div.next().fadeIn(function() {
+            if (this.id != 'signup-terms') {
+                var $input = $(this).find('input').eq(0);
+                if ($input.val() == '') {
+                    $input.focus();
+                }
+            }
+            if (this.id == 'signup-extra') {
+                var $dob = $('#signup [name="dob"]');
+                if ($dob.val() == '') {
+                    var d = new Date();
+                    d.setYear(d.getYear() - 21);
+                    try {
+                        $dob[0].valueAsDate = d;
+                        if ($dob.val() != '') {
+                            $dob.addClass('placeholder');
+                            $dob.one('focus', function() {
+                                $dob.removeClass('placeholder');
+                            });
+                        }
+                        else {
+                            $dob.addClass('dob-fallback');
+                        }
+                    }
+                    catch(e) {
+                        console.log(e);
+                    }
+                }
             }
         });
     });
     
-    $('#signup-name').on('click', '.back', function(event) {
-        $('#signup-car').fadeIn();
-        $('#signup-name').fadeOut();
-    }).on('click', '.next', function(event) {
-        $('#signup-name').fadeOut();
-        $('#signup-extra').fadeIn(function() {
-            var $dob = $('#signup [name="dob"]');
-            if ($dob.val() == '') {
-                var d = new Date();
-                d.setYear(d.getYear() - 21);
-                try {
-                    $dob[0].valueAsDate = d;
-                    if ($dob.val() != '') {
-                        $dob.addClass('placeholder');
-                        $dob.one('focus', function() {
-                            $dob.removeClass('placeholder');
-                        });
-                    }
-                    else {
-                        $dob.addClass('dob-fallback');
-                    }
-                }
-                catch(e) {
-                    console.log(e);
-                }
-            }
-            var $input = $('#signup-extra input').eq(0);
-            if ($input.val() == '') {
-                $input.focus();
-            }
-        });
-    });
-    
-    $('#signup-extra').on('click', '.back', function(event) {
-        $('#signup-name').fadeIn();
-        $('#signup-extra').fadeOut();
-    }).on('click', '.submit', function(event) {
+    $('#signup-terms').on('click', '.submit', function(event) {
         $('.dob-fallback').val(function() {
             var date = new Date(this.value);
             return date.toJSON().slice(0,10);
         });
         var data = $('#signup-form').serialize();
         function done() {
-            console.log(data);
             /**/
             $.post('https://ridesqirl.com:8443/signup', data, function(response) {
                 console.log(response);
-                $('#signup-extra').fadeOut();
+                $('#signup-terms,#signup-terms-iframe').fadeOut();
                 $('#signup-success').fadeIn();
             }).fail(function() {
                 console.log('Failed', arguments);
@@ -1897,7 +1914,7 @@ $(document).ready(function() {
                 done();
             }
             else {
-                console.log('Logged in with phone number that doesn\'t match number listed in signup form.');
+                statusMessage('Phone number mismatch');
             }
         });
     });
@@ -1978,6 +1995,8 @@ $(document).ready(function() {
             // Android hack for softkeyboard covering divs
             if (device.platform == 'Android') {
                 $('#signup').css('height', window.innerHeight);
+                // also switch some inputs to numeric keyboard
+                $('input[pattern]').attr('type', 'tel');
             }
             document.addEventListener('online', onOnline, false);
         }, false);
@@ -2000,7 +2019,7 @@ $(document).ready(function() {
                 profile.populate();
             });
         });
-        $.getScript('https://static.twilio.com/libs/twiliojs/1.2/twilio.min.js', TwilioHandlers);
+        $.getScript('https://static.twilio.com/libs/twiliojs/1.2/twilio.js', TwilioHandlers);
     }
 
     if (window.navigator && window.navigator.standalone) {
@@ -2025,6 +2044,7 @@ function onPause() {
         }
         onPause.time = Date.now();
     }
+    onPause.isPaused = true;
 }
 function onResume() {
     var time = Date.now();
@@ -2036,18 +2056,29 @@ function onResume() {
     }
     // Turn on geolocation
     if (!watchID) initialize();
+    
+    delete onPause.isPaused;
 }
 function onBackKeyDown() {
     if ($('.screen').filter(':visible').offset().left == 200) {
         toggleMenu();
     }
+    else if ($('#popup-cancel').is(':visible')) {
+        $('#popup-cancel').click();
+    }
     else if ($('#main').is(':visible')) {
         if ($('.collapse').is(':visible')) {
             $('.collapse').click();
         }
+        else if ($('#cancelRequest').is(':visible')) {
+            $('#cancelRequest').click();
+        }
         else {
             navigator.app.exitApp();
         }
+    }
+    else if ($('.back,.cancel,.action-sheet-cancel').is(':visible')) {
+        $('.back,.cancel,.action-sheet-cancel').filter(':visible').click();
     }
     else {
         changeScreen('main', true);
@@ -2095,7 +2126,7 @@ function TwilioHandlers() {
         $('.call').remove();
     });
     Twilio.Device.incoming(function (conn) {
-        if (window.cordova) {
+        if (window.cordova && onPause.isPaused) {
             // Perhaps only send on iOS since Android seems to pop open the app when there's a call?
             window.plugin.notification.local.add({
                 message: 'Incoming call...',
@@ -2162,8 +2193,8 @@ var profile = {
         if (window.facebookConnectPlugin) {
             facebookConnectPlugin.getAccessToken(function(token) {
                 facebookConnectPlugin.api('/me', [], function(response) {
-                    $('.fa-user').next().html(response.name);
-                    $('.fa-envelope').next().html(response.email);
+                    $('#profile-user-name > span').html(response.name);
+                    $('#profile-user-email > span').html(response.email);
                     $('#profile-pic img').attr('src', 'https://graph.facebook.com/' + response.id + '/picture?type=large');
                     $('.screen-login').hide();
                     $('#profile-container,#payment-info,#earnings-info,.signup-checklist.personal').show();
@@ -2184,8 +2215,8 @@ var profile = {
     },
     logout: function() {
         function onsuccess() {
-            $('.screen-login').show();
-            $('#profile-container,#payment-info,#earnings-info').hide();
+            $('.screen-login,#profile-signup').show();
+            $('#profile-container,#payment-info,#earnings-info,#profile-view-car').hide();
             $('#profile-pic img').attr('src', 'https://ridesqirl.com/app/img/unidentified.png');
             $('#signup').children().css('display','').children().css('display','').removeClass('checked').find('input').val('');
             $('.payment-cc').remove();
@@ -2196,7 +2227,7 @@ var profile = {
         function onerror(error) {
             console.log(error);
         }
-        if ($('#profile-phone').is(':visible') && !$('#profile-info').is(':visible')) {
+        if ($('#profile-user-phone').is(':visible')) {
             onsuccess();
             $('#profile-container').find('*').css('display','');
             window.localStorage.removeItem('phone');
@@ -2222,8 +2253,8 @@ function trueCenterIcon(obj) {
 }
 
 function easyGPS() {
-    //$('#map-canvas').append('<button class="gps"><i class="fa fa-crosshairs"></i></button>');
-    $('#main .header').append('<button class="gps"><i class="fa fa-location-arrow"></i><button>');
+    $('#map-canvas').append('<button class="gps"><i class="fa fa-location-arrow"></i></button>');
+    //$('#main .header').append('<button class="gps"><i class="fa fa-location-arrow"></i><button>');
     $('.gps').on('click', function(event) {
         var $this = $(this);
         if (geo.latitude && geo.longitude) {
@@ -2309,7 +2340,7 @@ function hibernateDriver() {
         }
     });
     me.setIcon({
-        url: 'img/markers/dropoffAcorn.png',
+        url: 'img/markers/pickupAcorn.png',
         scaledSize: new google.maps.Size(25,30)
     });
     $('#checkEarnings').html('Payment').attr('id','makePayment');
@@ -2359,7 +2390,7 @@ function emitPositionUpdates(obj) {
     if (!drivingListener) {
         drivingListener = google.maps.event.addListener(obj, 'position_changed', function() {
             var spot = obj.getPosition();
-            // Calculate distance endpoints are "off road" in getRoute() and add that to a proximity threshold
+            // Calculate distance endpoints are "off road" in getRoute and add that to a proximity threshold
             
             if (pickup && $('.indicatePickup').is(':visible') && getDistance(pickup.getPosition(),spot) < 25 + pickup.offroad) {
                 console.log('Arrived at Pick-up!');
@@ -2383,40 +2414,50 @@ function emitPositionUpdates(obj) {
     }
 }
 
-function around_the_block(lat, lng) {
-    var delta = 0.00001;
-    var mph = 25;
-    var bounds = {
-        north: 45.0357,
-        south: 45.0328,
-        east: -93.1839,
-        west: -93.1876
+/**
+function automate() {
+    geo.active = false;
+    var path = route.directions.routes[0].overview_path;
+    var i = 0;
+    var j = 0;
+    var l = path.length;
+    var I = setInterval(function() {
+        if (i < l) {
+            var point = me.getPosition();
+            if (j < 200 && getDistance(point, route.directions.routes[0].legs[0].end_location) < 5) {
+                if (++j == 200) {
+                    $('.startRide').click();
+                }
+            }
+            else {
+                var distance = getDistance(point, path[i]);
+                if (distance < 5 || i == 0) {
+                    me.setPosition(path[i]);
+                    ++i;
+                }
+                else {
+                    var multiple = Math.max(Math.round(distance / 5), 1);
+                    var diff = {
+                        lat: path[i].lat() - point.lat(),
+                        lng: path[i].lng() - point.lng()
+                    };
+                    me.setPosition(new google.maps.LatLng(point.lat() + diff.lat / multiple, point.lng() + diff.lng / multiple));
+                    if (multiple == 1) ++i;
+                }
+            }
+        }
+        else {
+            clearInterval(I);
+        }
+    }, 80);
+    automate.abort = function() { 
+        clearInterval(I); 
     };
-
-    if (!lat || lat == 0) {
-        lat = bounds.south;
-        lng = bounds.east;
-        emitPositionUpdates();
-    } 
-    else if (lng >= bounds.east && lat < bounds.north) {
-        lat += delta;
-    }
-    else if (lat >= bounds.north && lng > bounds.west) {
-        lng -= delta;
-    }	
-    else if (lng <= bounds.west && lat > bounds.south) {
-        lat -= delta;
-    }
-    else if (lat <= bounds.south && lng < bounds.east) {
-        lng += delta;
-    }
-    me.setPosition(new google.maps.LatLng(lat,lng));
-    driveTimerID = setTimeout(function() { around_the_block(lat,lng); }, 1000 * delta * 3600 / mph * 59);
+    automate.status = function() {
+        console.log((i/l * 100).toFixed(2) + '%', (j/200 * 100).toFixed(2) + '%');
+    };
 }
-
-function stop_drive() {
-    clearTimeout(driveTimerID);
-}
+/**/
 
 function changeScreen(newScreenID, quick) {
     var $oldScreen = $('.screen').filter(':visible');
@@ -2490,37 +2531,6 @@ function getAddress(obj, retry, fn) {
         }
     });	
 }
-// Uses Postal Address
-function codeAddress(address) {
-    if (!window.geocoder) geocoder = new google.maps.Geocoder();
-    var request = {
-        address: address,
-        bounds: map.getBounds()
-    };
-    geocoder.geocode(request, placeCallback);
-}
-// Accepts Keywords
-function findPlace(place) {
-    if (!window.service) service = new google.maps.places.PlacesService(map);
-    var request = {
-        location: map.getCenter(),
-        radius: '500',
-        query: place
-    };
-    service.textSearch(request, placeCallback);
-}
-function placeCallback(results, status) {
-    if (status == google.maps.places.PlacesServiceStatus.OK) {
-        /*
-        for (var i = 0; i < results.length; i++) {
-            var address = results[i].formatted_address;
-            var LatLng = results[i].geometry.location;
-            draw(address, LatLng.lat(), LatLng.lng() );
-        }
-        /**/
-        map.panTo(results[0].geometry.location);
-    }
-}
 function fullscreen_input() {
     var $input = $('#main-footer input').filter(':visible');
     if ($input.offset().top > window.innerHeight * 0.1) {
@@ -2537,7 +2547,7 @@ function fullscreen_input() {
                 setTimeout(function() {
                     $input.attr('placeholder',$input.val());
                     $input.val('');
-                    $input.select()/*[0].setSelectionRange(0,9999)*/;
+                    $input.select();
                     if (window.cordova && cordova.plugins && cordova.plugins.SoftKeyboard) {
                         cordova.plugins.SoftKeyboard.show();
                     }
@@ -2616,22 +2626,6 @@ function getDistance(p1, p2) {
 
 function rad(degree) {
     return degree * Math.PI / 180;	
-}
-
-function funky() {
-    var style = [ { "featureType": "road.highway", "elementType": "geometry", "stylers": [ { "hue": "#dd00ff" } ] },{ "featureType": "road.arterial", "elementType": "geometry", "stylers": [ { "hue": "#00ffdd" } ] },{ "featureType": "road.local", "elementType": "geometry", "stylers": [ { "hue": "#00ffdd" } ] },{ "featureType": "road", "elementType": "labels.text", "stylers": [ { "weight": 0.1 }, { "color": "#b18080" } ] },{ "featureType": "administrative", "elementType": "labels.text.fill", "stylers": [ { "visibility": "on" }, { "weight": 0.1 }, { "color": "#FFFFFF" } ] },{ "featureType": "administrative", "elementType": "labels.text.stroke", "stylers": [ { "color": "#808080" } ] },{ "featureType": "poi", "stylers": [ { "visibility": "off" } ] },{ } ];
-    map.setOptions({styles: style});
-}
-function noLabels() {
-    var style = [ { "elementType": "labels", "stylers": [ { "visibility": "off" } ] } ];
-    map.setOptions({styles: style});
-}
-function normalMap() {
-    map.setOptions({styles: []});
-}
-function driverMap() {
-    var style = [ { "featureType": "administrative.neighborhood", "stylers": [ { "visibility": "off" } ] } ];
-    map.setOptions({styles: style});
 }
 
 function statusMessage(message) {

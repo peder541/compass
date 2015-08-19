@@ -211,20 +211,20 @@
 	background-position: right center;
 }
 .visa {
-    background-image: url('../img/cards/small/visa.png');
+    background-image: url('../img/cards/visa.png');
 }
 .mastercard {
-    background-image: url('../img/cards/small/mastercard.png');
+    background-image: url('../img/cards/mastercard.png');
 }
 .amex {
-    background-image: url('../img/cards/small/amex.png');
+    background-image: url('../img/cards/amex.png');
 }
 .jcb {
-    background-image: url('../img/cards/small/jcb.png');
+    background-image: url('../img/cards/jcb.png');
 }
 .discover {
-    background-image: url('../img/cards/small/discover.png');
+    background-image: url('../img/cards/discover.png');
 }
 .dinersclub {
-    background-image: url('../img/cards/small/diners.png');
+    background-image: url('../img/cards/diners.png');
 }
